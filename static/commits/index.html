@@ -113,6 +113,7 @@
 			$("#since").html(moment($("#since").html()).subtract(8, "d").format("MM/DD/YYYY"));
 			$("#until").html(moment($("#until").html()).subtract(8, "d").format("MM/DD/YYYY"));
 			htmx.trigger("#commits", "rangeChanged");
+			Image;
 		}
 		function moveDateForward() {
 			if (moment().unix() < moment($("#until").html()).add(8, "d").unix()) return;
