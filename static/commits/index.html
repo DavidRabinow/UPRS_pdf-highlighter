@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html data-bs-theme="dark">
 	<head>
-		<title>imaperson.dev | update log</title>
+		<title>davidrabinow.com | update log</title>
 		<meta name="description" content="recent updates to my site">
 		<meta name="keywords" content="imaperson, imaperson1060, imaperson.dev, commits, changelog, commit history, history, updates">
 		<meta name="author" content="imaperson">
@@ -113,7 +113,7 @@
 			$("#since").html(moment($("#since").html()).subtract(8, "d").format("MM/DD/YYYY"));
 			$("#until").html(moment($("#until").html()).subtract(8, "d").format("MM/DD/YYYY"));
 			htmx.trigger("#commits", "rangeChanged");
-			Image;
+		
 		}
 		function moveDateForward() {
 			if (moment().unix() < moment($("#until").html()).add(8, "d").unix()) return;
