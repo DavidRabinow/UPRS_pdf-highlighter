@@ -73,11 +73,11 @@
 
 	$(document).ready(async () => {
 		if (window.location.pathname == "/" || window.location.pathname == "/index.html") {
-			$("#imapersontext").html("imaperson.");
+			$("#imapersontext").html("davidrabinow.");
 			$("#imapersonext").html("dev");
 			return;
 		}
-		await changeText("imaperson.", $("#imapersontext"))
+		await changeText("davidrabinow.", $("#imapersontext"))
 		let extensions =  [ "cs", "exe", "go", "html", "java", "js", "py" ];
 		for await (const i of new Array(3)) {
 			let ext = extensions[Math.floor(Math.random() * extensions.length)];
