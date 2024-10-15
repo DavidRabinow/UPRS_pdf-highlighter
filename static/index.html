@@ -97,7 +97,9 @@
                 setInterval(async () => {
                     await symbolText("!@#$%^&*D", $("#name-a"));
                     await symbolText("!@#$%^&*a", $("#name-r"));
-                    await symbolText("!@#$%^&*v", $("#text-i"));
+                    await symbolText("!@#$%^&*v", $("#name-i"));
+                    await symbolText("!@#$%^&*i", $("#text-i"));
+                    await symbolText("!@#$%^&*d", $("#name-i"));
                 }, 1500);
             }
             $(subtitles[index]).slideToggle(250);
