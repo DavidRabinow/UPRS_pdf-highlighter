@@ -21,11 +21,10 @@
 
     <div class="container">
         <h1>hi, i'm 
-            <!-- Updated span elements for each letter of "David" -->
             <span id="name-D"></span>  <!-- Changed: Added for 'D' -->
             <span id="name-a"></span>  <!-- Changed: Added for 'a' -->
             <span id="name-v"></span>  <!-- Changed: Added for 'v' -->
-            <span id="name-i"></span>  <!-- Changed: Added for 'i' -->
+            <span id="name-i" style="color: pink;"></span>  <!-- Changed: Set color for 'i' to pink -->
             <span id="name-d"></span>  <!-- Changed: Added for 'd' -->
         </h1>
         <p class="subtitle lead" style="display: none;">bad coder</p>
@@ -48,7 +47,6 @@
         }
 
         $(document).ready(async () => {
-            // Updated calls to symbolText for each letter in "David"
             await symbolText("!@#$%^&*D", $("#name-D"));  // Changed: Call for 'D'
             await symbolText("!@#$%^&*a", $("#name-a"));  // Changed: Call for 'a'
             await symbolText("!@#$%^&*v", $("#name-v"));  // Changed: Call for 'v'
@@ -62,7 +60,6 @@
                 if (index == subtitles.length - 2) {
                     $("#name-i").animate({ opacity: 0.25 }, 200);
                     setInterval(async () => {
-                        // Updated calls to symbolText to refresh "David"
                         await symbolText("!@#$%^&*D", $("#name-D"));  // Changed: Refresh call for 'D'
                         await symbolText("!@#$%^&*a", $("#name-a"));  // Changed: Refresh call for 'a'
                         await symbolText("!@#$%^&*v", $("#name-v"));  // Changed: Refresh call for 'v'
