@@ -63,7 +63,7 @@
 	$(document).ready(async () => {
 		if (window.location.pathname == "/" || window.location.pathname == "/index.html") {
 			$("#imapersontext").html("davidrabinow.");
-			$("#imapersonext").html("online");
+			$("#imapersonext").html("online ");
 			return;
 		}
 		await changeText("davidrabinow.", $("#imapersontext"))
@@ -73,6 +73,6 @@
 			extensions = extensions.filter(x => x != ext);
 			await changeText(ext, $("#imapersonext"));
 		}
-		await changeText("online", $("#imapersonext"));
+		await changeText("online   ", $("#imapersonext"));
 	});
 </script>
