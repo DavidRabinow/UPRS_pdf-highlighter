@@ -1,7 +1,7 @@
 {
   "main": "index.js",
   "author": "david rabinow0",
-  "repository": "github:imaperson1060/imaperson.dev",
+  "repository": "github:DavidRabinow/pegasus2.o",
   "homepage": "https://imaperson.dev",
   "license": "GPL-3.0-only",
   "dependencies": {
