@@ -59,7 +59,7 @@
             $(subtitles[0]).delay(100).fadeIn(250);
             let interval = setInterval(() => {
                 if (index == subtitles.length - 2) {
-                    $("#name-i").animate({ opacity: 0.70 }, 200);
+                    $("#name-i").animate({ opacity: 0.50 }, 200);
                     setInterval(async () => {
                         await symbolText("!@#$%^&*D", $("#name-D"));  // Changed: Refresh call for 'D'
                         await symbolText("!@#$%^&*a", $("#name-a"));  // Changed: Refresh call for 'a'
