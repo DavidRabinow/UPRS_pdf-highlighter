@@ -42,6 +42,6 @@ app.all("/*", (req, res) => res.status(405).json({ success: false, code: 405, er
 
 app.listen(process.env.PORT, async () => {
 	console.log(moment().format(), chalk.green("api ready"), chalk.blue(`(listening on port ${process.env.PORT})`));
-	(await import("./api/stop.js")).changeStatus("1");
-	fs.readdirSync("./discord").forEach(async bot => (await import(`./discord/${bot}/bot.js`)).default());
+//	(await import("./api/stop.js")).changeStatus("1");
+	//fs.readdirSync("./discord").forEach(async bot => (await import(`./discord/${bot}/bot.js`)).default());
 });

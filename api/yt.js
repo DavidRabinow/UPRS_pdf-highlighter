@@ -2,13 +2,13 @@ import mysql from "mysql";
 import util from "util";
 import ytdl from "@distube/ytdl-core";
 
-let mysqlLogin = Object.assign(JSON.parse(process.env.MYSQL), { database: "yt" }),
-	database = mysql.createPool(mysqlLogin),
-	query = util.promisify(database.query).bind(database);
+//let mysqlLogin = Object.assign(JSON.parse(process.env.MYSQL), { database: "yt" }),
+	//database = mysql.createPool(mysqlLogin),
+	//query = util.promisify(database.query).bind(database);
 
 export async function getVideoDetails(id, cookie) {
-	let video = (await query("SELECT * FROM `videos` WHERE id=?", [ id ]))[0];
-	if (video && video.timestamp + 21600 >= Math.round(new Date().getTime() / 1000)) return { code: 200, id, title: JSON.parse(decodeURIComponent(video.title)), description: JSON.parse(decodeURIComponent(video.description)), author: JSON.parse(decodeURIComponent(video.author)), formats: JSON.parse(decodeURIComponent(video.formats)) };
+	//let video = (await query("SELECT * FROM `videos` WHERE id=?", [ id ]))[0];
+	//if (video && video.timestamp + 21600 >= Math.round(new Date().getTime() / 1000)) return { code: 200, id, title: JSON.parse(decodeURIComponent(video.title)), description: JSON.parse(decodeURIComponent(video.description)), author: JSON.parse(decodeURIComponent(video.author)), formats: JSON.parse(decodeURIComponent(video.formats)) };
 
 	let videoInfo;
 	try { videoInfo = await ytdl.getInfo(id, { requestOptions: { headers: { cookie: cookie ?? null } } }); }
@@ -19,9 +19,9 @@ export async function getVideoDetails(id, cookie) {
 	}
 
 	let formats = { download: videoInfo.formats.filter(video => video.hasVideo && video.hasAudio).sort((a, b) => b.height * b.width - a.height * a.width)[0].url, video: videoInfo.formats.filter(video => video.hasVideo && !video.hasAudio).sort((a, b) => b.height * b.width - a.height * a.width)[0].url, audio: videoInfo.formats.filter(x => !x.hasVideo && x.hasAudio).sort((a, b) => b.audioBitrate - a.audioBitrate)[0].url };
-	if (videoInfo.videoDetails.isPrivate);
-	else if ((await query("SELECT * FROM `videos` WHERE id=?", [id]))[0]) await query("UPDATE `videos` SET `title`=?, `description`=?, `author`=?, `formats`=?, `timestamp`=? WHERE `id`=?", [ encodeURIComponent(JSON.stringify(videoInfo.videoDetails.title)), encodeURIComponent(JSON.stringify(videoInfo.videoDetails.description)), encodeURIComponent(JSON.stringify({ display: videoInfo.videoDetails.author.name, username: videoInfo.videoDetails.author.user })), encodeURIComponent(JSON.stringify(formats)), Math.round(new Date().getTime() / 1000), id ]);
-	else await query("INSERT INTO `videos`(`id`, `title`, `description`, `author`, `formats`, `timestamp`) VALUES (?,?,?,?,?,?)", [ id, encodeURIComponent(JSON.stringify(videoInfo.videoDetails.title)), encodeURIComponent(JSON.stringify(videoInfo.videoDetails.description)), encodeURIComponent(JSON.stringify({ display: videoInfo.videoDetails.author.name, username: videoInfo.videoDetails.author.user })), encodeURIComponent(JSON.stringify(formats)), Math.round(new Date().getTime() / 1000) ]);
+	//if (videoInfo.videoDetails.isPrivate);
+	//else if ((await query("SELECT * FROM `videos` WHERE id=?", [id]))[0]) await query("UPDATE `videos` SET `title`=?, `description`=?, `author`=?, `formats`=?, `timestamp`=? WHERE `id`=?", [ encodeURIComponent(JSON.stringify(videoInfo.videoDetails.title)), encodeURIComponent(JSON.stringify(videoInfo.videoDetails.description)), encodeURIComponent(JSON.stringify({ display: videoInfo.videoDetails.author.name, username: videoInfo.videoDetails.author.user })), encodeURIComponent(JSON.stringify(formats)), Math.round(new Date().getTime() / 1000), id ]);
+	//else await query("INSERT INTO `videos`(`id`, `title`, `description`, `author`, `formats`, `timestamp`) VALUES (?,?,?,?,?,?)", [ id, encodeURIComponent(JSON.stringify(videoInfo.videoDetails.title)), encodeURIComponent(JSON.stringify(videoInfo.videoDetails.description)), encodeURIComponent(JSON.stringify({ display: videoInfo.videoDetails.author.name, username: videoInfo.videoDetails.author.user })), encodeURIComponent(JSON.stringify(formats)), Math.round(new Date().getTime() / 1000) ]);
 
 	return { code: 200, id, title: videoInfo.videoDetails.title, description: videoInfo.videoDetails.description, author: { display: videoInfo.videoDetails.author.name, username: videoInfo.videoDetails.author.user }, formats };
 }
