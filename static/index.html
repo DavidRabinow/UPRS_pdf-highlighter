@@ -78,17 +78,17 @@
                     setTimeout(() => animateTerminal(), 1000);
                 }
             }, 750);
-            
+
             function animateTerminal() {
-    $("#terminal").fadeIn();
-    "Engineer and software developer;".split("").forEach((x, i) => {
-        setTimeout(() => {
-            // Append each character wrapped in a <span> for styling
-            $("#terminal-code-1").append(x === " " ? "&nbsp;" : `<span class='text-secondary'>${x}</span>`);
-            if (x === ";") setTimeout(() => $("#cards").fadeIn(), 500);
-        }, (100 * i));
-    });
-}
+                $("#terminal").fadeIn();
+                "Engineer and software developer;".split("").forEach((x, i) => {
+                    setTimeout(() => {
+                        $("#terminal-code-1").append(x);
+                        if (x == ";") setTimeout(() => $("#cards").fadeIn(), 500);
+                    }, (100 * i));
+                });
+            }
+        });
     </script>
 </body>
 </html>
