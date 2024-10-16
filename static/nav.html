@@ -73,7 +73,7 @@
             return;
         }
         await changeText("davidrabinow.", $("#imapersontext"))
-        let extensions =  [ "cs", "exe", "go", "html", "java", "js", "py" ];
+        let extensions =  [ "cs", "exe", "go", "html", "java", "js", "py","dev" ];
         for await (const i of new Array(3)) {
             let ext = extensions[Math.floor(Math.random() * extensions.length)];
             extensions = extensions.filter(x => x != ext);
