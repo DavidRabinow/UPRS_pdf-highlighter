@@ -79,19 +79,16 @@
                 }
             }, 750);
 
-        function animateTerminal() {
-    $("#terminal").fadeIn();
-    
-    // Set the color for the text before appending
-    $("#terminal-code-1").css("color", "rgb(255, 165, 0)");  // Example: Orange color
-
-    "Engineer and software developer;".split("").forEach((x, i) => {
-        setTimeout(() => {
-            $("#terminal-code-1").append(x);
-            if (x == ";") setTimeout(() => $("#cards").fadeIn(), 500);
-        }, (100 * i));
-    });
-}
+            function animateTerminal() {
+                $("#terminal").fadeIn();
+                "Engineer and software developer;".split("").forEach((x, i) => {
+                    setTimeout(() => {
+                        $("#terminal-code-1").append(x);
+                        if (x == ";") setTimeout(() => $("#cards").fadeIn(), 500);
+                    }, (100 * i));
+                });
+            }
+        });
     </script>
 </body>
 </html>
