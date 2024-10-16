@@ -80,15 +80,17 @@
             }, 750);
 
             function animateTerminal() {
-                $("#terminal").fadeIn();
-                "Engineer and software developer;".split("").forEach((x, i) => {
-                    setTimeout(() => {
-                        $("#terminal-code-1").append(x);
-                        if (x == ";") setTimeout(() => $("#cards").fadeIn(), 500);
-                    }, (100 * i));
-                });
-            }
-        });
+    $("#terminal").fadeIn();
+
+    // Ensure the text color is applied to each character as it is appended
+    "Engineer and software developer;".split("").forEach((x, i) => {
+        setTimeout(() => {
+            $("#terminal-code-1").append(`<span style="color: rgb(255, 165, 0);">${x}</span>`); // Change the color here
+            if (x == ";") setTimeout(() => $("#cards").fadeIn(), 500);
+        }, (100 * i));
+    });
+}
+
     </script>
 </body>
 </html>
