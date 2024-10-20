@@ -1,22 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Page</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
+body{
+    margin: 0;
+    padding: 0;
+}
 
-    <nav class="navbar">
-        <!-- Nav content -->
-    </nav>
+.background {
+    width: 100%;
+    height: 65vh; 
+    background-image: url('/header/testing.png'); 
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
 
-    <div class="background">
-        <!-- Background section -->
-    </div>
 
-    <!-- Rest of the page content -->
-
-</body>
-</html>
+.banner {
+    position: relative;
+    z-index: 1; 
+    
+}
