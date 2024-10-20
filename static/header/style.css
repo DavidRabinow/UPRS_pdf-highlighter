@@ -8,13 +8,13 @@ body{
     height: 65vh; 
     background-image: url('/header/testing.png'); 
     background-repeat: no-repeat;
-    
+    background-size: cover;
     background-position: center;
 }
 
 
 .banner {
-    position: relative;
-    z-index: 1; 
-    
+    position: relative; /* Ensure this is set to relative or absolute */
+    z-index: 1; /* Keep the z-index as it is */
+    top: -30px; /* Adjust this value to move the banner upwards */
 }
