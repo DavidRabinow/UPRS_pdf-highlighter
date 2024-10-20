@@ -5,16 +5,16 @@ body {
 
 .background {
     width: 100%;
-    height: 100vh; /* Full height */
-    background-image: url('test.jpg'); /* Replace with your image path */
+    height: 100vh; 
+    background-image: url('test.jpg'); 
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
 }
 
-/* Optional: Style for the banner */
+
 .banner {
     position: relative;
-    z-index: 1; /* Make sure the banner is above other content */
-    /* You can add more styles here if needed */
+    z-index: 1; 
+
 }
