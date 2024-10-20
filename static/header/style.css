@@ -9,12 +9,12 @@ body {
     background-image: url('/header/testing.jpg'); 
     background-repeat: no-repeat;
     background-size: cover;
-    
+    background-position: center;
 }
 
 
 .banner {
     position: relative;
     z-index: 1; 
-
+    margin-top: -10px; 
 }
