@@ -8,7 +8,7 @@ body{
     height: 65vh; 
     background-image: url('/header/testing.png'); 
     background-repeat: no-repeat;
-    background-size: cover;
+    
     background-position: center;
 }
 
@@ -18,14 +18,3 @@ body{
     z-index: 1; 
     
 }
-ul {
-    font-size: 0;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-  
-  li {
-    display: inline-block;
-    font-size: 1rem;
-  }
