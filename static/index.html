@@ -15,19 +15,14 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/htmx.org@1.9.12/dist/htmx.min.js"></script>
-    
-
-<link rel="stylesheet" type="text/css" href="style.css">
-
 </head>
 
 <body class="mb-5">
     <div class="mb-4" hx-get="/nav.html" hx-trigger="load"></div>
-    <div class="background">
-            
+
     <div class="container">
         <h1>Hi, i'm 
-            <span id="name-D"></span><span id="name-a"></span><span id="name-v"></span><span id="name-i" style="color: rgb(10, 79, 101);"></span><span id="name-d"></span> 
+            <span id="name-D"></span><span id="name-a"></span><span id="name-v"></span> <span id="name-i" style="color: rgb(10, 79, 101);"></span> <span id="name-d"></span> 
         </h1>
         <p class="subtitle lead" style="display: none;">bad coder</p>
         <p class="subtitle lead" style="display: none;">command c addict</p>
@@ -41,7 +36,7 @@
             <code style="color: rgb(255, 255, 255);">&gt;</code><code id="terminal-code-1"> </code>
         </div>
     </div>
-</div>
+
     <script>
         async function symbolText(text, element) {
             return new Promise(resolve => {
