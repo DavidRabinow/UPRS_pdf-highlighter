@@ -16,4 +16,5 @@ body {
 .banner {
     position: relative;
     z-index: 1; /* Make sure the banner is above other content */
+    /* You can add more styles here if needed */
 }
