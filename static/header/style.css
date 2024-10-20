@@ -16,5 +16,6 @@ body{
 .banner {
     position: relative; /* Ensure this is set to relative or absolute */
     z-index: 1; /* Keep the z-index as it is */
-    top: -30px; /* Adjust this value to move the banner upwards */
+    top: -30px;
+    margin-top: 0px; /* Adjust this value to move the banner upwards */
 }
