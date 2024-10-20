@@ -18,3 +18,12 @@ body {
     z-index: 1; 
 
 }
+nav {
+    margin: 0 !important; /* Removes margin */
+}
+.navbar {
+    padding: 0 !important; /* Removes padding */
+}
+.container-fluid {
+    padding: 0 !important; /* Removes padding */
+}
