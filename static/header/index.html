@@ -1,52 +1,41 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <title>CSS</title>
-        <link rel="stylesheet" type="text/css" href="style.css">
-        <style>
-            .background {
-                position: relative;
-                width: 100%;
-                height: 405px;
-                background-image: url('/header/testing.png'); /* Adjust path to your image */
-                background-repeat: no-repeat;
-                background-size: cover;
-                background-position: center;
-            }
-
-            .background h1, .background p, .background .terminal {
-                position: absolute;
-                top: 50%; /* Adjust to position text */
-                left: 50%;
-                transform: translate(-50%, -50%); /* Centering the text */
-                color: white; /* Adjust text color for visibility */
-                text-align: center; /* Optional, to center text */
-            }
-        </style>
-    </head>
-
-    <body>
-        <div class="background">
-            <h1>Hi, I'm 
-                <span id="name-D"></span>
-                <span id="name-a"></span>
-                <span id="name-v"></span>
-                <span id="name-i" style="color: rgb(10, 79, 101);"></span>
-                <span id="name-d"></span>
-            </h1>
-
-            <p class="subtitle lead" style="display: none;">bad coder</p>
-            <p class="subtitle lead" style="display: none;">command c addict</p>
-            <p class="subtitle lead" style="display: none;">not a virus, I swear</p>
-            <p class="subtitle lead" style="display: none;"><code class="text-i">i</code>'m a person</p>
-            <p class="subtitle lead" style="display: none;">
-                <code class="text-i" style="color: rgb(10, 79, 101);">I</code>'m a person,
-            </p>
-
-            <div id="terminal" class="mt-3" style="display: none;">
-                <code style="color: rgb(255, 255, 255);">&gt;</code>
-                <code id="terminal-code-1"> </code>
-            </div>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overlay Text on Image</title>
+    <link rel="stylesheet" type="text/css" href="style.css"> <!-- Link to your CSS file -->
+</head>
+<body>
+    <div class="background">
+        <h1>Hi, I'm 
+            <span id="name-D"></span>
+            <span id="name-a"></span>
+            <span id="name-v"></span>
+            <span id="name-i" style="color: rgb(10, 79, 101);"></span>
+            <span id="name-d"></span>
+        </h1>
+        
+        <p class="subtitle lead">bad coder</p>
+        <p class="subtitle lead">command c addict</p>
+        <p class="subtitle lead">not a virus, I swear</p>
+        <p class="subtitle lead"><code class="text-i">i</code>'m a person</p>
+        <p class="subtitle lead">
+            <code class="text-i" style="color: rgb(10, 79, 101);">I</code>'m a person,
+        </p>
+        
+        <div id="terminal" class="mt-3" style="display: none;">
+            <code style="color: rgb(255, 255, 255);">&gt;</code>
+            <code id="terminal-code-1"> </code>
         </div>
-    </body>
+    </div>
+
+    <script>
+        document.querySelectorAll('.subtitle').forEach((el, index) => {
+            setTimeout(() => {
+                el.style.display = 'block'; // Show each subtitle after a delay
+            }, index * 1000); // Adjust timing as needed
+        });
+    </script>
+</body>
 </html>
