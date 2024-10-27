@@ -31,54 +31,6 @@
         </div>
     </div>
 
-    <script>
-        async function symbolText(text, element) {
-            return new Promise(resolve => {
-                for (var i = 0; i < text.length; i++) 
-                    setTimeout(i => element.html(text.charAt(i)), (i * 20) + 300, i);
-                setTimeout(() => resolve(), (text.length * 20) - (text.length / 2 * 20));
-            });
-        }
-
-        $(document).ready(async () => {
-            await symbolText("!@#$%^&*D", $("#name-D"));  // Changed: Call for 'D'
-            await symbolText("!@#$%^&*a", $("#name-a"));  // Changed: Call for 'a'
-            await symbolText("!@#$%^&*v", $("#name-v"));  // Changed: Call for 'v'
-            await symbolText("!@#$%^&*i", $("#name-i"));  // Changed: Call for 'i'
-            await symbolText("!@#$%^&*d", $("#name-d"));  // Changed: Call for 'd'
-
-            let subtitles = $(".subtitle");
-            let index = 0;
-            $(subtitles[0]).delay(100).fadeIn(250);
-            let interval = setInterval(() => {
-                if (index == subtitles.length - 2) {
-                    $("#name-i").animate({ opacity: 0.62 }, 200);
-                    setInterval(async () => {
-                        await symbolText("!@#$%^&*D", $("#name-D"));  // Changed: Refresh call for 'D'
-                        await symbolText("!@#$%^&*a", $("#name-a"));  // Changed: Refresh call for 'a'
-                        await symbolText("!@#$%^&*v", $("#name-v"));  // Changed: Refresh call for 'v'
-                        await symbolText("!@#$%^&*i", $("#name-i"));  // Changed: Refresh call for 'i'
-                        await symbolText("!@#$%^&*d", $("#name-d"));  // Changed: Refresh call for 'd'
-                    }, 1500);
-                }
-                $(subtitles[index]).slideToggle(250);
-                $(subtitles[++index]).slideToggle(250);
-                if (index == subtitles.length - 1) {
-                    clearInterval(interval);
-                    setTimeout(() => animateTerminal(), 1000);
-                }
-            }, 750);
-
-            function animateTerminal() {
-                $("#terminal").fadeIn();
-                "Engineer and software developer;".split("").forEach((x, i) => {
-                    setTimeout(() => {
-                        $("#terminal-code-1").append(x);
-                        if (x == ";") setTimeout(() => $("#cards").fadeIn(), 500);
-                    }, (100 * i));
-                });
-            }
-        });
-    </script>
+   
 </body>
 </html>
