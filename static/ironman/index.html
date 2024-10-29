@@ -8,44 +8,83 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta property="og:image" content="https://avatars.githubusercontent.com/u/157258504?v=4">
 	<link rel="icon" href="https://avatars.githubusercontent.com/u/157258504?v=4">
+
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 	<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/htmx.org@1.9.12/dist/htmx.min.js"></script>
+
 	<style>
-		.uber-button {
+		.container {
+			margin-bottom: 2rem; /* Add some space below the container */
+		}
+		.flex-container {
+			display: flex; /* Use flexbox layout */
+			align-items: flex-start; /* Align items at the top */
+		}
+		.text-content {
+			margin-left: 6rem; /* Align text left of the image */
+		}
+		.helmet-code-button {
 			background-color: rgb(10, 79, 101); 
-			color: white;
-			height: 2em;
-			width: 10em;
+			color: rgb(255, 255, 255); 
+			height: 3rem; /* Use rem for height */
+			width: 20rem; /* Use rem for width */
 			border: none;
-			font-size: 0.75em;
-			border-radius: 0.6em;
+			font-size: 1rem; /* Use rem for font size */
+			border-radius: 0.625rem; /* Use rem for border radius */
 			text-align: center;
-			line-height: 2em;
+			text-decoration: none; /* Prevent underline */
+			display: block; /* Change display to block to stack buttons */
+			line-height: 3rem; /* Center text vertically */
 			cursor: pointer;
 			transition: 0.15s;
-			margin-left: auto;
-			margin-right: auto;
-			display: block;
-			position: relative;
-			top: -2em;
+			margin-top: 1rem; /* Space between buttons */
 		}
-		.uber-button:hover {
+		.helmet-code-button:hover {
 			opacity: 0.8;
 		}
+		.stls-button {
+			background-color: rgb(10, 79, 101); 
+			color: rgb(255, 255, 255); 
+			height: 3rem; /* Use rem for height */
+			width: 20rem; /* Use rem for width */
+			border: none;
+			font-size: 1rem; /* Use rem for font size */
+			border-radius: 0.625rem; /* Use rem for border radius */
+			text-align: center;
+			text-decoration: none; /* Prevent underline */
+			display: block; /* Change display to block to stack buttons */
+			line-height: 3rem; /* Center text vertically */
+			cursor: pointer;
+			transition: 0.15s;
+			margin-top: 1rem; /* Space between buttons */
+		}
+		.stls-button:hover {
+			opacity: 0.8;
+		}
+
+
 	</style>
 </head>
 <body class="mb-5">
 	<div class="mb-4" hx-get="/nav.html" hx-trigger="load"></div>
+
 	<div class="container">
 		<h1>Iron Man Helmet:</h1>
-		<a href="helmet-code.html" class="uber-button">Helmet Code</a>
-		<img src="ironman.png" class="mb-5" height="256">
-		<h4>
-			The Iron Man helmet, inspired by the iconic movie prop, was meticulously 3D-printed to replicate its sleek, high-tech design. Inside, two servo motors are mounted at the top, allowing the faceplate to rise and fall smoothly with a button press on the side of the helmet. Creating this functionality required custom coding to ensure precise control and synchronization of the servo motors. Additionally, a separate switch on the side controls the light-up eyes, enhancing the helmet’s realism. This project combines advanced engineering with a popular design to produce a highly functional and visually impressive piece.
-		</h4>
+		<div class="flex-container">
+				<img src="bare iron man helmet.png" class="mb-5" height="256">
+				<img src="ironman.png" class="mb-5" height="256">
+			<div class="text-content">
+				<a href="https://github.com/DavidRabinow/Iron-man-helmet-code" class="helmet-code-button"><b>Helmet Code</b></a>
+				<a href="https://drive.google.com/drive/folders/1USDJGabRnCHesh-GkYl_Xess5VXqYE-T?usp=sharing" class="stls-button"><b>Iron Man .stls</b></a> 
+			</div>
+		</div>
 	</div>
+
+	<h4 class="text-content">
+		The Iron Man helmet, inspired by the iconic movie prop, was meticulously 3D-printed to replicate its sleek, high-tech design. Inside, two servo motors are mounted at the top, allowing the faceplate to rise and fall smoothly with a button press on the side of the helmet. Creating this functionality required custom coding to ensure precise control and synchronization of the servo motors. Additionally, a separate switch on the side controls the light-up eyes, enhancing the helmet’s realism. This project combines advanced engineering with a popular design to produce a highly functional and visually impressive piece.
+	</h4>
 </body>
 </html>
