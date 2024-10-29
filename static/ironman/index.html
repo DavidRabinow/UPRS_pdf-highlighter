@@ -16,75 +16,41 @@
 	<script src="https://cdn.jsdelivr.net/npm/htmx.org@1.9.12/dist/htmx.min.js"></script>
 
 	<style>
-		.container {
-			margin-bottom: 2rem; /* Add some space below the container */
-		}
-		.flex-container {
-			display: flex; /* Use flexbox layout */
-			align-items: flex-start; /* Align items at the top */
-		}
-		.text-content {
-			margin-left: 6rem; /* Align text left of the image */
-		}
-		.helmet-code-button {
-			background-color: rgb(10, 79, 101); 
+		.helmet-code-button, .helmet-stls-button {
+			background-color:#6c757d;
 			color: rgb(255, 255, 255); 
 			height: 3rem; /* Use rem for height */
-			width: 20rem; /* Use rem for width */
+			width: 15rem; /* Use rem for width */
 			border: none;
 			font-size: 1rem; /* Use rem for font size */
 			border-radius: 0.625rem; /* Use rem for border radius */
 			text-align: center;
 			text-decoration: none; /* Prevent underline */
-			display: block; /* Change display to block to stack buttons */
+			display: block; /* Change to block for stacking */
 			line-height: 3rem; /* Center text vertically */
 			cursor: pointer;
 			transition: 0.15s;
-			margin-top: 1rem; /* Space between buttons */
+			margin-bottom: 1rem; /* Adjust the margin between buttons */
 		}
-		.helmet-code-button:hover {
-			opacity: 0.8;
+		.helmet-code-button:hover, .helmet-stls-button:hover {
+			background-color: rgb(10, 79, 101); ;
 		}
-		.stls-button {
-			background-color: rgb(10, 79, 101); 
-			color: rgb(255, 255, 255); 
-			height: 3rem; /* Use rem for height */
-			width: 20rem; /* Use rem for width */
-			border: none;
-			font-size: 1rem; /* Use rem for font size */
-			border-radius: 0.625rem; /* Use rem for border radius */
-			text-align: center;
-			text-decoration: none; /* Prevent underline */
-			display: block; /* Change display to block to stack buttons */
-			line-height: 3rem; /* Center text vertically */
-			cursor: pointer;
-			transition: 0.15s;
-			margin-top: 1rem; /* Space between buttons */
-		}
-		.stls-button:hover {
-			opacity: 0.8;
-		}
-
-
 	</style>
 </head>
+
 <body class="mb-5">
 	<div class="mb-4" hx-get="/nav.html" hx-trigger="load"></div>
 
 	<div class="container">
 		<h1>Iron Man Helmet:</h1>
-		<div class="flex-container">
-				<img src="bare iron man helmet.png" class="mb-5" height="256">
-				<img src="ironman.png" class="mb-5" height="256">
-			<div class="text-content">
-				<a href="https://github.com/DavidRabinow/Iron-man-helmet-code" class="helmet-code-button"><b>Helmet Code</b></a>
-				<a href="https://drive.google.com/drive/folders/1USDJGabRnCHesh-GkYl_Xess5VXqYE-T?usp=sharing" class="stls-button"><b>Iron Man .stls</b></a> 
-			</div>
-		</div>
+		<img src="ironman.png" class="mb-5" height="256">
+		<img src="bare iron man helmet.png" class="mb-5" height="256">
+		<h4>
+			The Iron Man helmet, inspired by the iconic movie prop, was meticulously 3D-printed to replicate its sleek, high-tech design. Inside, two servo motors are mounted at the top, allowing the faceplate to rise and fall smoothly with a button press on the side of the helmet. Creating this functionality required custom coding to ensure precise control and synchronization of the servo motors. Additionally, a separate switch on the side controls the light-up eyes, enhancing the helmet’s realism. This project combines advanced engineering with a popular design to produce a highly functional and visually impressive piece.
+		</h4>
+		<!-- Button linking to the GitHub repository -->
+		<a href="https://github.com/DavidRabinow/Iron-man-helmet-code" class="helmet-code-button">Helmet Code</a>
+		<a href="https://drive.google.com/drive/folders/1USDJGabRnCHesh-GkYl_Xess5VXqYE-T?usp=sharing" class="helmet-stls-button">Helmet Stls</a>
 	</div>
-
-	<h4 class="text-content">
-		The Iron Man helmet, inspired by the iconic movie prop, was meticulously 3D-printed to replicate its sleek, high-tech design. Inside, two servo motors are mounted at the top, allowing the faceplate to rise and fall smoothly with a button press on the side of the helmet. Creating this functionality required custom coding to ensure precise control and synchronization of the servo motors. Additionally, a separate switch on the side controls the light-up eyes, enhancing the helmet’s realism. This project combines advanced engineering with a popular design to produce a highly functional and visually impressive piece.
-	</h4>
 </body>
 </html>
