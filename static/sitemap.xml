@@ -37,11 +37,6 @@
 		<priority>0.8</priority>
 	</url>
 	<url>
-		<loc>https://davidrabinow.online/adb.net/</loc><a>wow<a>
-		<lastmod>2023-06-01</lastmod>
-		<priority>0.5</priority>
-	</url>
-	<url>
 		<loc>https://davidrabinow.online/commits/</loc>
 		<lastmod>2023-12-17</lastmod>
 		<priority>0.5</priority>
