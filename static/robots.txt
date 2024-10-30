@@ -1,4 +1,4 @@
-# imaperson.dev/robots.txt
+# davidrabinow.online/robots.txt
 
 User-agent: googlebot
 
@@ -8,4 +8,4 @@ Disallow: /yt/cookies/
 Disallow: /404.html
 Disallow: /nav.html
 
-Sitemap: https://imaperson.dev/sitemap.xml
+Sitemap: https://davidrabinow.online/sitemap.xml
