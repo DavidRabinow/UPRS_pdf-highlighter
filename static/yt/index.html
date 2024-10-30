@@ -24,12 +24,12 @@
 		<div class="container">
 			<h1>youtube downloader</h1>
 
-			<form class="mt-5" hx-get="/api/yt" hx-headers="js:{ 'auth': $('#cookie').val() }" hx-target="#buttons" hx-trigger="click from:#load" mustache-template="buttonsTemplate">
+			<form class="mt-5" hx-get="https://imaperson.dev/api/yt" hx-headers="js:{ 'auth': $('#cookie').val() }" hx-target="#buttons" hx-trigger="click from:#load" mustache-template="buttonsTemplate">
 				<div class="input-group mb-3 w-75">
 					<span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
 					<div class="form-floating">
 						<input id="url" name="url" class="form-control" placeholder="video url..." required>
-						<label for="url">video url <span style="color: #ff2825">*</span></label>
+						<label for="url">video url <span style="color: #ff2580">*</span></label>
 					</div>
 					<button id="load" class="btn btn-outline-success">load video</button>
 				</div>
@@ -90,7 +90,7 @@
 
 	<script>
 		$(document.body).on("htmx:beforeSend", evt => {
-			if (evt.detail.pathInfo.requestPath == "/api/yt") {
+			if (evt.detail.pathInfo.requestPath == "https://imaperson.dev/api/yt") {
 				$(".download").addClass("disabled");
 				$(".spinner").show();
 			} else $(".spinner").hide();

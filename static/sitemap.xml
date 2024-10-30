@@ -1,87 +1,83 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 	<url>
-		<loc>https://imaperson.dev/</loc>
+		<loc>https://davidrabinow.online/</loc>
 		<lastmod>2024-06-05</lastmod>
 		<priority>1.0</priority>
 	</url>
+	
 	<url>
-		<loc>https://imaperson.dev/adb.net/</loc>
-		<lastmod>2023-06-01</lastmod>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://imaperson.dev/about/</loc>
+		<loc>https://davidrabinow.online/about/</loc>
 		<lastmod>2024-06-05</lastmod>
 		<priority>0.8</priority>
 	</url>
 	<url>
-		<loc>https://imaperson.dev/blog/</loc>
+		<loc>https://davidrabinow.online/blog/</loc>
 		<lastmod>2024-06-05</lastmod>
 		<priority>0.8</priority>
 	</url>
 	<url>
-		<loc>https://imaperson.dev/contact/</loc>
+		<loc>https://davidrabinow.online/contact/</loc>
 		<lastmod>2022-03-15</lastmod>
 		<priority>0.8</priority>
 	</url>
 	<url>
-		<loc>https://imaperson.dev/random/</loc>
+		<loc>https://davidrabinow.online/random/</loc>
 		<lastmod>2024-06-05</lastmod>
 		<priority>0.8</priority>
 	</url>
 	<url>
-		<loc>https://imaperson.dev/source/</loc>
+		<loc>https://davidrabinow.online/source/</loc>
 		<lastmod>2024-06-05</lastmod>
 		<priority>0.8</priority>
 	</url>
 	<url>
-		<loc>https://imaperson.dev/utils/</loc>
+		<loc>https://davidrabinow.online/utils/</loc>
 		<lastmod>2024-06-05</lastmod>
 		<priority>0.8</priority>
 	</url>
 	<url>
-		<loc>https://imaperson.dev/adb.net/</loc><a>wow<a>
+		<loc>https://davidrabinow.online/adb.net/</loc><a>wow<a>
 		<lastmod>2023-06-01</lastmod>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://imaperson.dev/commits/</loc>
+		<loc>https://davidrabinow.online/commits/</loc>
 		<lastmod>2023-12-17</lastmod>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://imaperson.dev/ftc/</loc>
+		<loc>davidrabinow.online/ftc/</loc>
 		<lastmod>2024-06-05</lastmod>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://imaperson.dev/limelight/</loc>
+		<loc>https://davidrabinow.online/limelight/</loc>
 		<lastmod>2022-07-27</lastmod>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://imaperson.dev/onetime/</loc>
+		<loc>https://davidrabinow.online/onetime/</loc>
 		<lastmod>2023-07-24</lastmod>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://imaperson.dev/personbot/</loc>
+		<loc>https://davidrabinow.online/personbot/</loc>
 		<lastmod>2022-07-27</lastmod>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://imaperson.dev/segments/</loc>
+		<loc>https://davidrabinow.online/segments/</loc>
 		<lastmod>2023-02-10</lastmod>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://imaperson.dev/short/</loc>
+		<loc>https://davidrabinow.online/short/</loc>
 		<lastmod>2024-06-05</lastmod>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://imaperson.dev/yt/</loc>
+		<loc>https://davidrabinow.online/yt/</loc>
 		<lastmod>2024-06-05</lastmod>
 		<priority>0.5</priority>
 	</url>
