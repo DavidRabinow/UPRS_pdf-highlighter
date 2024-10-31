@@ -16,42 +16,58 @@
 	<script src="https://cdn.jsdelivr.net/npm/htmx.org@1.9.12/dist/htmx.min.js"></script>
 
 	<style>
-		.helmet-button {
-			background-color:#6c757d;
-			color: rgb(255, 255, 255); 
-			height: 3rem; /* Use rem for height */
-			width: 15rem; /* Use rem for width */
-			border: none;
-			font-size: 1rem; /* Use rem for font size */
-			border-radius: 0.625rem; /* Use rem for border radius */
-			text-align: center;
-			text-decoration: none; /* Prevent underline */
-			display: block; /* Change to block for stacking */
-			line-height: 3rem; /* Center text vertically */
-			cursor: pointer;
-			transition: 0.15s;
-			margin-bottom: 1rem; /* Adjust the margin between buttons */
-		}
-		.helmet-button:hover {
-			background-color: rgb(10, 79, 101); ;
-		}
+.full-width-button {
+    display: block;
+    width: 100%;
+    text-align: center;
+}
+			.full-width-button:hover{
+	background-color: rgb(10, 79, 101); 
+	border: none;
+}
+			
+
+	
 	</style>
 </head>
 
 <body class="mb-5">
 	<div class="mb-4" hx-get="/nav.html" hx-trigger="load"></div>
-
 	<div class="container">
 		<h1>Bionic Arms</h1>
 		<img src="bionic arm.jpg" class="mb-1" height="256">
 		<h5><b>.....</b></h5>
 		<img src="" class="mb-1" height="256">
-		<h5><b></b></h5>
+		
 		<h4>The bionic arm features a sleek, 3D-printed design and operates using a servo motor to control its movements. Fishing string connects the servo to the finger joints, allowing the arm to open and close smoothly. A button is used to toggle the arm’s position between open and closed states, offering simple, intuitive control. This setup combines advanced materials with precise mechanics to create a functional and user-friendly prosthetic solution</h4>
+		
+		<div class="mt-3 row">
+				
+
+				<div class="col-sm-3 mb-3">
+					<p class="card-text">
+						<a href="https://github.com/DavidRabinow/ROBOT-CODE" class="btn btn-secondary full-width-button" target="_blank">
+							<i class="bi bi-box"></i> Robo Arm code
+						</a>
+					</p>
+					<p class="card-text">
+						<a href="https://drive.google.com/drive/folders/1GP0kc6kEs6vVf8XQv6CrGoOjUos5LdO6?usp=share_link" class="btn btn-secondary full-width-button" target="_blank">
+							<i class="bi bi-box"></i> Robo arm Stls
+						</a>
+					</p>
+					<p class="card-text">
+						<a href="https://youtube.com/shorts/m7CIcRQyYUg?feature=share" class="btn btn-secondary full-width-button" target="_blank">
+							<i class="bi bi-box"></i> Robo arm Video
+						</a>
+					</p>
+				</div>
+				
+			</div>
+
+
+
+
 		<!-- Button linking to the GitHub repository -->
-		<a href="https://github.com/DavidRabinow/ROBOT-CODE" class="helmet-button">Arm Code</a>
-		<a href="https://drive.google.com/drive/folders/1GP0kc6kEs6vVf8XQv6CrGoOjUos5LdO6?usp=share_link" class="helmet-button">Arm Stls</a>
-		<a href="https://youtube.com/shorts/m7CIcRQyYUg?feature=share" class="helmet-button">Video of Arm</a>
 	</div>
 </body>
 </html>
