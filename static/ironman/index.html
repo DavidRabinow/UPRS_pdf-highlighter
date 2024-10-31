@@ -33,6 +33,17 @@
 			margin-bottom: 1rem; /* Adjust the margin between buttons */
 		}
 		.helmet-button:hover { background-color: rgb(10, 79, 101); }
+					
+				.full-width-button {
+    display: block;
+    width: 100%;
+    text-align: center;
+}
+			.full-width-button:hover{
+	background-color: rgb(10, 79, 101); 
+	border: none;
+}
+
 	</style>
 </head>
 
@@ -46,10 +57,25 @@
 		<img src="ironman.png" class="mb-1" height="256">
 		<h5><b>After</b></h5>
 		<h4>The Iron Man helmet, inspired by the iconic movie prop, was meticulously 3D-printed to replicate its sleek, high-tech design. Inside, two servo motors are mounted at the top, allowing the faceplate to rise and fall smoothly with a button press on the side of the helmet. Creating this functionality required custom coding to ensure precise control and synchronization of the servo motors. Additionally, a separate switch on the side controls the light-up eyes, enhancing the helmet’s realism. This project combines advanced engineering with a popular design to produce a highly functional and visually impressive piece.</h4>
-		<!-- Button linking to the GitHub repository -->
-		<a href="https://github.com/DavidRabinow/Iron-man-helmet-code" class="helmet-button">Helmet Code</a>
-		<a href="https://drive.google.com/drive/folders/1USDJGabRnCHesh-GkYl_Xess5VXqYE-T?usp=sharing" class="helmet-button">Helmet Stls</a>
-		<a href="https://youtube.com/shorts/m7CIcRQyYUg?feature=share" class="helmet-button">Video of helmet</a>
+		
+		<div class="col-sm-3 mb-3">
+			<p class="card-text">
+				<a href="https://github.com/DavidRabinow/Iron-man-helmet-code" class="btn btn-secondary full-width-button" target="_blank">
+					<i class="bi bi-box"></i> Helmet Code
+				</a>
+			</p>
+			<p class="card-text">
+				<a href="https://drive.google.com/drive/folders/1USDJGabRnCHesh-GkYl_Xess5VXqYE-T?usp=sharing" class="btn btn-secondary full-width-button" target="_blank">
+					<i class="bi bi-box"></i> Helmet Stls
+				</a>
+			</p>
+			<p class="card-text">
+				<a href="https://youtube.com/shorts/m7CIcRQyYUg?feature=share" class="btn btn-secondary full-width-button" target="_blank">
+					<i class="bi bi-box"></i> Helmet Video
+				</a>
+			</p>
+		</div>
+		
 	</div>
 </body>
 </html>
