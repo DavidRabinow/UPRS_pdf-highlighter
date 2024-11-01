@@ -90,7 +90,7 @@
 
 	<script>
 		$(document.body).on("htmx:beforeSend", evt => {
-			if (evt.detail.pathInfo.requestPath == "https://imaperson.dev/api/yt") {
+			if (evt.detail.pathInfo.requestPath == "/api/yt") {
 				$(".download").addClass("disabled");
 				$(".spinner").show();
 			} else $(".spinner").hide();
