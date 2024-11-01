@@ -15,7 +15,7 @@ export async function getVideoDetails(id, cookie) {
 	catch (e) {
 		if (e.toString().indexOf("private video") != -1) return { code: cookie ? 403 : 401, error: cookie ? "invalid cookie" : "this video is private" };
 		else if (e.toString().indexOf("video id found") != -1 || e.toString().indexOf("unavailable") != -1) return { code: 404, error: "video not found" };
-		else return { code: 500, error: "an unknown error occurred" };
+		else return { code: 500, error: e.toString()};
 	}
 
 	let formats = { download: videoInfo.formats.filter(video => video.hasVideo && video.hasAudio).sort((a, b) => b.height * b.width - a.height * a.width)[0].url, video: videoInfo.formats.filter(video => video.hasVideo && !video.hasAudio).sort((a, b) => b.height * b.width - a.height * a.width)[0].url, audio: videoInfo.formats.filter(x => !x.hasVideo && x.hasAudio).sort((a, b) => b.audioBitrate - a.audioBitrate)[0].url };
