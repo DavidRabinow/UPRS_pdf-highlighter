@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html data-bs-theme="dark">
+
 <head>
 	<title>davidrabinow.online | Iron Man Helmet</title>
 	<meta name="description" content="Iron Man Helmet">
@@ -16,18 +17,16 @@
 	<script src="https://cdn.jsdelivr.net/npm/htmx.org@1.9.12/dist/htmx.min.js"></script>
 
 	<style>
+		.full-width-button {
+			display: block;
+			width: 100%;
+			text-align: center;
+		}
 
-					
-				.full-width-button {
-    display: block;
-    width: 100%;
-    text-align: center;
-}
-			.full-width-button:hover{
-	background-color: rgb(10, 79, 101); 
-	border: none;
-}
-
+		.full-width-button:hover {
+			background-color: rgb(10, 79, 101);
+			border: none;
+		}
 	</style>
 </head>
 
@@ -40,68 +39,111 @@
 		<h5><b>Before</b></h5>
 		<img src="iron-min.png" class="mb-1" height="256">
 		<h5><b>After</b></h5>
-		<h6>The Iron Man helmet, inspired by the iconic movie prop, was meticulously 3D-printed to replicate its sleek, high-tech design. Two servo motors mounted inside the helmet control the faceplate, enabling it to rise and fall smoothly with a button press on the side. A separate switch activates the light-up eyes, enhancing the realism and overall effect. This project combines advanced engineering and popular design to produce a highly functional and visually impressive piece.
+		<h6>The Iron Man helmet, inspired by the iconic movie prop, was meticulously 3D-printed to replicate its sleek,
+			high-tech design. Two servo motors mounted inside the helmet control the faceplate, enabling it to rise and
+			fall smoothly with a button press on the side. A separate switch activates the light-up eyes, enhancing the
+			realism and overall effect. This project combines advanced engineering and popular design to produce a
+			highly functional and visually impressive piece.
 
 		</h6>
-		<b><h5><u>Challenges Faced:</u>
+		<b>
+			<h5><u>Challenges Faced:</u>
 
-		</h5>
-		<ol>
-			<li><u>Servo Synchronization:</u> <div class="mb-1" div></div>Ensuring the two servo motors operated in perfect sync was difficult, as any misalignment caused the faceplate to tilt or jam. </li>
+
+
+
+
+
+
+
+
+
+
+
+			</h5>
+			<ol>
+				<li><u>Servo Synchronization:</u>
+					<div class="mb-1" div></div>Ensuring the two servo motors operated in perfect sync was difficult, as
+					any misalignment caused the faceplate to tilt or jam.
+				</li>
 				<div class="mb-3" div></div>
-				<li><u>Button Integration:</u> <div class="mb-1" div></div> Soldering the button to the circuit and ensuring it fit seamlessly into the helmet design required precision and careful planning.</li>
+				<li><u>Button Integration:</u>
+					<div class="mb-1" div></div> Soldering the button to the circuit and ensuring it fit seamlessly into
+					the helmet design required precision and careful planning.
+				</li>
 
-					<div class="mb-3" div></div>
-					<li><u>Power Supply Issues:</u> <div class="mb-1" div></div>The motors and lights occasionally drew more power than the system could handle, causing inconsistent performance and requiring additional capacitors for stability.</li>
-						<div class="mb-3" div></div>
-						<li><u>Wiring Constraints:</u> <div class="mb-1" div></div>The compact helmet interior made it challenging to route wires neatly without interfering with the motors or the user’s comfort.</li>
-							<div class="mb-3" div></div>
-							<li><u>Faceplate Stability:</u> <div class="mb-1" div></div> Initial iterations of the faceplate mechanism were too fragile, leading to wobbling or failure under repeated use. This required reinforcing the mounts and redesigning the hinge system.</li>
-								<div class="mb-3" div></div>
-								<li><u>3D-Printing Tolerances:</u> <div class="mb-1" div></div>Minor inconsistencies in 3D printing led to parts that didn’t fit together perfectly, requiring sanding and reprints to achieve a smooth assembly.</li>
-									<div class="mb-3" div></div>
-									<li><u>Light Diffusion:</u> <div class="mb-1" div></div>The LED eyes were too bright initially, creating an unnatural glare. Adding a diffuser improved the appearance but introduced challenges in maintaining even lighting.</li>
-										<div class="mb-3" div></div>
-										<li><u>Comfort Adjustments:</u> <div class="mb-1" div></div>Ensuring the helmet was wearable for extended periods required adding padding and adjusting internal components to avoid discomfort or pressure points.
-										</li>
-											<div class="mb-3" div></div>
-								
+				<div class="mb-3" div></div>
+				<li><u>Power Supply Issues:</u>
+					<div class="mb-1" div></div>The motors and lights occasionally drew more power than the system could
+					handle, causing inconsistent performance and requiring additional capacitors for stability.
+				</li>
+				<div class="mb-3" div></div>
+				<li><u>Wiring Constraints:</u>
+					<div class="mb-1" div></div>The compact helmet interior made it challenging to route wires neatly
+					without interfering with the motors or the user’s comfort.
+				</li>
+				<div class="mb-3" div></div>
+				<li><u>Faceplate Stability:</u>
+					<div class="mb-1" div></div> Initial iterations of the faceplate mechanism were too fragile, leading
+					to wobbling or failure under repeated use. This required reinforcing the mounts and redesigning the
+					hinge system.
+				</li>
+				<div class="mb-3" div></div>
+				<li><u>3D-Printing Tolerances:</u>
+					<div class="mb-1" div></div>Minor inconsistencies in 3D printing led to parts that didn’t fit
+					together perfectly, requiring sanding and reprints to achieve a smooth assembly.
+				</li>
+				<div class="mb-3" div></div>
+				<li><u>Light Diffusion:</u>
+					<div class="mb-1" div></div>The LED eyes were too bright initially, creating an unnatural glare.
+					Adding a diffuser improved the appearance but introduced challenges in maintaining even lighting.
+				</li>
+				<div class="mb-3" div></div>
+				<li><u>Comfort Adjustments:</u>
+					<div class="mb-1" div></div>Ensuring the helmet was wearable for extended periods required adding
+					padding and adjusting internal components to avoid discomfort or pressure points.
+				</li>
+				<div class="mb-3" div></div>
 
-										</b>
+
+		</b>
 		</ol>
 
 		<div class="col-sm-3 mb-3">
 			<p class="card-text">
-				<a href="https://github.com/DavidRabinow/Iron-man-helmet-code" class="btn btn-secondary full-width-button" target="_blank">
+				<a href="https://github.com/DavidRabinow/Iron-man-helmet-code"
+					class="btn btn-secondary full-width-button" target="_blank">
 					<i class="bi bi-box"></i> Helmet Code
 				</a>
 			</p>
 			<p class="card-text">
-				<a href="https://drive.google.com/drive/folders/1USDJGabRnCHesh-GkYl_Xess5VXqYE-T?usp=sharing" class="btn btn-secondary full-width-button" target="_blank">
+				<a href="https://drive.google.com/drive/folders/1USDJGabRnCHesh-GkYl_Xess5VXqYE-T?usp=sharing"
+					class="btn btn-secondary full-width-button" target="_blank">
 					<i class="bi bi-box"></i> Helmet Stls
 				</a>
 			</p>
 			<p class="card-text">
-				<a href="https://youtube.com/shorts/m7CIcRQyYUg?feature=share" class="btn btn-secondary full-width-button" target="_blank">
+				<a href="https://youtube.com/shorts/m7CIcRQyYUg?feature=share"
+					class="btn btn-secondary full-width-button" target="_blank">
 					<i class="bi bi-box"></i> Helmet Video
 				</a>
 			</p>
 		</div>
-		
+
 	</div>
 </body>
 <footer class="footer">
 	© 2025 <u>David M. Rabinow.</u>
 </footer>
 <style>
-
 	.footer {
-      position: absolute;
-      bottom: 0;
+		position: absolute;
+		bottom: 0;
 
-      width: 100%;
-      text-align: center;
-      font-size: 12px;
-    }
+		width: 100%;
+		text-align: center;
+		font-size: 12px;
+	}
 </style>
+
 </html>
