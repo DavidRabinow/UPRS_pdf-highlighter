@@ -1,93 +1,111 @@
 <!DOCTYPE html>
 <html data-bs-theme="dark">
-<head>
-	<title>davidrabinow.online | Stack winner</title>
-	<meta name="description" content="A device that can always beat the game Stack">
-	<meta name="keywords" content="David Rabinow, davidrabinow.online, iron man helmet">
-	<meta name="author" content="David Rabinow">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta property="og:image" content="https://avatars.githubusercontent.com/u/157258504?v=4">
-	<link rel="icon" href="https://avatars.githubusercontent.com/u/157258504?v=4">
+  <head>
+    <title>davidrabinow.online | Stack winner</title>
+    <meta
+      name="description"
+      content="A device that can always beat the game Stack"
+    />
+    <meta
+      name="keywords"
+      content="David Rabinow, davidrabinow.online, iron man helmet"
+    />
+    <meta name="author" content="David Rabinow" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      property="og:image"
+      content="https://avatars.githubusercontent.com/u/157258504?v=4"
+    />
+    <link
+      rel="icon"
+      href="https://avatars.githubusercontent.com/u/157258504?v=4"
+    />
 
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-	<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/htmx.org@1.9.12/dist/htmx.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@1.9.12/dist/htmx.min.js"></script>
+  </head>
 
-	
-</head>
+  <body class="mb-5">
+    <div class="mb-4" hx-get="/nav.html" hx-trigger="load"></div>
 
-<body class="mb-5">
-	<div class="mb-4" hx-get="/nav.html" hx-trigger="load"></div>
+    <div class="container">
+      <h1>Stack winner:</h1>
+      <img src="stack game.png" class="mb-1" height="256" />
+      <img src="final-stack.png" class="mb-1" height="256" />
 
-	<div class="container">
-		<h1>Stack winner:</h1>
-		<img src="stack game.png" class="mb-1" height="256">
-		<img src="final-stack.png" class="mb-1" height="256">
-		
-		<h5>This project aimed to beat the game Stack by using a servo-controlled stylus pen to interact with the device's touchscreen. The stylus, connected to a servo motor, was precisely rigged to barely touch the screen’s surface. Using custom code uploaded to an Arduino Uno, the servo moved the stylus in perfect synchronization to achieve accurate taps, maximizing the score in the game.
+      <h5>
+        This project aimed to beat the game Stack by using a servo-controlled
+        stylus pen to interact with the device's touchscreen. The stylus,
+        connected to a servo motor, was precisely rigged to barely touch the
+        screen’s surface. Using custom code uploaded to an Arduino Uno, the
+        servo moved the stylus in perfect synchronization to achieve accurate
+        taps, maximizing the score in the game.
+      </h5>
 
-		</h5>
-		
+      <ol>
+        <b>
+          <li>
+            <u>Timing Precision:</u>
+            <div class="mb-1"></div>
+            The key to succeeding in Stack was precise timing for each tap.
+            Calibrating the servo’s movements to match the game’s increasing
+            speed required careful coding and testing.
+          </li>
+          <div class="mb-3"></div>
+        </b>
+      </ol>
 
-		<ol><b>
-			<li><u>Timing Precision:</u> <div class="mb-1" div></div> The key to succeeding in Stack was precise timing for each tap. Calibrating the servo’s movements to match the game’s increasing speed required careful coding and testing. </li>
-				<div class="mb-3" div></div>
-				
-		
-							
-											<div class="mb-3" div></div>
-											
+      <div class="col-sm-3 mb-3">
+        <p class="card-text">
+          <a
+            href="https://github.com/DavidRabinow/Stack_game"
+            class="btn btn-secondary full-width-button"
+            target="_blank"
+          >
+            Stack Code
+          </a>
+        </p>
+        <p class="card-text">
+          <a
+            href="https://www.youtube.com/shorts/T4Rgf2Hq7RM"
+            class="btn btn-secondary full-width-button"
+            target="_blank"
+          >
+            Stack Video
+          </a>
+        </p>
+      </div>
+    </div>
+  </body>
+  <footer class="footer">© 2025 <u>David M. Rabinow.</u></footer>
+  <style>
+    .full-width-button {
+      display: block;
+      width: 100%;
+      text-align: center;
+    }
+    .full-width-button:hover {
+      background-color: rgb(10, 79, 101);
+      border: none;
+    }
 
-
-
-										</b>
-		</ol>
-
-
-
-		<div class="col-sm-3 mb-3">
-			<p class="card-text">
-				<a href="https://github.com/DavidRabinow/Stack_game" class="btn btn-secondary full-width-button" target="_blank">
-					 Stack Code
-				</a>
-			</p>
-			<p class="card-text">
-				<a href="https://www.youtube.com/shorts/T4Rgf2Hq7RM" class="btn btn-secondary full-width-button" target="_blank">
-					 Stack Video
-				</a>
-			</p>
-		</div>
-		
-	</div>
-</body>
-<footer class="footer">
-	© 2025 <u>David M. Rabinow.</u>
-</footer>
-<style>
-
-					
-	.full-width-button {
-display: block;
-width: 100%;
-text-align: center;
-}
-.full-width-button:hover{
-background-color: rgb(10, 79, 101); 
-border: none;
-}
-
-
-
-
-.footer {
-            text-align: center;
-            font-size: 12px;
-            color:white;
-          
-            
-            width: 100%;
-        }
-</style>
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: white;
+      width: 100%;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+    }
+  </style>
 </html>
