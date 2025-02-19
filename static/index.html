@@ -1,178 +1,268 @@
 <!DOCTYPE html>
 <html data-bs-theme="dark">
-<head>
-	<meta name="description" content="A really cool website made by David Rabinow">
-	<title>davidrabinow.online | Home Page</title>
-    <meta name="description" content="David Rabinow's website">
-    <meta name="keywords" content="davidrabinow.online, David Rabinow , tech, davidrabinow,">
-    <meta name="author" content="David Rabinow">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta property="og:image" content="https://avatars.githubusercontent.com/u/157258504?v=4">
-    <link rel="icon" href="https://avatars.githubusercontent.com/u/157258504?v=4">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <head>
+    <meta
+      name="description"
+      content="A really cool website made by David Rabinow"
+    />
+    <title>davidrabinow.online | Home Page</title>
+    <meta name="description" content="David Rabinow's website" />
+    <meta
+      name="keywords"
+      content="davidrabinow.online, David Rabinow , tech, davidrabinow,"
+    />
+    <meta name="author" content="David Rabinow" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      property="og:image"
+      content="https://avatars.githubusercontent.com/u/157258504?v=4"
+    />
+    <link
+      rel="icon"
+      href="https://avatars.githubusercontent.com/u/157258504?v=4"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+    />
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/htmx.org@1.9.12/dist/htmx.min.js"></script>
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest.json" />
+  </head>
 
-</head>
-
-<body class="mb-5">
+  <body class="mb-5">
     <div class="mb-" hx-get="/nav.html" hx-trigger="load"></div>
 
     <div class="background text-center">
-        <span style="height: 95vh">
-            <b style="position: relative; top: 120px;">
-                <h1>DAVID RABINOW</h1>
-                <h3>Web Developer & CAD Designer</h3>
-            </b>
-        </span>
+      <span style="height: 95vh">
+        <b style="position: relative; top: 120px">
+          <h1>DAVID RABINOW</h1>
+          <h3>Web Developer & CAD Designer</h3>
+        </b>
+      </span>
     </div>
 
-    <h1 style="text-align: center;"><u>Portfolio</u></h1>
+    <h1 style="text-align: center"><u>Portfolio</u></h1>
     <div class="mb-5"></div>
 
     <a href="projects/index.html">
-        <h3 style="text-align: center;"><u class="past-projects">Active Projects:</u></h3>
+      <h3 style="text-align: center">
+        <u class="past-projects">Active Projects:</u>
+      </h3>
     </a>
 
     <div class="mt-3 row">
-        <div class="col-sm-3 mb-3">
-            <div class="card">
-                <img src="gokart/karty-min.png" class="card-img-top" alt="GitHub">
-                <div class="card-body">
-                    <h5 class="card-title">Go Kart</h5>
-                    <p class="card-text">
-                        <a href="gokart/index.html" class="btn btn-secondary full-width-button "target="_blank">See more</a>
-                    </p>
-                </div>
-            </div>
+      <div class="col-sm-3 mb-3">
+        <div class="card">
+          <img
+            src="gokart/karty-min.png"
+            class="card-img-top"
+            alt="GitHub"
+            style="object-fit: cover; height: 28rem"
+          />
+          <div class="card-body">
+            <h5 class="card-title">Go Kart</h5>
+            <p class="card-text">
+              <a
+                href="gokart/index.html"
+                class="btn btn-secondary full-width-button"
+                target="_blank"
+                >See more</a
+              >
+            </p>
+          </div>
         </div>
-        
-            <div class="col-sm-3 mb-3">
-                <div class="card">
-                    <img src="drone/drone.png" class="card-img-top" alt="GitHub">
-                    <div class="card-body">
-                        <h5 class="card-title">Drone</h5>
-                        <p class="card-text">
-                            <a href="drone/index.html" class="btn btn-secondary full-width-button "target="_blank">See more</a>
-                        </p>
-                    </div>
-                </div>
-            </div>
-    
+      </div>
+
+      <div class="col-sm-3 mb-3">
+        <div class="card">
+          <img
+            src="drone/drone.jpg"
+            class="card-img-top drone-image"
+            alt="GitHub"
+            style="height: 28rem; object-fit: cover"
+          />
+          <div class="card-body">
+            <h5 class="card-title">Drone</h5>
+            <p class="card-text">
+              <a
+                href="drone/index.html"
+                class="btn btn-secondary full-width-button"
+                target="_blank"
+                >See more</a
+              >
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <a href="projects/index.html">
-        <h3 style="text-align: center;"><u class="past-projects">Past Projects:</u></h3>
+      <h3 style="text-align: center">
+        <u class="past-projects">Past Projects:</u>
+      </h3>
     </a>
 
     <div class="mt-3 row">
-        
-        <div class="col-sm-3 mb-3">
-            <div class="card">
-                <img src="bionicarm/arm-min-2.png" class="card-img-top" alt="Bionic Arm">
-                <div class="card-body">
-                    <h5 class="card-title">Bionic Arms</h5>
-                    <p class="card-text">
-                        <a href="bionicarm/index.html" class="btn btn-secondary full-width-button "target="_blank">See more</a>
-                    </p>
-                </div>
-            </div>
+      <div class="col-sm-3 mb-3">
+        <div class="card">
+          <img
+            src="bionicarm/arm-min-2.png"
+            class="card-img-top"
+            alt="Bionic Arm"
+            style="object-fit: cover; height: 28rem"
+          />
+          <div class="card-body">
+            <h5 class="card-title">Bionic Arms</h5>
+            <p class="card-text">
+              <a
+                href="bionicarm/index.html"
+                class="btn btn-secondary full-width-button"
+                target="_blank"
+                >See more</a
+              >
+            </p>
+          </div>
         </div>
-		<div class="col-sm-3 mb-3">
-            <div class="card">
-                <img src="ironman/iron-min-2.png" class="card-img-top">
-                <div class="card-body">
-                    <h5 class="card-title">Iron Man Helmet</h5>
-                    <p class="card-text">
-                        <a href="ironman/index.html" class="btn btn-secondary full-width-button "target="_blank">See more</a>
-                    </p>
-                </div>
-            </div>
-        </div>
+      </div>
 
-        <div class="col-sm-3 mb-3">
-            <div class="card">
-                <img src="assets/newarc-min-2.png" class="card-img-top"  alt="Iron Man Arc Reactor">
-                <div class="card-body">
-                    <h5 class="card-title">Iron Man Arc Reactor</h5>
-                    <p class="card-text">
-                        <a href="stack/index.html" class="btn btn-secondary full-width-button "target="_blank">See more</a>
-                    </p>
-                </div>
-            </div>
+      <div class="col-sm-3 mb-3">
+        <div class="card">
+          <img
+            src="ironman/iron-min-2.png"
+            class="card-img-top"
+            style="object-fit: cover; height: 28rem"
+          />
+          <div class="card-body">
+            <h5 class="card-title">Iron Man Helmet</h5>
+            <p class="card-text">
+              <a
+                href="ironman/index.html"
+                class="btn btn-secondary full-width-button"
+                target="_blank"
+                >See more</a
+              >
+            </p>
+          </div>
         </div>
-   
-	<div class="col-sm-3 mb-3">
-		<div class="card">
-			                    <img src="stack/final-stack.png" style="height: 28rem;" class="card-img-top" alt="Stack Winner">
-			             <div class="card-body">
-				    <h5 class="card-title">Stack Winner</h5>
-				<p class="card-text">
-					<a href="stack/index.html" class="btn btn-secondary full-width-button "target="_blank">See more</a>
-				</p>
-			</div>
-		</div>
-	</div>
+      </div>
 
-    <footer class="footer">
-        © 2025 <u>David M. Rabinow.</u>
-    </footer>
+      <div class="col-sm-3 mb-3">
+        <div class="card">
+          <img
+            src="assets/newarc-min-2.png"
+            class="card-img-top"
+            alt="Iron Man Arc Reactor"
+            style="object-fit: cover; height: 28rem"
+          />
+          <div class="card-body">
+            <h5 class="card-title">Iron Man Arc Reactor</h5>
+            <p class="card-text">
+              <a
+                href="stack/index.html"
+                class="btn btn-secondary full-width-button"
+                target="_blank"
+                >See more</a
+              >
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-sm-3 mb-3">
+        <div class="card">
+          <img
+            src="stack/final-stack.png"
+            class="card-img-top"
+            alt="Stack Winner"
+            style="object-fit: cover; height: 28rem"
+          />
+          <div class="card-body">
+            <h5 class="card-title">Stack Winner</h5>
+            <p class="card-text">
+              <a
+                href="stack/index.html"
+                class="btn btn-secondary full-width-button"
+                target="_blank"
+                >See more</a
+              >
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">© 2025 <u>David M. Rabinow.</u></footer>
 
     <style>
-       .full-width-button {
-            display: block;
-            width: 100%;
-            text-align: center;
-        }
+      .full-width-button {
+        display: block;
+        width: 100%;
+        text-align: center;
+      }
 
-        .full-width-button:hover {
-            background-color: rgb(10, 79, 101);
-        }
-       
-       body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow-x: hidden; /* Disable horizontal scrolling */
-        }
+      .full-width-button:hover {
+        background-color: rgb(10, 79, 101);
+      }
 
-        .footer {
-            text-align: center;
-            font-size: 12px;
-        }
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow-x: hidden; /* Disable horizontal scrolling */
+      }
 
-        .background {
-            background-image: url('background.png');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            width: 100%;
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
-        }
+      .footer {
+        text-align: center;
+        font-size: 12px;
+      }
 
-        .past-projects {
-            color: white;
-            text-decoration: underline;
-            transition: color 0.3s ease;
-        }
+      .background {
+        background-image: url("background.png");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        width: 100%;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+      }
 
-        .past-projects:hover {
-            color: rgb(10, 79, 101);
-            cursor: pointer;
-        }
+      .past-projects {
+        color: white;
+        text-decoration: underline;
+        transition: color 0.3s ease;
+      }
 
-        h1 {
-            font-size: 4rem;
-            margin: 0;
-        }
+      .past-projects:hover {
+        color: rgb(10, 79, 101);
+        cursor: pointer;
+      }
 
-        h3 {
-            font-size: 2rem;
-            margin: 0;
-        }
+      h1 {
+        font-size: 4rem;
+        margin: 0;
+      }
+
+      h3 {
+        font-size: 2rem;
+        margin: 0;
+      }
+
+      .drone-image {
+        transition: transform 0.3s ease, object-position 0.3s ease;
+      }
+
+      .drone-image:hover {
+        transform: scale(0.9); /* Zoom out to 90% of the original size */
+        object-position: center top; /* Adjust the position to focus on the center */
+      }
     </style>
-</body>
+  </body>
 </html>
