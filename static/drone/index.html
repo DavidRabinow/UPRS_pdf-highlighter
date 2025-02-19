@@ -1,41 +1,246 @@
 <!DOCTYPE html>
 <html data-bs-theme="dark">
-	<head>
-		<meta name="description" content="A drone I'm actively building">
-		<title>davidrabinow.online | Drone</title>
-		
-		<meta name="keywords" content="David Rabinow, david rabinow, rabinow,">
-		<meta name="author" content="David Rabinow">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<link rel="icon" href="https://avatars.githubusercontent.com/u/157258504?v=4">
+  <head>
+    <title>davidrabinow.online | Drone </title>
+    <meta name="description" content="Iron Man Helmet" />
+    <meta
+      name="keywords"
+      content="David Rabinow, davidrabinow.online, iron man helmet"
+    />
+    <meta name="author" content="David Rabinow" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      property="og:image"
+      content="https://avatars.githubusercontent.com/u/157258504?v=4"
+    />
+    <link
+      rel="icon"
+      href="https://avatars.githubusercontent.com/u/157258504?v=4"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@1.9.12/dist/htmx.min.js"></script>
+  </head>
 
-		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-		<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
-		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-		<script src="https://cdn.jsdelivr.net/npm/htmx.org@1.9.12/dist/htmx.min.js"></script>
-	</head>
+  <body style="text-align: left;">
+    <div class="d-flex flex-column min-vh-100">
+        <div class="mb-4" hx-get="/nav.html" hx-trigger="load"></div>
+    
+      <div class="container" style="margin-left: 2rem; max-width: 100%; padding-left: 0;">
+        <div class="mb-5">
+          
+          <h1 style="margin-left: 2rem;">Drone</h1>
 
-	<body class="mb-5">
-		<div class="mb-4" hx-get="/nav.html" hx-trigger="load"></div>
+          <img
+            src="drone.png"
+            class="img-fluid mb-3"
+            alt="Drone Image"
+            style="height: 256px; display: block; margin-left: 0;"
+          />
+          <p>
+            The drone is custom-built with a 3D-printed frame designed in Fusion
+            360. The frame is lightweight and reinforced with carbon fiber tubing
+            for durability. The motor mounts required multiple iterations to
+            withstand vibrations, and a custom adapter was designed to securely
+            attach the propellers to the motors. The landing gear is also carbon
+            fiber, with a removable 3D-printed mounting system for easy transport
+            and repairs. For wire management, a 3D-printed ESC holder keeps the
+            components organized and accessible. The build is still being refined,
+            but it is near completion.
+          </p>
+        </div>
 
-		<div class="container">
-			<h1><b>Great</b> Fillament</h1>
-			<ul>
-				<li><a href="https://shorturl.at/3N3dD" class="link">Sunlu PLA</a></li>
-				<li><a href="https://shorturl.at/KC6a8" class="link">Overture PLA</a></li>
-				<li><a href="https://shorturl.at/8YfCI" class="link">Overture PETG</a></li>
-				<li><a href="https://shorturl.at/0FKHs" class="link">Inland TPU</a></li>
-			</ul>
-		</div>
-	</body>
+        <ol>
+          
+            <b>Frame</b>
+            <div class="image-container">
+              <p>
+                The main part of the drone's frame is 3D-printed. I designed this
+                part and all the other components using Fusion 360, a computer
+                modeling software, and then 3D-printed them. The frame is
+                lightweight, weighing less than a pound. The arms of the drone are
+                made from carbon fiber tubing, which is extremely durable while
+                still being lightweight. To prevent the tubes from spinning inside
+                the 3D-printed frame, I drilled a hole and inserted a screw to
+                secure them.
+              </p>
+              <img src="frame.jpg" class="mb-1" alt="Drone Frame" />
+            </div>
+          
 
-	<style>
-		.link { 
-			color: gray;
-			font-size: 30px;
-			font-weight: bold;
-		}
-		.link:hover { color: rgb(10, 79, 101); }
-	</style>
+          
+            <p>Motor to Propeller Adapter</b>
+            <div class="image-container">
+              <p>
+                The propellers I had were not compatible with the motors because
+                there was no way to attach them securely. The motor would spin
+                inside the propeller without actually turning it. To address this
+                issue, I designed a custom adapter that allowed me to mount the
+                propellers to the motors effectively.
+              </p>
+              <img
+                src="adapter1.jpg"
+                class="mb-1"
+                alt="Motor to Propeller Adapter"
+              />
+              <img
+                src="adapter2.jpg"
+                class="mb-1"
+                alt="Motor to Propeller Adapter"
+              />
+            </div>
+        
+
+            <b>Motor Mount</b>
+            <div class="image-container">
+              <p>
+                For the actual motor mount, it took many iterations of design.
+                When the motor would spin up, it tended to instantly break the
+                mounts, so I had to redesign due to vibrations. To prevent the
+                motor mount from spinning on the carbon fiber tube, I designed it
+                with a screw hole at the points where the bottom of the motor
+                attaches to the 3D model, reinforcing those areas.
+              </p>
+            </div>
+          
+
+          
+            <b>Landing Gear</b>
+            <div class="image-container">
+              <p>
+                For the landing gear, I wanted it to be made from carbon fiber due
+                to its strength, durability, and light weight. I designed these
+                3D-printed mounts that can easily be removed and attached for
+                transportation purposes or in case the landing gear gets damaged.
+                The mechanism is a two-part design, with the top and bottom parts
+                attached with M3 screws, able to hold a piece of carbon fiber
+                tubing at the bottom. It's not completely finished yet, but I'm
+                almost done with the landing gear.
+              </p>
+            </div>
+          
+
+          
+            <b>Drone ESC Holder</b>
+            <div class="image-container">
+              <p>
+                The ESC (Electronic Speed Controller) has a multitude of wires
+                connecting to various components, such as the four motors and the
+                receiver for the drone. It is also positioned next to the battery.
+                It was important that all the wires are easily accessible in case
+                something goes wrong while maintaining neat wire management. I
+                therefore designed and 3D-printed a holder for it, but I think it
+                still needs some work before it's complete.
+              </p>
+            </div>
+          
+        </ol>
+
+        <div class="mb-4" style="margin-left: 2rem;">
+          <label for="Drone-progress"
+            ><b><u>Progress bar:</u></b></label
+          ><br /><br />
+          <progress id="Drone-progress" value="70" max="100"></progress>
+        </div>
+
+        <div class="col-sm-3 mb-3">
+          <p class="card-text">
+            <a
+              href="https://youtube.com/shorts/m7CIcRQyYUg?feature=share"
+              class="btn btn-secondary full-width-button"
+              target="_blank"
+            >
+              Drone Video
+            </a>
+          </p>
+        </div>
+
+        <footer class="footer">© 2025 <u>David M. Rabinow</u></footer>
+      </div>
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        color: #f8f9fa;
+        background-color: #212529;
+        text-align: left;
+      }
+
+      .container {
+        max-width: 100%;
+        margin-left: 2rem; /* Added left margin */
+        padding-left: 0;
+      }
+
+      progress {
+        width: 100%;
+        height: 25px;
+        border-radius: 5px;
+      }
+
+      /* WebKit Browsers (Chrome, Safari, Edge) */
+      progress::-webkit-progress-bar {
+        background-color: #ddd;
+        border-radius: 5px;
+      }
+
+      progress::-webkit-progress-value {
+        background-color: rgb(10, 79, 101);
+        border-radius: 5px;
+      }
+
+      /* Firefox */
+      progress::-moz-progress-bar {
+        background-color: rgb(10, 79, 101);
+      }
+
+      .full-width-button {
+        display: block;
+        width: 100%;
+        text-align: center;
+      }
+
+      .footer {
+        text-align: center;
+        font-size: 12px;
+        color: white;
+        margin-top: 50px;
+      }
+
+      .card-text a {
+        color: #fff;
+        text-decoration: none;
+      }
+
+      .card-text a:hover {
+        color: rgb(10, 79, 101);
+      }
+
+      .image-container img {
+        margin-bottom: 1rem;
+        height: 256px;
+      }
+      html, body {
+    overflow-x: hidden;
+    width: 100%;
+}
+p{
+    max-width: 50rem; /* Adjust width as needed */
+
+    line-height: 1.6; /* Improves readability */
+}
+
+
+    </style>
+  </body>
 </html>
+
+
