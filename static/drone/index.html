@@ -1,314 +1,157 @@
 <!DOCTYPE html>
 <html data-bs-theme="dark">
   <head>
-    <title>davidrabinow.online | Drone </title>
-    <meta name="description" content="Iron Man Helmet" />
-    <meta name="keywords" content="David Rabinow, davidrabinow.online, iron man helmet" />
+    <meta name="description" content="A drone I built " />
+    <title>davidrabinow.online | Drone</title>
+    <meta name="description" content="Drone" />
+    <meta name="keywords" content="David Rabinow, davidrabinow.online, Drone" />
     <meta name="author" content="David Rabinow" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta property="og:image" content="https://avatars.githubusercontent.com/u/157258504?v=4" />
-    <link rel="icon" href="https://avatars.githubusercontent.com/u/157258504?v=4" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+    <meta
+      property="og:image"
+      content="https://avatars.githubusercontent.com/u/157258504?v=4"
+    />
+    <link
+      rel="icon"
+      href="https://avatars.githubusercontent.com/u/157258504?v=4"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+    />
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/htmx.org@1.9.12/dist/htmx.min.js"></script>
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest.json" />
+  </head>
 
+  <body class="mb-5">
+    <div class="mb-4" hx-get="/nav.html" hx-trigger="load"></div>
+    <div class="container">
+      <h1>Drone</h1>
+      <img src="drone.jpg" class="mb-1" height="256" />
+      <img src="" class="mb-1" height="256" />
 
-</head>
-
-  <body style="text-align: left;">
-    <div class="d-flex flex-column min-vh-100">
-        <div class="mb-4" hx-get="/nav.html" hx-trigger="load"></div>
-    
-      <div class="container" style="margin-left: 2rem; max-width: 100%; padding-left: 0;">
-        <div class="mb-5">
-          <h1 style="margin-left: 2rem;">Drone</h1>
-          <img src="drone.jpg
-          
-          
-          " class="img-fluid mb-3" alt="Drone Image" style="height: 256px; display: block; margin-left: 0;" />
-          <p>
-            The drone is custom-built with a 3D-printed frame designed in Fusion
-            360. The frame is lightweight and reinforced with carbon fiber tubing
-            for durability. The motor mounts required multiple iterations to
-            withstand vibrations, and a custom adapter was designed to securely
-            attach the propellers to the motors. The landing gear is also carbon
-            fiber, with a removable 3D-printed mounting system for easy transport
-            and repairs. For wire management, a 3D-printed ESC holder keeps the
-            components organized and accessible. The build is still being refined,
-            but it is near completion.
-          </p>
-        </div>
-
-        <ol>
-          <b>Frame</b>
-          <div class="image-container">
-            <p>
-              The main part of the drone's frame is 3D-printed. I designed this
-              part and all the other components using Fusion 360, a computer
-              modeling software, and then 3D-printed them. The frame is
-              lightweight, weighing less than a pound. The arms of the drone are
-              made from carbon fiber tubing, which is extremely durable while
-              still being lightweight. To prevent the tubes from spinning inside
-              the 3D-printed frame, I drilled a hole and inserted a screw to
-              secure them.
-            </p>
-            <img src="frame.jpg" class="mb-1" alt="Drone Frame" />
-          </div>
-
-          <p>Motor to Propeller Adapter</b>
-          <div class="image-container">
-            <p>
-              The propellers I had were not compatible with the motors because
-              there was no way to attach them securely. The motor would spin
-              inside the propeller without actually turning it. To address this
-              issue, I designed a custom adapter that allowed me to mount the
-              propellers to the motors effectively.
-            </p>
-            <img src="adapter1.jpg" class="mb-1" alt="Motor to Propeller Adapter" />
-            <img src="adapter2.jpg" class="mb-1" alt="Motor to Propeller Adapter" />
-          </div>
-
-          <b>Motor Mount</b>
-          <div class="image-container">
-            <p>
-              For the actual motor mount, it took many iterations of design.
-              When the motor would spin up, it tended to instantly break the
-              mounts, so I had to redesign due to vibrations. To prevent the
-              motor mount from spinning on the carbon fiber tube, I designed it
-              with a screw hole at the points where the bottom of the motor
-              attaches to the 3D model, reinforcing those areas.
-            </p>
-          </div>
-
-          <b>Landing Gear</b>
-          <div class="image-container">
-            <p>
-              For the landing gear, I wanted it to be made from carbon fiber due
-              to its strength, durability, and light weight. I designed these
-              3D-printed mounts that can easily be removed and attached for
-              transportation purposes or in case the landing gear gets damaged.
-              The mechanism is a two-part design, with the top and bottom parts
-              attached with M3 screws, able to hold a piece of carbon fiber
-              tubing at the bottom. It's not completely finished yet, but I'm
-              almost done with the landing gear.
-            </p>
-          </div>
-
-          <b>Drone ESC Holder</b>
-          <div class="image-container">
-            <p>
-              The ESC (Electronic Speed Controller) has a multitude of wires
-              connecting to various components, such as the four motors and the
-              receiver for the drone. It is also positioned next to the battery.
-              It was important that all the wires are easily accessible in case
-              something goes wrong while maintaining neat wire management. I
-              therefore designed and 3D-printed a holder for it, but I think it
-              still needs some work before it's complete.
-            </p>
-          </div>
-        </ol>
-
+      <h4>
+        The drone is custom-built with a 3D-printed frame designed in Fusion
+        360. The frame is lightweight and reinforced with carbon fiber tubing
+        for durability. The motor mounts required multiple iterations to
+        withstand vibrations, and a custom adapter was designed to securely
+        attach the propellers to the motors. The landing gear is also carbon
+        fiber, with a removable 3D-printed mounting system for easy transport
+        and repairs. For wire management, a 3D-printed ESC holder keeps the
+        components organized and accessible. The build is still being refined,
+        but it is near completion.
+      </h4>
+      <ol>
+        <b>
+          <img src="frame.jpg" class="mb-1" height="256" />
+          <li>
+            <u>Frame:</u>
+            <div class="mb-1" div></div>
+            The main part of the drone's frame is 3D-printed. I designed this
+            part and all the other components using Fusion 360, a computer
+            modeling software, and then 3D-printed them. The frame is
+            lightweight, weighing less than a pound. The arms of the drone are
+            made from carbon fiber tubing, which is extremely durable while
+            still being lightweight. To prevent the tubes from spinning inside
+            the 3D-printed frame, I drilled a hole and inserted a screw to
+            secure them.
+          </li>
+          <div class="mb-3" div></div>
+          <img src="adapter1.jpg" class="mb-1" height="256" />
+          <img src="adapter2.jpg" class="mb-1" height="256" />
+          <li>
+            <u>Motor to Propeller Adapter</u>
+            <div class="mb-1" div></div>
+            The propellers I had were not compatible with the motors because
+            there was no way to attach them securely. The motor would spin
+            inside the propeller without actually turning it. To address this
+            issue, I designed a custom adapter that allowed me to mount the
+            propellers to the motors effectively.
+          </li>
+          <div class="mb-3" div></div>
+          <img src="motor mount.jpg" class="mb-1" height="256" />
+          <li>
+            <u>Motor Mount:</u>
+            <div class="mb-1" div></div>
+            For the actual motor mount, it took many iterations of design. When
+            the motor would spin up, it tended to instantly break the mounts, so
+            I had to redesign due to vibrations. To prevent the motor mount from
+            spinning on the carbon fiber tube, I designed it with a screw hole
+            at the points where the bottom of the motor attaches to the 3D
+            model, reinforcing those areas..
+          </li>
+          <img src="landing gear1.jpg" class="mb-1" height="256" />
+          <img src="landing gear2.jpg" class="mb-1" height="256" />
+          <div class="mb-3" div></div>
+          <li>
+            <u>Landing Gear</u>
+            <div class="mb-1" div></div>
+            For the landing gear, I wanted it to be made from carbon fiber due
+            to its strength, durability, and light weight. I designed these
+            3D-printed mounts that can easily be removed and attached for
+            transportation purposes or in case the landing gear gets damaged.
+            The mechanism is a two-part design, with the top and bottom parts
+            attached with M3 screws, able to hold a piece of carbon fiber tubing
+            at the bottom. It's not completely finished yet, but I'm almost done
+            with the landing gear.
+          </li>
+          <img src="esc holder.jpg" class="mb-1" height="256" />
+          <div class="mb-3" div></div>
+          <li>
+            <u
+              >Drone ESC Holder:
+              <div class="mb-1" div></div></u
+            >The ESC (Electronic Speed Controller) has a multitude of wires
+            connecting to various components, such as the four motors and the
+            receiver for the drone. It is also positioned next to the battery.
+            It was important that all the wires are easily accessible in case
+            something goes wrong while maintaining neat wire management. I
+            therefore designed and 3D-printed a holder for it, but I think it
+            still needs some work before it's complete.
+          </li>
+          <div class="mb-3" div></div>
+        </b>
+      </ol>
+      <!-- <div class="mt-3 row">
         <div class="col-sm-3 mb-3">
           <p class="card-text">
-            <a href="https://youtube.com/shorts/m7CIcRQyYUg?feature=share" class="btn btn-secondary full-width-button" target="_blank">
-              Drone Video
-            </a>
+            <a
+              href="https://github.com/DavidRabinow/ROBOT-CODE"
+              class="btn btn-secondary full-width-button"
+              target="_blank"
+            >
+              Drone video 
           </p>
         </div>
+      </div> -->
 
-        <footer class="footer">© 2025 <u>David M. Rabinow</u></footer>
-      </div>
-
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        color: #f8f9fa;
-        background-color: #212529;
-        text-align: left;
-      }
-
-      .container {
-        max-width: 100%;
-        margin-left: 2rem; /* Added left margin */
-        padding-left: 0;
-      }
-
-      .full-width-button {
-        display: block;
-        width: 100%;
-        text-align: center;
-      }
-
-      .footer {
-        text-align: center;
-        font-size: 12px;
-        color: white;
-        margin-top: 50px;
-      }
-
-      .card-text a {
-        color: #fff;
-        text-decoration: none;
-      }
-
-      .card-text a:hover {
-        color: rgb(10, 79, 101);
-      }
-
-      .image-container img {
-        margin-bottom: 1rem;
-        height: 256px;
-      }
-      html, body {
-    overflow-x: hidden;
-    width: 100%;
-}
-p{
-    max-width: 50rem; /* Adjust width as needed */
-
-    line-height: 1.6; /* Improves readability */
-}
-    </style>
+      <!-- Button linking to the GitHub repository -->
+    </div>
   </body>
+  <footer class="footer">© 2025 <u>David M. Rabinow.</u></footer>
+  <style>
+    .full-width-button {
+      display: block;
+      width: 100%;
+      text-align: center;
+    }
+    .full-width-button:hover {
+      background-color: rgb(10, 79, 101);
+      border: none;
+    }
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: white;
+
+      width: 100%;
+    }
+  </style>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!DOCTYPE html>
-<html data-bs-theme="dark">
-<head>
-	<meta name="description" content="Bionic arms I built ">
-	<title>davidrabinow.online | Drone</title>
-	<meta name="description" content="Bionic Arms">
-	<meta name="keywords" content="David Rabinow, davidrabinow.online, bionic arms">
-	<meta name="author" content="David Rabinow">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta property="og:image" content="https://avatars.githubusercontent.com/u/157258504?v=4">
-	<link rel="icon" href="https://avatars.githubusercontent.com/u/157258504?v=4">
-
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-	<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/htmx.org@1.9.12/dist/htmx.min.js"></script>
-	<link rel="manifest" href="manifest.json">
-
-	
-</head>
-
-<body class="mb-5">
-	<div class="mb-4" hx-get="/nav.html" hx-trigger="load"></div>
-	<div class="container">
-		<h1>Bionic Arms</h1>
-		<img src="arm-min-2.png" class="mb-1" height="256">
-		<img src="" class="mb-1" height="256">
-		
-		<h4>The drone is custom-built with a 3D-printed frame designed in Fusion
-      360. The frame is lightweight and reinforced with carbon fiber tubing
-      for durability. The motor mounts required multiple iterations to
-      withstand vibrations, and a custom adapter was designed to securely
-      attach the propellers to the motors. The landing gear is also carbon
-      fiber, with a removable 3D-printed mounting system for easy transport
-      and repairs. For wire management, a 3D-printed ESC holder keeps the
-      components organized and accessible. The build is still being refined,
-      but it is near completion.</h4>
-		<ol><b>
-			<li><u>Frame:</u> <div class="mb-1" div></div>The main part of the drone's frame is 3D-printed. I designed this
-        part and all the other components using Fusion 360, a computer
-        modeling software, and then 3D-printed them. The frame is
-        lightweight, weighing less than a pound. The arms of the drone are
-        made from carbon fiber tubing, which is extremely durable while
-        still being lightweight. To prevent the tubes from spinning inside
-        the 3D-printed frame, I drilled a hole and inserted a screw to
-        secure them.</li>
-			<div class="mb-3" div></div>
-			<li><u>Servo Calibration:</u> <div class="mb-1" div></div>The propellers I had were not compatible with the motors because
-        there was no way to attach them securely. The motor would spin
-        inside the propeller without actually turning it. To address this
-        issue, I designed a custom adapter that allowed me to mount the
-        propellers to the motors effectively.</li>
-			<div class="mb-3" div></div>
-			<li><u>String Tension:</u> <div class="mb-1" div></For the actual motor mount, it took many iterations of design.
-        When the motor would spin up, it tended to instantly break the
-        mounts, so I had to redesign due to vibrations. To prevent the
-        motor mount from spinning on the carbon fiber tube, I designed it
-        with a screw hole at the points where the bottom of the motor
-        attaches to the 3D model, reinforcing those areas..</li></div>
-			<div class="mb-3" div></div>
-			<li><u>Power Supply Issues:</u> <div class="mb-1" div></div>The servo motor occasionally stalled or jittered due to inconsistent power delivery, requiring additional capacitors and a regulated power source for stability.</li>
-		
-			<div class="mb-3" div></div>
-			<li><u>Structural Weakness: <div class="mb-1" div></div></u>Some 3D-printed parts broke under stress, particularly during the testing phase. This led to redesigns and reprints using more robust designs or materials.</li>
-			<div class="mb-3" div></div>
-			<u>Finger Alignment: </u><li><div class="mb-1" div></div>Ensuring the fingers moved uniformly was challenging. Small discrepancies in string placement or servo movement caused uneven finger motion, reducing overall functionality.</li>
-</b>
-	</ol>
-		<div class="mt-3 row">
-				
-
-				<div class="col-sm-3 mb-3">
-					<p class="card-text">
-						<a href="https://github.com/DavidRabinow/ROBOT-CODE" class="btn btn-secondary full-width-button" target="_blank">
-							 Robo Arm code
-						</a>
-					</p>
-					<p class="card-text">
-						<a href="https://drive.google.com/drive/folders/1GP0kc6kEs6vVf8XQv6CrGoOjUos5LdO6?usp=share_link" class="btn btn-secondary full-width-button" target="_blank">
-							 Robo Arm Stls
-						</a>
-					</p>
-					<p class="card-text">
-						<a href="https://youtube.com/shorts/m7CIcRQyYUg?feature=share" class="btn btn-secondary full-width-button" target="_blank">
-							</i> Robo Arm Video
-						</a>
-					</p>
-				</div>
-				
-			</div>
-
-
-
-
-		<!-- Button linking to the GitHub repository -->
-	</div>
-</body>
-<footer class="footer">
-	© 2025 <u>David M. Rabinow.</u>
-</footer>
-<style>
-	
-	.full-width-button {
-		display: block;
-		width: 100%;
-		text-align: center;
-	}
-				.full-width-button:hover{
-		background-color: rgb(10, 79, 101); 
-		border: none;
-	}
-	.footer {
-            text-align: center;
-            font-size: 12px;
-            color:white;
-          
-            
-            width: 100%;
-        }	
-	
-		
-		</style>
-</html>
-
