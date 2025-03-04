@@ -163,7 +163,7 @@
             <li>
               <a
                 class="dropdown-item"
-                href="https://getrambam.davidrabinow.online"
+                href="https://getrambam.davidrabinow.com"
                 target="_blank"
                 ><i class="bi bi-box"></i> Get Rambam</a
               >
@@ -203,7 +203,7 @@
       window.location.pathname == "/index.html"
     ) {
       $("#imapersontext").html("davidrabinow.");
-      $("#imapersonext").html("online");
+      $("#imapersonext").html("com");
       return;
     }
     await changeText("davidrabinow.", $("#imapersontext"));
@@ -213,6 +213,6 @@
       extensions = extensions.filter((x) => x != ext);
       await changeText(ext, $("#imapersonext"));
     }
-    await changeText("online", $("#imapersonext"));
+    await changeText("com", $("#imapersonext"));
   });
 </script>
