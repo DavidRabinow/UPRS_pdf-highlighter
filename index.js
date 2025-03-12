@@ -12,6 +12,24 @@ console.log(moment().format(), chalk.yellow("initializing express server..."));
 console.log(moment().format(), chalk.yellow("---------------------------------"));
 
 app.set("json spaces", 4);
+
+// IP tracking middleware
+app.use((req, res, next) => {
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const userAgent = req.headers['user-agent'];
+    const timestamp = moment().format();
+    
+    // Log to console
+    console.log(timestamp, chalk.cyan(`Visitor IP: ${ip}`), chalk.gray(`User-Agent: ${userAgent}`));
+    
+    // Log to file
+    fs.appendFileSync('visitors.log', `${timestamp} - IP: ${ip} - User-Agent: ${userAgent}\n`);
+    
+    // Attach IP to request object for use in routes
+    req.visitorIp = ip;
+    next();
+});
+
 app.use((req, res, next) => {
 	res.header("Access-Control-Allow-Origin", "*");
 	res.header("Access-Control-Allow-Headers", "X-Requested-With");
