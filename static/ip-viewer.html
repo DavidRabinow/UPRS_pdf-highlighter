@@ -54,18 +54,24 @@
         .refresh-btn:hover {
             background: #1976D2;
         }
+        #current-ip {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
     </style>
 </head>
 <body>
     <h1>IP Visitor Log</h1>
-    <button class="refresh-btn" onclick="fetchLogs()">Refresh Logs</button>
+    <div id="current-ip">Loading your IP...</div>
+    <button class="refresh-btn" onclick="checkIP()">Check My IP</button>
     <div id="visitor-log" class="visitor-log">
         <div style="text-align: center">Loading...</div>
     </div>
 
     <script>
         function fetchLogs() {
-            fetch('/api/visitors')
+            fetch('/.netlify/functions/getVisitors')
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -96,7 +102,24 @@
                 });
         }
 
-        // Load logs on page load
+        function checkIP() {
+            fetch('/.netlify/functions/getIp')
+                .then(response => response.json())
+                .then(data => {
+                    const timestamp = new Date(data.timestamp).toLocaleString();
+                    document.getElementById('current-ip').innerHTML = `
+                        <div>Your IP: <strong>${data.ip}</strong></div>
+                        <div style="font-size: 0.8em; color: #666;">Last checked: ${timestamp}</div>
+                    `;
+                })
+                .catch(error => {
+                    document.getElementById('current-ip').innerHTML = 
+                        '<div style="color: red">Error fetching IP</div>';
+                });
+        }
+
+        // Check IP and load logs on page load
+        checkIP();
         fetchLogs();
     </script>
 </body>
