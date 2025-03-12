@@ -1,19 +1,31 @@
 {
   "main": "index.js",
   "author": "david rabinow0",
-  "repository": "github:DavidRabinow/pegasus2.o",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DavidRabinow/pegasus2.o.git"
+  },
   "homepage": "https://davidrabinow.online",
   "license": "GPL-3.0-only",
   "dependencies": {
-    
     "@distube/ytdl-core": "^4.14.4",
+    "axios": "^1.8.3",
     "chalk": "^5.3.0",
-    
     "dotenv": "^16.4.5",
-    "express": "^4.19.2",
+    "express": "^4.21.2",
     "moment": "^2.30.1",
     "mysql": "^2.18.1",
     "ytpl": "^2.3.0"
   },
-  "type": "module"
+  "type": "module",
+  "name": "pegasus2.o",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/DavidRabinow/pegasus2.o/issues"
+  },
+  "description": ""
 }
