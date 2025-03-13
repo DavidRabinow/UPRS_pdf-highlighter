@@ -39,12 +39,15 @@ ${deviceMessage}
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ content: message }),
   })
-    .then((response) =>
-      console.log(`Sent message to Discord with status ${response.status}`)
-    )
-    .catch((error) =>
-      console.error(`Error sending message to Discord: ${error}`)
-    );
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      console.log(`Sent message to Discord with status ${response.status}`);
+    })
+    .catch((error) => {
+      console.error(`Error sending message to Discord: ${error}`);
+    });
 }
 
 function getUserLocation(callback) {
