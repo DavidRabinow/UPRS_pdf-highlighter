@@ -5,7 +5,7 @@
     "type": "git",
     "url": "git+https://github.com/DavidRabinow/pegasus2.o.git"
   },
-  "homepage": "https://davidrabinow.online",
+  "homepage": "https://davidrabinow.com",
   "license": "GPL-3.0-only",
   "dependencies": {
     "@distube/ytdl-core": "^4.14.4",
