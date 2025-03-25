@@ -3,3 +3,6 @@ concepts/*
 .env
 run.bat
 package-lock.json
+static/script.js
+api/webhook.js
+static/script.js

