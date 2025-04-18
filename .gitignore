@@ -3,3 +3,4 @@ concepts/*
 .env
 run.bat
 package-lock.json
+static/bionicarm/arm-min-2.png
