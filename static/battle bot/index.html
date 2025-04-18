@@ -33,80 +33,69 @@
                 
                 
             </h6>
-
-                          <h5 class="mb-2"><u>Challenges Faced:</u></h5>
-<ol><b>
-    <li><u>Servo Synchronization:</u> 
-        <div class="mb-1"></div>
-        Ensuring the two servo motors operated in perfect sync was difficult, as any misalignment caused the faceplate to tilt or jam.
-    </li>
-    <div class="mb-3"></div>
-
-    <li><u>Button Integration:</u> 
-        <div class="mb-1"></div>
-        Soldering the button to the circuit and ensuring it fit seamlessly into the helmet design required precision and careful planning.
-    </li>
-    <div class="mb-3"></div>
-
-    <li><u>Power Supply Issues:</u> 
-        <div class="mb-1"></div>
-        The motors and lights occasionally drew more power than the system could handle, requiring additional capacitors for stability.
-    </li>
-    <div class="mb-3"></div>
-
-    <li><u>Wiring Constraints:</u> 
-        <div class="mb-1"></div>
-        The compact helmet interior made it challenging to route wires neatly without interfering with the motors or the user’s comfort.
-    </li>
-    <div class="mb-3"></div>
-
-    <li><u>Faceplate Stability:</u> 
-        <div class="mb-1"></div>
-        Early designs were fragile, requiring reinforced mounts and hinge redesigns to prevent wobbling and breakage.
-    </li>
-    <div class="mb-3"></div>
-
-    <li><u>3D-Printing Tolerances:</u> 
-        <div class="mb-1"></div>
-        Minor inconsistencies in 3D printing led to parts that didn’t fit perfectly, requiring sanding and reprints to ensure smooth assembly.
-    </li>
-    <div class="mb-3"></div>
-
-    <li><u>Light Diffusion:</u> 
-        <div class="mb-1"></div>
-        The LED eyes were initially too bright, creating glare. Adding diffusers helped but made even light distribution more complex.
-    </li>
-    <div class="mb-3"></div>
-
-    <li><u>Comfort Adjustments:</u> 
-        <div class="mb-1"></div>
-        Prolonged wear required internal padding and careful arrangement of components to avoid discomfort and pressure points.
-    </li>
-</b></ol>
-
-
+            <img src="battle bot cad.png" class="mb-1" height="256">
+           <h4>ROUGH BATTLE BOT CAD</h4>
+           <div class="mb-4"></div>
+            <h5 class="mb-2"><u>Challenges Faced:</u></h5>
+            <ol style="list-style-position: inside;"><b>
+            
+                <li><u>Servo Mount Strength:</u> 
+                    <div class="mb-1"></div>
+                    The torque from the flipper’s 25kg servo caused early 3D-printed mounts to crack. Reinforcing them with thicker walls and brackets fixed the issue.
+                </li><div class="mb-3"></div>
+            
+                <li><u>IR Signal Interference:</u> 
+                    <div class="mb-1"></div>
+                    IR receivers occasionally lagged or picked up false signals. Dual receivers and wire shielding improved reliability.
+                </li><div class="mb-3"></div>
+            
+                <li><u>Power Distribution:</u> 
+                    <div class="mb-1"></div>
+                    Voltage drops occurred when servos and logic shared power. Splitting power rails stabilized performance.
+                </li><div class="mb-3"></div>
+            
+                <li><u>Flipper Timing Control:</u> 
+                    <div class="mb-1"></div>
+                    Fine-tuning angle limits and servo delay logic prevented servo stress and improved snapback precision.
+                </li><div class="mb-3"></div>
+            
+                <li><u>Wiring Management:</u> 
+                    <div class="mb-1"></div>
+                    Cramped internals required smart routing with heat shrink and zip ties to reduce interference and mess.
+                </li><div class="mb-3"></div>
+            
+                <li><u>IR Remote Programming:</u> 
+                    <div class="mb-1"></div>
+                    Button presses sometimes repeated or lagged. Debouncing and state tracking in code fixed the issues.
+                </li><div class="mb-3"></div>
+            
+                <li><u>Servo Overload Prevention:</u> 
+                    <div class="mb-1"></div>
+                    Running multiple servos risked overheating. I added movement limits and cooldowns to prevent burnout.
+                </li><div class="mb-3"></div>
+            
+                <li><u>Weapon Sync Logic:</u> 
+                    <div class="mb-1"></div>
+                    Simultaneous weapon use caused brownouts. A short cooldown function between hammer and flipper attacks solved it.
+                </li>
+            
+            </b></ol>
             <div class="col-sm-3 mb-3">
                 <p class="card-text">
                     <a href="https://github.com/DavidRabinow/Battle-bot/blob/main/battle-bot-wheels.ino"
                         class="btn btn-secondary full-width-button" target="_blank">
-                        </i> Helmet Code
+                        Battle Bot Code
                     </a>
                 </p>
                 <p class="card-text">
-                    <a href="https://drive.google.com/drive/folders/1USDJGabRnCHesh-GkYl_Xess5VXqYE-T?usp=sharing"
+                    <a href="https://drive.google.com/drive/folders/1FbL3v6wvhXR-xghY5Xjx-1e5PPVJJ7VI?usp=drive_link"
                         class="btn btn-secondary full-width-button" target="_blank">
-                        </i> Helmet STLs
+                        Battle Bot STLs
                     </a>
                 </p>
-                <p class="card-text">
-                    <a href="https://youtube.com/shorts/m7CIcRQyYUg?feature=share"
-                        class="btn btn-secondary full-width-button" target="_blank">
-                        </i> Helmet Video
-                    </a>
-                </p>
+              
             </div>
-        </div>
-	</div> </div>
+            
         <footer class="footer">
             © 2025 <u>David M. Rabinow.</u>
         </footer>
