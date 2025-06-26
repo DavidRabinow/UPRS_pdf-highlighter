@@ -42,12 +42,16 @@
       <h1>Stack winner:</h1>
       <img src="stack game.png" class="mb-1" height="256" />
       <img src="final-stack.png" class="mb-1" height="256" />
-
+      <style>
+        body {
+          background-color: #000 !important;
+        }
+      </style>
       <h5>
         This project aimed to beat the game Stack by using a servo-controlled
         stylus pen to interact with the device's touchscreen. The stylus,
         connected to a servo motor, was precisely rigged to barely touch the
-        screen’s surface. Using custom code uploaded to an Arduino Uno, the
+        screen's surface. Using custom code uploaded to an Arduino Uno, the
         servo moved the stylus in perfect synchronization to achieve accurate
         taps, maximizing the score in the game.
       </h5>
@@ -58,7 +62,7 @@
             <u>Timing Precision:</u>
             <div class="mb-1"></div>
             The key to succeeding in Stack was precise timing for each tap.
-            Calibrating the servo’s movements to match the game’s increasing
+            Calibrating the servo's movements to match the game's increasing
             speed required careful coding and testing.
           </li>
           <div class="mb-3"></div>
@@ -107,6 +111,15 @@
       position: fixed;
       bottom: 0;
       left: 0;
+    }
+
+    body {
+      background-color: #000 !important;
+    }
+
+    a,
+    a:visited {
+      color: #fff !important;
     }
   </style>
 </html>
