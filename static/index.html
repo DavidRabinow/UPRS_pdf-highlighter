@@ -250,6 +250,7 @@
     <section
       class="hero-section landing-hero d-flex flex-column align-items-center justify-content-center text-center"
     >
+      <!-- Modern gradient and noise overlay handled in CSS -->
       <div class="hero-content fade-in">
         <img
           src="https://avatars.githubusercontent.com/u/157258504?v=4"
@@ -270,14 +271,16 @@
     <!-- Projects Section -->
     <section id="projects" class="container mt-5">
       <h2 class="section-title mb-4">Portfolio</h2>
-      <div class="row g-4">
+      <div class="row g-4 project-grid-fadein">
         <!-- Project Card Example -->
         <div class="col-md-6">
           <div class="project-card d-flex align-items-stretch">
             <img src="gokart/karty-min.png" class="project-img" alt="Go Kart" />
             <div class="project-info">
               <h5>Go Kart</h5>
-              <p>Electric go kart project with custom chassis and controls.</p>
+              <p class="project-desc">
+                Electric go kart with custom chassis and controls.
+              </p>
               <a
                 href="gokart/index.html"
                 class="btn btn-outline-primary"
@@ -292,7 +295,9 @@
             <img src="drone/drone.jpg" class="project-img" alt="Drone" />
             <div class="project-info">
               <h5>Drone</h5>
-              <p>Custom-built quadcopter with advanced stabilization.</p>
+              <p class="project-desc">
+                Quadcopter with advanced stabilization.
+              </p>
               <a
                 href="drone/index.html"
                 class="btn btn-outline-primary"
@@ -312,8 +317,8 @@
             />
             <div class="project-info">
               <h5>Bionic Arms</h5>
-              <p>
-                Robotic prosthetic arm with EMG control and 3D-printed parts.
+              <p class="project-desc">
+                Robotic prosthetic arm with EMG control.
               </p>
               <a
                 href="bionicarm/index.html"
@@ -333,7 +338,7 @@
             />
             <div class="project-info">
               <h5>Battle Bot</h5>
-              <p>Combat robot designed for competitive robotics events.</p>
+              <p class="project-desc">Combat robot for competitive events.</p>
               <a
                 href="battle bot/index.html"
                 class="btn btn-outline-primary"
@@ -352,7 +357,9 @@
             />
             <div class="project-info">
               <h5>Iron Man Helmet</h5>
-              <p>Wearable helmet with motorized faceplate and LED eyes.</p>
+              <p class="project-desc">
+                Wearable helmet with motorized faceplate.
+              </p>
               <a
                 href="ironman/index.html"
                 class="btn btn-outline-primary"
@@ -371,7 +378,9 @@
             />
             <div class="project-info">
               <h5>Iron Man Arc Reactor</h5>
-              <p>Functional replica with custom PCB and lighting effects.</p>
+              <p class="project-desc">
+                Functional replica with custom PCB and lighting.
+              </p>
               <a
                 href="arcreactor/index.html"
                 class="btn btn-outline-primary"
@@ -390,8 +399,8 @@
             />
             <div class="project-info">
               <h5>Stack Winner</h5>
-              <p>
-                Stacking robot that won first place in a robotics competition.
+              <p class="project-desc">
+                Stacking robot, 1st place in competition.
               </p>
               <a
                 href="stack/index.html"
@@ -403,9 +412,33 @@
           </div>
         </div>
       </div>
+      <div class="text-center mt-4 mb-5">
+        <a href="/projects/" class="btn btn-outline-light view-all-btn"
+          >View All Projects</a
+        >
+      </div>
     </section>
     <!-- Footer -->
-    <footer class="footer mt-5">© 2025 <u>David M. Rabinow.</u></footer>
+    <footer class="footer mt-5">
+      <div class="footer-social mb-2">
+        <a
+          href="https://github.com/DavidRabinow"
+          target="_blank"
+          class="footer-icon"
+          ><i class="bi bi-github"></i
+        ></a>
+        <a
+          href="https://linkedin.com/in/davidrabinow"
+          target="_blank"
+          class="footer-icon"
+          ><i class="bi bi-linkedin"></i
+        ></a>
+        <a href="mailto:davidrabinow@gmail.com" class="footer-icon"
+          ><i class="bi bi-envelope"></i
+        ></a>
+      </div>
+      © 2025 <u>David M. Rabinow.</u>
+    </footer>
     <style>
       body,
       html {
@@ -432,18 +465,22 @@
       }
       .landing-hero {
         min-height: 100vh;
-        background: linear-gradient(135deg, #0a0a0a 0%, #181818 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        background: linear-gradient(
+            120deg,
+            rgba(20, 20, 22, 0.55) 0%,
+            rgba(30, 30, 34, 0.55) 100%
+          ),
+          url("assets/cackground.png");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
         position: relative;
         z-index: 1;
+        overflow: hidden;
       }
       .hero-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
+        position: relative;
+        z-index: 1;
       }
       .fade-in {
         opacity: 0;
@@ -457,10 +494,8 @@
         }
       }
       .hero-logo {
-        box-shadow: 0 4px 32px 0 rgba(236, 236, 236, 0.1);
-        background: #181818;
         border-radius: 50%;
-        padding: 10px;
+        padding: 0;
         margin-bottom: 2rem;
       }
       .hero-title {
@@ -663,26 +698,27 @@
         }
       }
       .custom-navbar {
-        background: #111 !important;
-        box-shadow: 0 2px 16px 0 rgba(236, 236, 236, 0.04);
+        background: rgba(10, 10, 10, 0.98) !important;
+        box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.18);
         font-family: "Lato", "Inter", Arial, sans-serif;
-        font-size: 1.08rem;
-        padding-top: 0.3rem;
-        padding-bottom: 0.3rem;
+        font-size: 1.01rem;
+        padding-top: 0.35rem;
+        padding-bottom: 0.35rem;
         border-bottom: 1.5px solid #23272f;
         z-index: 1000;
+        min-height: 44px;
       }
       .navbar-title {
         font-family: "Lato", "Inter", Arial, sans-serif;
         font-weight: 900;
         font-size: 1.25rem;
         letter-spacing: 2px;
-        color: #ececec;
+        color: #fff;
         text-transform: uppercase;
         margin-left: 0.2rem;
       }
       .navbar-nav .nav-link {
-        color: #ececec !important;
+        color: #fff !important;
         font-weight: 700;
         letter-spacing: 1px;
         padding-left: 0.7rem;
@@ -692,7 +728,7 @@
       }
       .navbar-nav .nav-link:hover,
       .navbar-nav .nav-link.active {
-        color: #fff !important;
+        color: #ececec !important;
         border-bottom: 2px solid #ececec;
         background: none !important;
       }
@@ -722,6 +758,61 @@
       }
       .dropdown-divider {
         border-top: 1px solid #23272f;
+      }
+      .project-grid-fadein {
+        animation: fadeInUp 1.2s cubic-bezier(0.23, 1, 0.32, 1) 0.2s both;
+      }
+      .project-card {
+        transition: box-shadow 0.2s, transform 0.2s, border 0.2s, filter 0.2s;
+      }
+      .project-card:hover {
+        box-shadow: 0 12px 32px 0 rgba(236, 236, 236, 0.18);
+        transform: translateY(-6px) scale(1.025);
+        border: 1.5px solid #ececec;
+        filter: brightness(1.04);
+      }
+      .project-desc {
+        font-size: 1.02rem;
+        color: #b0bec5;
+        margin-bottom: 1rem;
+        margin-top: 0.2rem;
+      }
+      .view-all-btn {
+        font-size: 1.1rem;
+        font-weight: 700;
+        border-radius: 30px;
+        padding: 0.7rem 2.5rem;
+        border: 2px solid #ececec;
+        color: #ececec;
+        background: transparent;
+        transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+      }
+      .view-all-btn:hover {
+        background: #ececec;
+        color: #181818;
+        box-shadow: 0 4px 32px 0 rgba(236, 236, 236, 0.18);
+      }
+      .footer-social {
+        margin-bottom: 0.5rem;
+      }
+      .footer-icon {
+        color: #ececec;
+        font-size: 1.5rem;
+        margin: 0 0.5rem;
+        transition: color 0.18s;
+      }
+      .footer-icon:hover {
+        color: #fff;
+      }
+      .hero-bg-svg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 0;
+        pointer-events: none;
+        overflow: hidden;
       }
     </style>
     <script src="script.js"></script>
