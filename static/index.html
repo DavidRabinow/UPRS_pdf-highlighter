@@ -87,7 +87,10 @@
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse">
-          <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          <ul
+            class="navbar-nav ms-auto mb-2 mb-lg-0"
+            style="margin-right: 2rem; margin-left: 2rem"
+          >
             <!-- Utilities Dropdown -->
             <li class="nav-item dropdown ms-3">
               <a
@@ -200,14 +203,6 @@
                   >
                 </li>
               </ul>
-            </li>
-            <li class="nav-item ms-3">
-              <a
-                class="nav-link"
-                href="https://github.com/DavidRabinow"
-                target="_blank"
-                >GITHUB</a
-              >
             </li>
             <li class="nav-item ms-3">
               <a
@@ -638,9 +633,10 @@
           box-shadow: 0 8px 32px 0 rgba(236, 236, 236, 0.08);
         }
         .custom-dropdown {
-          min-width: 100vw;
-          left: -16px !important;
-          right: -16px !important;
+          width: 100vw;
+          min-width: 200px;
+          left: 0 !important;
+          right: auto !important;
           border-radius: 0 0 12px 12px;
           font-size: 1.05rem;
         }
@@ -699,16 +695,16 @@
         background: rgba(10, 10, 10, 0.98) !important;
         box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.18);
         font-family: "Lato", "Inter", Arial, sans-serif;
-        font-size: 1.01rem;
-        padding-top: 0.35rem;
-        padding-bottom: 0.35rem;
+        font-size: 1.18rem;
+        padding-top: 0.85rem;
+        padding-bottom: 0.85rem;
         border-bottom: 1.5px solid #23272f;
         z-index: 1000;
-        min-height: 44px;
+        min-height: 62px;
       }
       .navbar-title {
         font-family: "Lato", "Inter", Arial, sans-serif;
-        font-weight: 900;
+        font-weight: 400;
         font-size: 1.25rem;
         letter-spacing: 2px;
         color: #fff;
