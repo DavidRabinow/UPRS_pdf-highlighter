@@ -571,10 +571,44 @@
           min-height: unset;
         }
         .project-img {
-          width: 100%;
-          height: 180px;
+          width: 100% !important;
+          height: auto !important;
+          max-height: 220px;
           border-right: none;
           border-bottom: 2px solid #111;
+          object-fit: cover;
+          display: block;
+        }
+        .project-info {
+          padding: 1rem;
+        }
+        .navbar-title {
+          font-size: 1rem;
+          letter-spacing: 1px;
+        }
+        .navbar-nav .nav-link {
+          padding-left: 0.3rem;
+          padding-right: 0.3rem;
+          font-size: 1.05rem;
+          padding-top: 0.7rem;
+          padding-bottom: 0.7rem;
+        }
+        .custom-navbar .navbar-collapse {
+          background: #111;
+          padding: 0.5rem 0;
+          border-radius: 0 0 12px 12px;
+          box-shadow: 0 8px 32px 0 rgba(236, 236, 236, 0.08);
+        }
+        .custom-dropdown {
+          min-width: 100vw;
+          left: -16px !important;
+          right: -16px !important;
+          border-radius: 0 0 12px 12px;
+          font-size: 1.05rem;
+        }
+        .custom-dropdown .dropdown-item {
+          padding: 1rem 1.5rem;
+          font-size: 1.05rem;
         }
       }
       @media (max-width: 600px) {
@@ -589,6 +623,36 @@
         }
         .project-info {
           padding: 1rem;
+        }
+        .navbar-title {
+          font-size: 0.9rem;
+          letter-spacing: 0.5px;
+        }
+        .custom-navbar {
+          font-size: 0.98rem;
+          padding-top: 0.1rem;
+          padding-bottom: 0.1rem;
+        }
+        .navbar-nav .nav-link {
+          font-size: 0.98rem;
+          padding-top: 0.7rem;
+          padding-bottom: 0.7rem;
+        }
+        .custom-dropdown .dropdown-item {
+          padding: 1.1rem 1.2rem;
+          font-size: 0.98rem;
+        }
+        .custom-dropdown {
+          min-width: 100vw;
+          left: -24px !important;
+          right: -24px !important;
+        }
+        .navbar-brand img {
+          width: 32px !important;
+          height: 32px !important;
+        }
+        .project-img {
+          max-height: 140px;
         }
       }
       .custom-navbar {
@@ -651,16 +715,6 @@
       }
       .dropdown-divider {
         border-top: 1px solid #23272f;
-      }
-      @media (max-width: 991px) {
-        .navbar-title {
-          font-size: 1rem;
-          letter-spacing: 1px;
-        }
-        .navbar-nav .nav-link {
-          padding-left: 0.3rem;
-          padding-right: 0.3rem;
-        }
       }
     </style>
     <script src="script.js"></script>
