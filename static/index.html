@@ -19,8 +19,11 @@
       name="description"
       content="A bunch of engineering projects made by David Rabinow"
     />
-    <title>davidrabinow.com | Home Page</title>
-    <meta name="description" content="David Rabinow's website" />
+    <title>STUX Technologies | AI Integration & Automation</title>
+    <meta
+      name="description"
+      content="STUX Technologies specializes in AI integration and intelligent process automation."
+    />
     <meta
       name="keywords"
       content="davidrabinow.com, David Rabinow , tech, davidrabinow,"
@@ -31,10 +34,7 @@
       property="og:image"
       content="https://avatars.githubusercontent.com/u/157258504?v=4"
     />
-    <link
-      rel="icon"
-      href="https://avatars.githubusercontent.com/u/157258504?v=4"
-    />
+    <link rel="icon" href="/assets/stux-logo.png" />
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
@@ -57,185 +57,46 @@
   </head>
 
   <body class="mb-5">
-    <!-- Navigation Bar (copied from nav.html for consistency) -->
+    <!-- Navbar -->
     <nav
-      class="navbar navbar-expand-lg navbar-dark custom-navbar shadow-sm sticky-top"
+      class="navbar navbar-expand-lg navbar-dark stux-navbar sticky-top shadow-sm"
     >
       <div class="container-fluid">
-        <a class="navbar-brand d-flex align-items-center" href="/">
+        <a class="navbar-brand d-flex align-items-center" href="#">
           <img
-            width="40"
-            height="40"
-            src="https://avatars.githubusercontent.com/u/157258504?v=4"
-            style="
-              border-radius: 50%;
-              background: #181818;
-              box-shadow: 0 2px 12px #ececec22;
-            "
-            alt="DR Logo"
+            src="/assets/stux-logo.png"
+            alt="STUX Logo"
+            width="44"
+            height="44"
+            class="me-2 stux-logo"
+            style="background: none; border-radius: 50%"
           />
-          <span class="ms-3 navbar-title">DAVID RABINOW</span>
+          <span class="stux-title">STUX Technologies</span>
         </a>
         <button
           class="navbar-toggler"
           type="button"
           data-bs-toggle="collapse"
-          data-bs-target=".navbar-collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
           aria-expanded="false"
           aria-label="Toggle navigation"
         >
           <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse">
-          <ul
-            class="navbar-nav ms-auto mb-2 mb-lg-0"
-            style="margin-right: 2rem; margin-left: 2rem"
-          >
-            <!-- Utilities Dropdown -->
-            <li class="nav-item dropdown ms-3">
-              <a
-                class="nav-link dropdown-toggle"
-                role="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-                >UTILITIES</a
-              >
-              <ul class="dropdown-menu custom-dropdown">
-                <li>
-                  <a class="dropdown-item" href="/utils">All utilities</a>
-                </li>
-                <li><hr class="dropdown-divider" /></li>
-                <li>
-                  <a
-                    class="dropdown-item"
-                    href="https://vscode.download.prss.microsoft.com/dbazure/download/stable/019f4d1419fbc8219a181fab7892ebccf7ee29a2/VSCode-darwin-universal.zip"
-                    ><i class="bi bi-box"></i> VSC downloader (Mac)</a
-                  >
-                </li>
-                <li>
-                  <a
-                    class="dropdown-item"
-                    href="//code.visualstudio.com/sha/download?build=stable&os=win32-x64-user"
-                    ><i class="bi bi-box"></i> VSC downloader Windows</a
-                  >
-                </li>
-                <li>
-                  <a
-                    class="dropdown-item"
-                    href="https://downloads.arduino.cc/arduino-ide/nightly/arduino-ide_nightly-20240304_macOS_64bit.dmg"
-                    ><i class="bi bi-box"></i> Arduino downloader (Mac)</a
-                  >
-                </li>
-                <li>
-                  <a
-                    class="dropdown-item"
-                    href="https://download-cdn.jetbrains.com/python/pycharm-professional-2023.3.4.dmg"
-                    ><i class="bi bi-box"></i> Pycharm downloader (Mac)</a
-                  >
-                </li>
-              </ul>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link active" href="#">Home</a>
             </li>
-            <!-- 3-D Printing Dropdown -->
-            <li class="nav-item dropdown ms-3">
-              <a
-                class="nav-link dropdown-toggle"
-                role="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-                >3-D PRINTING</a
-              >
-              <ul class="dropdown-menu custom-dropdown">
-                <li>
-                  <a class="dropdown-item" href="/3dprinters"
-                    ><i class="bi bi-box"></i> My 3-D Printers</a
-                  >
-                </li>
-                <li><hr class="dropdown-divider" /></li>
-                <li>
-                  <a class="dropdown-item" href="/filament"
-                    ><i class="bi bi-box"></i> Filament</a
-                  >
-                </li>
-              </ul>
+            <li class="nav-item">
+              <a class="nav-link" href="#solutions">Solutions</a>
             </li>
-            <!-- Projects Dropdown -->
-            <li class="nav-item dropdown ms-3">
-              <a
-                class="nav-link dropdown-toggle"
-                role="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-                >PROJECTS</a
-              >
-              <ul class="dropdown-menu custom-dropdown">
-                <li>
-                  <a class="dropdown-item" href="/projects/">All projects</a>
-                </li>
-                <li><hr class="dropdown-divider" /></li>
-                <li>
-                  <a class="dropdown-item" href="/drone"
-                    ><i class="bi bi-box"></i> Drone</a
-                  >
-                </li>
-                <li>
-                  <a class="dropdown-item" href="/gokart"
-                    ><i class="bi bi-box"></i> Go Kart</a
-                  >
-                </li>
-                <li>
-                  <a class="dropdown-item" href="/bionicarm"
-                    ><i class="bi bi-box"></i> Bionic Arms</a
-                  >
-                </li>
-                <li>
-                  <a class="dropdown-item" href="/battle bot"
-                    ><i class="bi bi-box"></i> Battle bot</a
-                  >
-                </li>
-                <li>
-                  <a class="dropdown-item" href="/ironman"
-                    ><i class="bi bi-box"></i> Iron Man Helmet</a
-                  >
-                </li>
-                <li>
-                  <a class="dropdown-item" href="/stack"
-                    ><i class="bi bi-box"></i> Stack Winner</a
-                  >
-                </li>
-              </ul>
+            <li class="nav-item">
+              <a class="nav-link" href="#about">About</a>
             </li>
-            <li class="nav-item ms-3">
-              <a
-                class="nav-link"
-                href="https://forms.gle/eonQicGL5pcp7KZp6"
-                target="_blank"
-                >CONTACT</a
-              >
-            </li>
-            <li class="nav-item ms-3">
-              <a class="nav-link" href="/about">ABOUT</a>
-            </li>
-            <!-- Games Dropdown -->
-            <li class="nav-item dropdown ms-3">
-              <a
-                class="nav-link dropdown-toggle"
-                role="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-                >GAMES</a
-              >
-              <ul class="dropdown-menu custom-dropdown">
-                <li><a class="dropdown-item" href="/games">All Games</a></li>
-                <li><hr class="dropdown-divider" /></li>
-                <li>
-                  <a
-                    class="dropdown-item"
-                    href="https://getrambam.davidrabinow.com"
-                    target="_blank"
-                    ><i class="bi bi-box"></i> Get Rambam</a
-                  >
-                </li>
-              </ul>
+            <li class="nav-item">
+              <a class="nav-link" href="#contact">Contact</a>
             </li>
           </ul>
         </div>
@@ -243,196 +104,36 @@
     </nav>
     <!-- Hero Section -->
     <section
-      class="hero-section landing-hero d-flex flex-column align-items-center justify-content-center text-center"
+      class="stux-hero d-flex flex-column align-items-center justify-content-center text-center"
     >
-      <!-- Modern gradient and noise overlay handled in CSS -->
-      <div class="hero-content fade-in">
-        <img
-          src="https://avatars.githubusercontent.com/u/157258504?v=4"
-          alt="DR Logo"
-          width="140"
-          height="140"
-          class="mb-4 hero-logo"
-        />
-        <h1 class="hero-title">David Rabinow</h1>
-        <h3 class="hero-subtitle">
-          Mechanical Engineer | Innovating The Future
-        </h3>
-        <a href="#projects" class="btn btn-outline-light hero-btn mt-4"
-          >View Portfolio</a
-        >
-      </div>
+      <img
+        src="/assets/stux-logo.png"
+        alt="STUX Logo"
+        width="120"
+        height="120"
+        class="mb-4 stux-hero-logo"
+      />
+      <h1 class="stux-hero-title">
+        We specialize in AI integration and intelligent process automation.
+      </h1>
+      <h3 class="stux-hero-subtitle">
+        Our solutions help businesses streamline operations, improve efficiency,
+        and unlock data-driven insights by seamlessly connecting advanced AI
+        technologies with everyday workflows.
+      </h3>
+      <a href="#solutions" class="btn btn-primary stux-hero-btn mt-4"
+        >Learn More</a
+      >
     </section>
-    <!-- Projects Section -->
-    <section id="projects" class="container mt-5">
-      <h2 class="section-title mb-4">Portfolio</h2>
-      <div class="row g-4 project-grid-fadein">
-        <!-- Project Card Example -->
-        <div class="col-md-6">
-          <div class="project-card d-flex align-items-stretch">
-            <img src="gokart/karty-min.png" class="project-img" alt="Go Kart" />
-            <div class="project-info">
-              <h5>Go Kart</h5>
-              <p class="project-desc">
-                212cc engine-powered go kart built from ground up.
-              </p>
-              <a
-                href="gokart/index.html"
-                class="btn btn-outline-primary"
-                target="_blank"
-                >See more</a
-              >
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="project-card d-flex align-items-stretch">
-            <img src="drone/drone.jpg" class="project-img" alt="Drone" />
-            <div class="project-info">
-              <h5>Drone</h5>
-              <p class="project-desc">
-                Quadcopter with advanced stabilization.
-              </p>
-              <a
-                href="drone/index.html"
-                class="btn btn-outline-primary"
-                target="_blank"
-                >See more</a
-              >
-            </div>
-          </div>
-        </div>
-        <!-- Add more project cards as needed, following the same structure -->
-        <div class="col-md-6">
-          <div class="project-card d-flex align-items-stretch">
-            <img
-              src="bionicarm/arm-min-.png"
-              class="project-img"
-              alt="Bionic Arm"
-            />
-            <div class="project-info">
-              <h5>Bionic Arms</h5>
-              <p class="project-desc">
-                Prosthetic arm designed for reliability.
-              </p>
-              <a
-                href="bionicarm/index.html"
-                class="btn btn-outline-primary"
-                target="_blank"
-                >See more</a
-              >
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="project-card d-flex align-items-stretch">
-            <img
-              src="battle bot/battle bot.jpg"
-              class="project-img"
-              alt="Battle Bot"
-            />
-            <div class="project-info">
-              <h5>Battle Bot</h5>
-              <p class="project-desc">
-                Combat robot built for competitive robotics battles.
-              </p>
-              <a
-                href="battle bot/index.html"
-                class="btn btn-outline-primary"
-                target="_blank"
-                >See more</a
-              >
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="project-card d-flex align-items-stretch">
-            <img
-              src="ironman/iron-min-2.png"
-              class="project-img"
-              alt="Iron Man Helmet"
-            />
-            <div class="project-info">
-              <h5>Iron Man Helmet</h5>
-              <p class="project-desc">
-                Wearable helmet with motorized faceplate.
-              </p>
-              <a
-                href="ironman/index.html"
-                class="btn btn-outline-primary"
-                target="_blank"
-                >See more</a
-              >
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="project-card d-flex align-items-stretch">
-            <img
-              src="assets/newarc-min-2.png"
-              class="project-img"
-              alt="Iron Man Arc Reactor"
-            />
-            <div class="project-info">
-              <h5>Iron Man Arc Reactor</h5>
-              <p class="project-desc">
-                Functional replica with custom PCB and lighting.
-              </p>
-              <a
-                href="arcreactor/index.html"
-                class="btn btn-outline-primary"
-                target="_blank"
-                >See more</a
-              >
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="project-card d-flex align-items-stretch">
-            <img
-              src="stack/final-stack.png"
-              class="project-img"
-              alt="Stack Winner"
-            />
-            <div class="project-info">
-              <h5>Stack Winner</h5>
-              <p class="project-desc">
-                Stacking robot, 1st place in competition.
-              </p>
-              <a
-                href="stack/index.html"
-                class="btn btn-outline-primary"
-                target="_blank"
-                >See more</a
-              >
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="text-center mt-4 mb-5">
-        <a href="/projects/" class="btn btn-outline-light view-all-btn"
-          >View All Projects</a
-        >
-      </div>
+    <!-- Content Sections Placeholder -->
+    <section id="solutions" class="container mt-5">
+      <h2 class="section-title mb-4">Our Solutions</h2>
+      <!-- Solution cards or panels will go here -->
     </section>
-    <!-- Footer -->
     <footer class="footer mt-5">
       <div class="footer-social mb-2">
-        <a
-          href="https://github.com/DavidRabinow"
-          target="_blank"
-          class="footer-icon"
-          ><i class="bi bi-github"></i
-        ></a>
-        <a
-          href="https://www.linkedin.com/in/david-rabinow-418b072a8/"
-          target="_blank"
-          class="footer-icon"
-          ><i class="bi bi-linkedin"></i
-        ></a>
-        <a href="mailto:drabinow2@gmail.com" class="footer-icon"
-          ><i class="bi bi-envelope"></i
-        ></a>
+        <a href="#" class="footer-icon"><i class="bi bi-linkedin"></i></a>
+        <a href="#" class="footer-icon"><i class="bi bi-envelope"></i></a>
       </div>
     </footer>
     <style>
@@ -442,152 +143,76 @@
         padding: 0;
         min-height: 100vh;
         font-family: "Inter", Arial, sans-serif;
-        background: linear-gradient(135deg, #0a0a0a 0%, #181818 100%);
+        background: linear-gradient(120deg, #181c1f 0%, #23272f 100%);
         color: #f5f6fa;
         overflow-x: hidden;
       }
-      .navbar {
+      .stux-navbar {
+        background: rgba(10, 10, 20, 0.98) !important;
+        font-size: 1.13rem;
+        padding-top: 0.7rem;
+        padding-bottom: 0.7rem;
+        border-bottom: 1.5px solid #23272f;
+        z-index: 1000;
+        min-height: 56px;
+      }
+      .stux-title {
         font-family: "Inter", Arial, sans-serif;
-        font-size: 1.1rem;
-        background: #111 !important;
-        border-bottom: 1px solid #23272f;
+        font-weight: 700;
+        font-size: 1.3rem;
+        letter-spacing: 2px;
+        color: #fff;
+        text-transform: uppercase;
+        margin-left: 0.2rem;
       }
-      .navbar-brand span {
-        color: #ececec;
-      }
-      .navbar-nav .nav-link.active,
-      .navbar-nav .nav-link:hover {
-        color: #ececec !important;
-      }
-      .landing-hero {
-        min-height: 100vh;
-        background: linear-gradient(
-            120deg,
-            rgba(20, 20, 22, 0.55) 0%,
-            rgba(30, 30, 34, 0.55) 100%
-          ),
-          url("assets/background.png");
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        position: relative;
-        z-index: 1;
-        overflow: hidden;
-      }
-      .hero-content {
-        position: relative;
-        z-index: 1;
-      }
-      .fade-in {
-        opacity: 0;
-        transform: translateY(30px);
-        animation: fadeInUp 1.2s cubic-bezier(0.23, 1, 0.32, 1) 0.1s forwards;
-      }
-      @keyframes fadeInUp {
-        to {
-          opacity: 1;
-          transform: none;
-        }
-      }
-      .hero-logo {
+      .stux-logo {
         border-radius: 50%;
-        padding: 0;
+        background: none;
+      }
+      .stux-hero {
+        min-height: 90vh;
+        background: none;
+        padding-top: 2.5rem;
+        padding-bottom: 2.5rem;
+      }
+      .stux-hero-logo {
         margin-bottom: 2rem;
       }
-      .hero-title {
-        font-family: "Lato", "Inter", Arial, sans-serif;
-        font-size: 3.8rem;
+      .stux-hero-title {
+        font-size: 2.5rem;
         font-weight: 900;
-        letter-spacing: 2.5px;
-        margin-bottom: 0.7rem;
+        letter-spacing: 1.5px;
+        margin-bottom: 1.2rem;
         color: #fff;
-        text-shadow: 0 0 12px #ececec22;
-        text-transform: uppercase;
       }
-      .hero-subtitle {
-        font-size: 1.5rem;
+      .stux-hero-subtitle {
+        font-size: 1.25rem;
         font-weight: 400;
         color: #ececec;
         margin-bottom: 2.2rem;
       }
-      .hero-btn {
-        border: 2px solid #ececec;
-        color: #ececec;
-        background: transparent;
+      .stux-hero-btn {
+        background: linear-gradient(90deg, #6a7cff 0%, #00eaff 100%);
+        border: none;
         font-weight: 700;
         font-size: 1.1rem;
         padding: 0.75rem 2.5rem;
         border-radius: 30px;
-        box-shadow: 0 2px 16px 0 rgba(236, 236, 236, 0.1);
-        transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+        color: #fff;
+        box-shadow: 0 2px 16px 0 rgba(79, 195, 247, 0.15);
+        transition: background 0.2s, box-shadow 0.2s;
       }
-      .hero-btn:hover {
-        background: #ececec;
-        color: #181818;
-        box-shadow: 0 4px 32px 0 rgba(236, 236, 236, 0.18);
+      .stux-hero-btn:hover {
+        background: linear-gradient(90deg, #00eaff 0%, #6a7cff 100%);
+        box-shadow: 0 4px 32px 0 rgba(79, 195, 247, 0.25);
+        color: #fff;
       }
       .section-title {
         font-size: 2.2rem;
         font-weight: 700;
-        color: #ececec;
+        color: #6a7cff;
         letter-spacing: 1px;
         text-align: center;
-        text-shadow: 0 0 8px #ececec33;
-      }
-      .project-card {
-        background: #181818;
-        border-radius: 18px;
-        box-shadow: 0 2px 16px 0 rgba(236, 236, 236, 0.08);
-        overflow: hidden;
-        display: flex;
-        flex-direction: row;
-        transition: box-shadow 0.2s, transform 0.2s, border 0.2s;
-        min-height: 220px;
-        border: 1.5px solid #23272f;
-      }
-      .project-card:hover {
-        box-shadow: 0 8px 32px 0 rgba(236, 236, 236, 0.18);
-        transform: translateY(-4px) scale(1.02);
-        border: 1.5px solid #ececec;
-      }
-      .project-img {
-        width: 180px;
-        height: 100%;
-        object-fit: cover;
-        border-right: 2px solid #111;
-        background: #111;
-      }
-      .project-info {
-        padding: 1.5rem 1.5rem 1.5rem 1.5rem;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        flex: 1;
-      }
-      .project-info h5 {
-        font-size: 1.3rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-        color: #ececec;
-        text-shadow: 0 0 6px #ececec33;
-      }
-      .project-info p {
-        color: #b0bec5;
-        font-size: 1rem;
-        margin-bottom: 1rem;
-      }
-      .btn-outline-primary {
-        border-color: #ececec;
-        color: #ececec;
-        border-radius: 20px;
-        font-weight: 600;
-        transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-        box-shadow: 0 0 0px #ececec00;
-      }
-      .btn-outline-primary:hover {
-        background: #ececec;
-        color: #181818;
-        box-shadow: 0 0 12px #ececec99;
       }
       .footer {
         text-align: center;
@@ -595,197 +220,6 @@
         color: #b0bec5;
         margin-top: 4rem;
         padding-bottom: 2rem;
-      }
-      @media (max-width: 991px) {
-        .project-card {
-          flex-direction: column;
-          min-height: unset;
-        }
-        .project-img {
-          width: 100% !important;
-          height: auto !important;
-          min-height: unset;
-          max-height: unset;
-          border-right: none;
-          border-bottom: 2px solid #111;
-          object-fit: contain;
-          background: #181818;
-          display: block;
-          border-radius: 18px 18px 0 0;
-        }
-        .project-info {
-          padding: 1rem;
-        }
-        .navbar-title {
-          font-size: 1rem;
-          letter-spacing: 1px;
-        }
-        .navbar-nav .nav-link {
-          padding-left: 0.3rem;
-          padding-right: 0.3rem;
-          font-size: 1.05rem;
-          padding-top: 0.7rem;
-          padding-bottom: 0.7rem;
-        }
-        .custom-navbar .navbar-collapse {
-          background: #111;
-          padding: 0.5rem 0;
-          border-radius: 0 0 12px 12px;
-          box-shadow: 0 8px 32px 0 rgba(236, 236, 236, 0.08);
-        }
-        .custom-dropdown {
-          width: 100vw;
-          min-width: 200px;
-          left: 0 !important;
-          right: auto !important;
-          border-radius: 0 0 12px 12px;
-          font-size: 1.05rem;
-        }
-        .custom-dropdown .dropdown-item {
-          padding: 1rem 1.5rem;
-          font-size: 1.05rem;
-        }
-      }
-      @media (max-width: 600px) {
-        .hero-title {
-          font-size: 2.2rem;
-        }
-        .hero-subtitle {
-          font-size: 1.1rem;
-        }
-        .section-title {
-          font-size: 1.3rem;
-        }
-        .project-info {
-          padding: 1rem;
-        }
-        .navbar-title {
-          font-size: 0.9rem;
-          letter-spacing: 0.5px;
-        }
-        .custom-navbar {
-          font-size: 0.98rem;
-          padding-top: 0.1rem;
-          padding-bottom: 0.1rem;
-        }
-        .navbar-nav .nav-link {
-          font-size: 0.98rem;
-          padding-top: 0.7rem;
-          padding-bottom: 0.7rem;
-        }
-        .custom-dropdown .dropdown-item {
-          padding: 1.1rem 1.2rem;
-          font-size: 0.98rem;
-        }
-        .custom-dropdown {
-          min-width: 100vw;
-          left: -24px !important;
-          right: -24px !important;
-        }
-        .navbar-brand img {
-          width: 32px !important;
-          height: 32px !important;
-        }
-        .project-img {
-          height: auto !important;
-          min-height: unset;
-          max-height: unset;
-        }
-      }
-      .custom-navbar {
-        background: rgba(10, 10, 10, 0.98) !important;
-        box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.18);
-        font-family: "Lato", "Inter", Arial, sans-serif;
-        font-size: 1.18rem;
-        padding-top: 0.85rem;
-        padding-bottom: 0.85rem;
-        border-bottom: 1.5px solid #23272f;
-        z-index: 1000;
-        min-height: 62px;
-      }
-      .navbar-title {
-        font-family: "Lato", "Inter", Arial, sans-serif;
-        font-weight: 400;
-        font-size: 1.25rem;
-        letter-spacing: 2px;
-        color: #fff;
-        text-transform: uppercase;
-        margin-left: 0.2rem;
-      }
-      .navbar-nav .nav-link {
-        color: #fff !important;
-        font-weight: 700;
-        letter-spacing: 1px;
-        padding-left: 0.7rem;
-        padding-right: 0.7rem;
-        transition: color 0.18s, border-bottom 0.18s;
-        border-bottom: 2px solid transparent;
-      }
-      .navbar-nav .nav-link:hover,
-      .navbar-nav .nav-link.active {
-        color: #ececec !important;
-        border-bottom: 2px solid #ececec;
-        background: none !important;
-      }
-      .navbar-toggler {
-        border: none;
-        background: none !important;
-        color: #ececec;
-      }
-      .navbar-toggler:focus {
-        outline: none;
-        box-shadow: none;
-      }
-      .custom-dropdown {
-        background: #181818 !important;
-        border: 1px solid #23272f;
-        box-shadow: 0 4px 24px 0 rgba(236, 236, 236, 0.08);
-      }
-      .custom-dropdown .dropdown-item {
-        color: #ececec;
-        font-weight: 500;
-        letter-spacing: 0.5px;
-        transition: background 0.18s, color 0.18s;
-      }
-      .custom-dropdown .dropdown-item:hover {
-        background: #23272f;
-        color: #fff;
-      }
-      .dropdown-divider {
-        border-top: 1px solid #23272f;
-      }
-      .project-grid-fadein {
-        animation: fadeInUp 1.2s cubic-bezier(0.23, 1, 0.32, 1) 0.2s both;
-      }
-      .project-card {
-        transition: box-shadow 0.2s, transform 0.2s, border 0.2s, filter 0.2s;
-      }
-      .project-card:hover {
-        box-shadow: 0 12px 32px 0 rgba(236, 236, 236, 0.18);
-        transform: translateY(-6px) scale(1.025);
-        border: 1.5px solid #ececec;
-        filter: brightness(1.04);
-      }
-      .project-desc {
-        font-size: 1.02rem;
-        color: #b0bec5;
-        margin-bottom: 1rem;
-        margin-top: 0.2rem;
-      }
-      .view-all-btn {
-        font-size: 1.1rem;
-        font-weight: 700;
-        border-radius: 30px;
-        padding: 0.7rem 2.5rem;
-        border: 2px solid #ececec;
-        color: #ececec;
-        background: transparent;
-        transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-      }
-      .view-all-btn:hover {
-        background: #ececec;
-        color: #181818;
-        box-shadow: 0 4px 32px 0 rgba(236, 236, 236, 0.18);
       }
       .footer-social {
         margin-bottom: 0.5rem;
@@ -799,15 +233,16 @@
       .footer-icon:hover {
         color: #fff;
       }
-      .hero-bg-svg {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        z-index: 0;
-        pointer-events: none;
-        overflow: hidden;
+      @media (max-width: 991px) {
+        .stux-hero-title {
+          font-size: 1.5rem;
+        }
+        .stux-hero-subtitle {
+          font-size: 1rem;
+        }
+        .section-title {
+          font-size: 1.3rem;
+        }
       }
     </style>
     <script src="script.js"></script>
