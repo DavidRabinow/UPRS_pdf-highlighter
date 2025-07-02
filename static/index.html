@@ -57,6 +57,44 @@
   </head>
 
   <body class="mb-5 stux-bg">
+    <style>
+      body.stux-bg {
+        min-height: 100vh;
+        background: url("/assets/nyc.jpg") no-repeat center center fixed;
+        background-size: cover;
+        position: relative;
+      }
+      .after-hero-bg {
+        background: #101018;
+        width: 100vw;
+        min-height: 100vh;
+      }
+      .stux-hero {
+        min-height: 90vh;
+        background: none;
+        padding-top: 2.5rem;
+        padding-bottom: 2.5rem;
+        position: relative;
+        z-index: 2;
+      }
+      /* Overlay to fade out background after hero */
+      .stux-hero::after {
+        content: "";
+        display: block;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -1px;
+        height: 120px;
+        background: linear-gradient(
+          180deg,
+          rgba(16, 16, 24, 0) 0%,
+          #101018 100%
+        );
+        z-index: 3;
+        pointer-events: none;
+      }
+    </style>
     <!-- Welcome Banner -->
     <div id="welcome-banner" class="stux-banner">
       <div class="stux-banner-content">
@@ -101,7 +139,7 @@
               <a class="nav-link" href="#solutions">Solutions</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#about">About</a>
+              <a class="nav-link" href="/about/">About</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/contact/">Contact</a>
@@ -126,91 +164,97 @@
         >Learn More</a
       >
     </section>
-    <!-- How We Help Enterprises Section -->
-    <section class="stux-help-section-pro container my-5 py-4">
-      <div
-        class="stux-help-row row align-items-center justify-content-center g-4"
-      >
-        <div class="col-lg-5 col-md-12 mb-4 mb-lg-0">
-          <div class="stux-help-heading">
-            <h2 class="stux-help-title-pro mb-3">
-              How we help enterprises<br />with AI development services
-            </h2>
-            <div class="stux-help-accent"></div>
-          </div>
-        </div>
-        <div class="col-lg-7 col-md-12">
-          <div class="row g-3">
-            <div class="col-12 col-md-6">
-              <div class="stux-feature-card">
-                <div class="stux-feature-icon"><i class="bi bi-cpu"></i></div>
-                <div>
-                  <h4 class="stux-feature-title">End-to-End AI Services</h4>
-                  <p class="stux-feature-desc">
-                    From strategy to deployment, we help you integrate and scale
-                    AI solutions that drive real business value.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div class="col-12 col-md-6">
-              <div class="stux-feature-card">
-                <div class="stux-feature-icon"><i class="bi bi-award"></i></div>
-                <div>
-                  <h4 class="stux-feature-title">22+ Years of Experience</h4>
-                  <p class="stux-feature-desc">
-                    Proven track record delivering 60+ AI and data science
-                    projects across healthcare, retail, finance, and more.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div class="col-12 col-md-6">
-              <div class="stux-feature-card">
-                <div class="stux-feature-icon">
-                  <i class="bi bi-people"></i>
-                </div>
-                <div>
-                  <h4 class="stux-feature-title">200+ AI & Data Experts</h4>
-                  <p class="stux-feature-desc">
-                    A world-class team of AI, ML, and data professionals
-                    delivering consulting and implementation services.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div class="col-12 col-md-6">
-              <div class="stux-feature-card">
-                <div class="stux-feature-icon">
-                  <i class="bi bi-shield-lock"></i>
-                </div>
-                <div>
-                  <h4 class="stux-feature-title">Multi-layered Security</h4>
-                  <p class="stux-feature-desc">
-                    Your systems and data are protected at every stage with
-                    enterprise-grade security and compliance.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div class="col-12">
-              <div class="stux-feature-card">
-                <div class="stux-feature-icon">
-                  <i class="bi bi-bar-chart-line"></i>
-                </div>
-                <div>
-                  <h4 class="stux-feature-title">Measurable Business Impact</h4>
-                  <p class="stux-feature-desc">
-                    Our solutions streamline operations, scale seamlessly, and
-                    deliver tangible results for your enterprise.
-                  </p>
-                </div>
-              </div>
+    <div class="after-hero-bg">
+      <!-- How We Help Enterprises Section -->
+      <section class="stux-help-section-pro container my-5 py-4">
+        <div
+          class="stux-help-row row align-items-center justify-content-center g-4"
+        >
+          <div class="col-lg-5 col-md-12 mb-4 mb-lg-0">
+            <div class="stux-help-heading">
+              <h2 class="stux-help-title-pro mb-3">
+                How I help enterprises<br />with AI development services
+              </h2>
+              <div class="stux-help-accent"></div>
             </div>
           </div>
+          <div class="col-lg-7 col-md-12">
+            <div class="row g-3">
+              <div class="col-12 col-md-6">
+                <div class="stux-feature-card">
+                  <div class="stux-feature-icon">
+                    <i class="bi bi-person-check"></i>
+                  </div>
+                  <div>
+                    <h4 class="stux-feature-title">Personalized Service</h4>
+                    <p class="stux-feature-desc">
+                      Work directly with the founder for tailored, hands-on AI
+                      solutions and support.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="stux-feature-card">
+                  <div class="stux-feature-icon">
+                    <i class="bi bi-lightning-charge"></i>
+                  </div>
+                  <div>
+                    <h4 class="stux-feature-title">Agile & Focused</h4>
+                    <p class="stux-feature-desc">
+                      Quick, flexible project delivery with a focus on your
+                      unique business needs.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="stux-feature-card">
+                  <div class="stux-feature-icon">
+                    <i class="bi bi-clock-history"></i>
+                  </div>
+                  <div>
+                    <h4 class="stux-feature-title">2 Years of AI Experience</h4>
+                    <p class="stux-feature-desc">
+                      Hands-on experience delivering AI and automation projects
+                      for real-world impact.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="stux-feature-card">
+                  <div class="stux-feature-icon">
+                    <i class="bi bi-shield-lock"></i>
+                  </div>
+                  <div>
+                    <h4 class="stux-feature-title">Security-Minded</h4>
+                    <p class="stux-feature-desc">
+                      Your data and systems are protected with best practices at
+                      every stage.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="stux-feature-card">
+                  <div class="stux-feature-icon">
+                    <i class="bi bi-bar-chart-line"></i>
+                  </div>
+                  <div>
+                    <h4 class="stux-feature-title">Measurable Results</h4>
+                    <p class="stux-feature-desc">
+                      Solutions that streamline operations, scale with your
+                      business, and deliver real value.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
     <!-- Content Sections Placeholder -->
     <section id="solutions" class="container mt-5">
       <h2 class="section-title mb-4">Our Solutions</h2>
