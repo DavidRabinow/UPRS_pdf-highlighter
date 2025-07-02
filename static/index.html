@@ -114,13 +114,6 @@
     <section
       class="stux-hero d-flex flex-column align-items-center justify-content-center text-center"
     >
-      <img
-        src="/assets/stux-logo.png"
-        alt="STUX Logo"
-        width="120"
-        height="120"
-        class="mb-4 stux-hero-logo"
-      />
       <h1 class="stux-hero-title">
         We specialize in AI integration and intelligent process automation.
       </h1>
@@ -133,6 +126,91 @@
         >Learn More</a
       >
     </section>
+    <!-- How We Help Enterprises Section -->
+    <section class="stux-help-section-pro container my-5 py-4">
+      <div
+        class="stux-help-row row align-items-center justify-content-center g-4"
+      >
+        <div class="col-lg-5 col-md-12 mb-4 mb-lg-0">
+          <div class="stux-help-heading">
+            <h2 class="stux-help-title-pro mb-3">
+              How we help enterprises<br />with AI development services
+            </h2>
+            <div class="stux-help-accent"></div>
+          </div>
+        </div>
+        <div class="col-lg-7 col-md-12">
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <div class="stux-feature-card">
+                <div class="stux-feature-icon"><i class="bi bi-cpu"></i></div>
+                <div>
+                  <h4 class="stux-feature-title">End-to-End AI Services</h4>
+                  <p class="stux-feature-desc">
+                    From strategy to deployment, we help you integrate and scale
+                    AI solutions that drive real business value.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="stux-feature-card">
+                <div class="stux-feature-icon"><i class="bi bi-award"></i></div>
+                <div>
+                  <h4 class="stux-feature-title">22+ Years of Experience</h4>
+                  <p class="stux-feature-desc">
+                    Proven track record delivering 60+ AI and data science
+                    projects across healthcare, retail, finance, and more.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="stux-feature-card">
+                <div class="stux-feature-icon">
+                  <i class="bi bi-people"></i>
+                </div>
+                <div>
+                  <h4 class="stux-feature-title">200+ AI & Data Experts</h4>
+                  <p class="stux-feature-desc">
+                    A world-class team of AI, ML, and data professionals
+                    delivering consulting and implementation services.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="stux-feature-card">
+                <div class="stux-feature-icon">
+                  <i class="bi bi-shield-lock"></i>
+                </div>
+                <div>
+                  <h4 class="stux-feature-title">Multi-layered Security</h4>
+                  <p class="stux-feature-desc">
+                    Your systems and data are protected at every stage with
+                    enterprise-grade security and compliance.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="stux-feature-card">
+                <div class="stux-feature-icon">
+                  <i class="bi bi-bar-chart-line"></i>
+                </div>
+                <div>
+                  <h4 class="stux-feature-title">Measurable Business Impact</h4>
+                  <p class="stux-feature-desc">
+                    Our solutions streamline operations, scale seamlessly, and
+                    deliver tangible results for your enterprise.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
     <!-- Content Sections Placeholder -->
     <section id="solutions" class="container mt-5">
       <h2 class="section-title mb-4">Our Solutions</h2>
@@ -140,8 +218,16 @@
     </section>
     <footer class="footer mt-5">
       <div class="footer-social mb-2">
-        <a href="#" class="footer-icon"><i class="bi bi-linkedin"></i></a>
-        <a href="#" class="footer-icon"><i class="bi bi-envelope"></i></a>
+        <a
+          href="https://www.linkedin.com/company/107751293/"
+          class="footer-icon"
+          target="_blank"
+          rel="noopener"
+          ><i class="bi bi-linkedin"></i
+        ></a>
+        <a href="mailto:drabinow2@gmail.com" class="footer-icon"
+          ><i class="bi bi-envelope"></i
+        ></a>
       </div>
     </footer>
     <style>
@@ -360,6 +446,84 @@
         .stux-banner-close {
           right: 1rem;
           top: 0.7rem;
+        }
+      }
+      .stux-help-section-pro {
+        background: none;
+        width: 100%;
+        margin-bottom: 2rem;
+      }
+      .stux-help-row {
+        width: 100%;
+        margin: 0 auto;
+        max-width: 1200px;
+      }
+      .stux-help-heading {
+        padding-left: 0.5rem;
+      }
+      .stux-help-title-pro {
+        font-size: 2.2rem;
+        font-weight: 900;
+        color: #fff;
+        letter-spacing: 0.01em;
+        line-height: 1.18;
+        margin-bottom: 0.7rem;
+      }
+      .stux-help-accent {
+        width: 80px;
+        height: 4px;
+        background: linear-gradient(90deg, #ff6600 0%, #ffb347 100%);
+        border-radius: 2px;
+        margin-top: 0.2rem;
+        margin-bottom: 0.5rem;
+      }
+      .stux-feature-card {
+        background: rgba(30, 30, 40, 0.98);
+        border-radius: 16px;
+        box-shadow: 0 2px 16px 0 rgba(0, 0, 0, 0.1);
+        padding: 1.2rem 1.1rem 1.1rem 1.1rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 1.1rem;
+        margin-bottom: 0.5rem;
+        min-height: 120px;
+        transition: box-shadow 0.2s;
+      }
+      .stux-feature-card:hover {
+        box-shadow: 0 6px 32px 0 rgba(255, 102, 0, 0.1);
+      }
+      .stux-feature-icon {
+        font-size: 2.1rem;
+        color: #ff6600;
+        flex-shrink: 0;
+        margin-top: 0.1rem;
+      }
+      .stux-feature-title {
+        font-size: 1.13rem;
+        font-weight: 800;
+        color: #fff;
+        margin-bottom: 0.2rem;
+      }
+      .stux-feature-desc {
+        color: #e0e0e0;
+        font-size: 1rem;
+        margin-bottom: 0;
+        line-height: 1.6;
+      }
+      @media (max-width: 900px) {
+        .stux-help-row {
+          flex-direction: column;
+          max-width: 98vw;
+        }
+        .stux-help-title-pro {
+          font-size: 1.3rem;
+        }
+        .stux-feature-card {
+          font-size: 0.98rem;
+          padding: 1rem 0.7rem 0.9rem 0.7rem;
+        }
+        .stux-feature-icon {
+          font-size: 1.4rem;
         }
       }
     </style>
