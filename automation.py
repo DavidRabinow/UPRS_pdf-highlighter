@@ -14,6 +14,9 @@ from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 import time
 import logging
+from selenium.webdriver.common.action_chains import ActionChains
+import difflib
+from datetime import datetime
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -78,8 +81,11 @@ class SeleniumAutomation:
         ]
         
         # PRECISE selectors for the bright green "Search" button
-        # These selectors target the small bright green "Search" button positioned below the input field
+        # Highest priority: button directly after the 'File' label
         self.green_search_button_selectors = [
+            # Most precise selector as requested
+            "//label[text()='File']/following::button[contains(text(),'Search')][1]",
+
             # Most specific selectors for bright green "Search" button with exact text
             "//button[text()='Search' and contains(@class, 'green')]",
             "//button[text()='Search' and contains(@class, 'btn-success')]",
@@ -303,12 +309,7 @@ class SeleniumAutomation:
     def find_and_fill_file_search_field(self, search_text):
         """
         Find the PRECISE search field under "File" with dropdown arrow and fill it with the provided text.
-        
-        This method uses precise selectors to locate the specific field that:
-        - Is positioned under the "File" label
-        - Shows "select..." placeholder text
-        - Has a dropdown arrow on the right side
-        
+        After entering the text, locate and click the correct green 'Search' button using the confirmed XPath.
         Args:
             search_text (str): The text to enter in the search field
         """
@@ -357,125 +358,439 @@ class SeleniumAutomation:
             search_field.send_keys(search_text)
             logger.info(f"✅ SUCCESS: Successfully entered search text: '{search_text}'")
             
+            # Wait for dropdown suggestion to appear
+            logger.info("Waiting 1 second for dropdown suggestion to appear...")
+            time.sleep(1)
+            
+            # Locate and click the correct green 'Search' button using the confirmed XPath
+            logger.info("Waiting for the correct green 'Search' button to be clickable using XPath: //*[@id=\"btnSearchProps\"]")
+            from selenium.webdriver.support.ui import WebDriverWait
+            from selenium.webdriver.support import expected_conditions as EC
+            wait = WebDriverWait(self.driver, 10)
+            try:
+                search_button = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="btnSearchProps"]')))
+                logger.info("✅ Correct green 'Search' button is clickable. Clicking now...")
+                self.driver.execute_script("arguments[0].style.border='3px solid red'", search_button)
+                time.sleep(1)
+                search_button.click()
+                logger.info("✅ Clicked the green 'Search' button successfully.")
+            except Exception as e:
+                logger.error(f"❌ ERROR: Could not find or click the green 'Search' button: {e}")
+                raise Exception(f"Green 'Search' button interaction failed: {e}")
+            
         except Exception as interaction_error:
             logger.error(f"❌ ERROR: Failed to interact with search field: {interaction_error}")
             raise Exception(f"Search field interaction failed: {interaction_error}")
         
-        # Wait a moment for the text to be entered
-        time.sleep(2)
-        logger.info(f"✅ Search text entry completed using selector: {used_selector}")
+        logger.info(f"✅ Search text entry and Search button click completed using selector: {used_selector}")
 
-    def find_and_click_green_search_button(self):
+    def click_first_payee_and_store_name(self):
         """
-        Find and click the PRECISE bright green "Search" button positioned below the input field.
-        
-        This method locates the small bright green "Search" button that is:
-        - Bright green with white text "Search"
-        - Horizontally aligned slightly to the left of the text input field
-        - Vertically positioned below the input field where text was typed
-        - Visually distinct from the dropdown suggestion list
+        Locate all payee rows using XPath //*[@id="propsGrid"]/tbody/tr, extract only the Payee Name from the correct cell in the first row,
+        store it in a variable, print it, and double-click the row. Do not reuse the element after navigation.
         """
-        logger.info("=== SEARCHING FOR PRECISE BRIGHT GREEN 'SEARCH' BUTTON ===")
-        logger.info("Looking for small bright green 'Search' button positioned below the input field")
-        logger.info("Button should be bright green with white text 'Search'")
-        logger.info("Positioned horizontally to the left of the input field and vertically below it")
-        logger.info("Visually distinct from any dropdown suggestion list")
-        
-        # Try to find the green "Search" button using PRECISE selectors
-        search_button_found = False
-        used_selector = None
-        
-        for i, selector in enumerate(self.green_search_button_selectors):
-            try:
-                logger.info(f"Trying selector {i+1}/{len(self.green_search_button_selectors)}: {selector}")
-                
-                if selector.startswith("//"):
-                    search_button = self.driver.find_element(By.XPATH, selector)
-                else:
-                    search_button = self.driver.find_element(By.CSS_SELECTOR, selector)
-                
-                # Verify this is the correct "Search" button
-                is_visible = search_button.is_displayed()
-                is_enabled = search_button.is_enabled()
-                button_text = search_button.text.strip() if search_button.text else ''
-                button_class = search_button.get_attribute('class') or ''
-                button_type = search_button.get_attribute('type') or ''
-                button_value = search_button.get_attribute('value') or ''
-                
-                logger.info(f"Found potential 'Search' button:")
-                logger.info(f"  - Text: '{button_text}'")
-                logger.info(f"  - Class: '{button_class}'")
-                logger.info(f"  - Type: '{button_type}'")
-                logger.info(f"  - Value: '{button_value}'")
-                logger.info(f"  - Visible: {is_visible}")
-                logger.info(f"  - Enabled: {is_enabled}")
-                
-                # Verify this is the correct "Search" button
-                if is_visible and is_enabled:
-                    # Check if it's a "Search" button (exact text match preferred)
-                    if button_text == 'Search' or button_value == 'Search':
-                        logger.info(f"✅ CONFIRMED: Found the correct bright green 'Search' button with selector: {selector}")
-                        logger.info(f"Button text: '{button_text}', Class: '{button_class}'")
-                        
-                        # Click the "Search" button
-                        logger.info("Clicking the bright green 'Search' button...")
-                        search_button.click()
-                        logger.info("✅ SUCCESS: Successfully clicked bright green 'Search' button")
-                        
-                        search_button_found = True
-                        used_selector = selector
-                        break
-                    elif 'search' in button_text.lower() or 'search' in button_value.lower():
-                        logger.info(f"✅ CONFIRMED: Found search button with text '{button_text}' using selector: {selector}")
-                        logger.info(f"Button text: '{button_text}', Class: '{button_class}'")
-                        
-                        # Click the search button
-                        logger.info("Clicking the search button...")
-                        search_button.click()
-                        logger.info("✅ SUCCESS: Successfully clicked search button")
-                        
-                        search_button_found = True
-                        used_selector = selector
-                        break
-                    else:
-                        logger.info(f"❌ Button found but text '{button_text}' doesn't match 'Search' - skipping")
-                else:
-                    logger.info(f"❌ Button found but not visible/enabled - skipping")
-                    
-            except NoSuchElementException:
-                logger.debug(f"Selector not found: {selector}")
-                continue
-            except Exception as e:
-                logger.warning(f"Error with search button selector '{selector}': {e}")
-                continue
-        
-        if not search_button_found:
-            logger.error("❌ CRITICAL ERROR: Could not find the bright green 'Search' button")
-            logger.error("The bright green 'Search' button should be positioned below the input field")
-            logger.error("Expected: Small bright green button with white text 'Search'")
-            logger.error("Positioned horizontally to the left of the input field and vertically below it")
-            logger.error("Visually distinct from any dropdown suggestion list")
-            logger.error("Please verify the page structure and update selectors if needed")
-            raise Exception("Bright green 'Search' button not found - automation cannot continue")
-        
-        # Wait a moment for the search to execute
-        time.sleep(3)
-        logger.info(f"✅ 'Search' button click completed using selector: {used_selector}")
+        from selenium.webdriver.common.action_chains import ActionChains
+        from selenium.webdriver.support.ui import WebDriverWait
+        from selenium.webdriver.support import expected_conditions as EC
+        logger.info("Waiting for payee grid rows to be present...")
+        wait = WebDriverWait(self.driver, 20)
+        try:
+            payee_rows = wait.until(EC.presence_of_all_elements_located((By.XPATH, '//*[@id="propsGrid"]/tbody/tr')))
+            logger.info(f"✅ Found {len(payee_rows)} payee rows in the grid.")
+            if not payee_rows:
+                raise Exception("No payee rows found in the grid.")
+            first_row = payee_rows[0]
+            # Extract only the Payee Name from the correct cell (replace N with the correct column index, e.g., 2 for the second cell)
+            payee_name_cell = first_row.find_element(By.XPATH, ".//td[2]")  # <-- Change 2 to the correct column if needed
+            payee_name = payee_name_cell.text.strip()
+            logger.info(f"✅ Extracted Payee Name from grid cell: '{payee_name}' (type: {type(payee_name)})")
+            print(f"Payee Name: {payee_name}")
+            # Double-click the row (do not use the element after this)
+            ActionChains(self.driver).double_click(first_row).perform()
+            logger.info(f"✅ Double-clicked first payee row.")
+            return payee_name  # Return the string, not the element
+        except Exception as e:
+            logger.error(f"❌ ERROR: Could not find or double-click a payee row: {e}")
+            raise
+
+    def find_and_click_best_bizfile_match(self, payee_name):
+        """
+        After searching BizFileOnline, wait for results, check if any are present, print/log each result's text and similarity score,
+        and click the best match. If no results, print a warning and exit the step.
+        """
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.support.ui import WebDriverWait
+        from selenium.webdriver.support import expected_conditions as EC
+        import difflib
+        import time
+        wait = WebDriverWait(self.driver, 15)
+        try:
+            logger.info("Waiting 2 seconds for BizFileOnline search results to appear...")
+            time.sleep(2)
+            logger.info("Waiting for BizFileOnline search results to be present (//a[contains(@class, 'entityName')])...")
+            results = wait.until(
+                EC.presence_of_all_elements_located((By.XPATH, "//a[contains(@class, 'entityName')]"))
+            )
+            if not results:
+                logger.warning("⚠️ No search results found on BizFileOnline.")
+                print("No search results found on BizFileOnline.")
+                return
+            logger.info(f"✅ Found {len(results)} clickable search results.")
+            best_score = -1
+            best_elem = None
+            best_text = None
+            for elem in results:
+                result_text = elem.text.strip()
+                score = difflib.SequenceMatcher(None, payee_name.lower(), result_text.lower()).ratio()
+                logger.info(f"Result: '{result_text}' | Similarity score: {score:.3f}")
+                print(f"Result: '{result_text}' | Similarity score: {score:.3f}")
+                if score > best_score:
+                    best_score = score
+                    best_elem = elem
+                    best_text = result_text
+            if best_elem is not None:
+                logger.info(f"✅ Clicking best match: '{best_text}' (score: {best_score:.3f})")
+                print(f"Best match: '{best_text}' (score: {best_score:.3f})")
+                best_elem.click()
+            else:
+                logger.warning("⚠️ No suitable search result found to click.")
+                print("No suitable search result found to click.")
+        except Exception as e:
+            logger.error(f"❌ ERROR: Could not process BizFileOnline search results: {e}")
+            raise
+
+    def find_and_click_newest_matching_bizfile_result(self, payee_name):
+        """
+        After BizFileOnline search, locate all result rows, extract Entity Name and Filing Date, compare to Payee name,
+        and click the newest matching result. Print/log which result was clicked and its date.
+        """
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.support.ui import WebDriverWait
+        from selenium.webdriver.support import expected_conditions as EC
+        import difflib
+        from datetime import datetime
+        import time
+        wait = WebDriverWait(self.driver, 15)
+        try:
+            logger.info("Waiting 2 seconds for BizFileOnline search results to appear...")
+            time.sleep(2)
+            logger.info("Waiting for BizFileOnline result rows to be present (//table//tr[contains(@class, 'result-row')])...")
+            rows = wait.until(
+                EC.presence_of_all_elements_located((By.XPATH, "//table//tr[contains(@class, 'result-row')]"))
+            )
+            if not rows:
+                logger.warning("⚠️ No result rows found on BizFileOnline.")
+                print("No result rows found on BizFileOnline.")
+                return
+            logger.info(f"✅ Found {len(rows)} result rows.")
+            best_score = -1
+            newest_date = None
+            best_row = None
+            best_entity = None
+            best_date_str = None
+            for row in rows:
+                try:
+                    entity_name = row.find_element(By.XPATH, ".//td[1]").text.strip()
+                    filing_date_str = row.find_element(By.XPATH, ".//td[2]").text.strip()
+                    score = difflib.SequenceMatcher(None, payee_name.lower(), entity_name.lower()).ratio()
+                    logger.info(f"Row: Entity='{entity_name}', Filing Date='{filing_date_str}', Similarity={score:.3f}")
+                    print(f"Row: Entity='{entity_name}', Filing Date='{filing_date_str}', Similarity={score:.3f}")
+                    # Parse date (assume MM/DD/YYYY or similar)
+                    try:
+                        filing_date = datetime.strptime(filing_date_str, "%m/%d/%Y")
+                    except Exception:
+                        filing_date = None
+                    # Choose the newest matching result (highest score, then newest date)
+                    if score > 0.8:  # Only consider strong matches
+                        if (best_row is None or (filing_date and newest_date and filing_date > newest_date) or (filing_date and newest_date is None)):
+                            best_score = score
+                            best_row = row
+                            best_entity = entity_name
+                            best_date_str = filing_date_str
+                            newest_date = filing_date
+                except Exception as row_e:
+                    logger.warning(f"Could not process a result row: {row_e}")
+            if best_row is not None:
+                logger.info(f"✅ Clicking newest matching result: '{best_entity}' (Filing Date: {best_date_str})")
+                print(f"Clicked: '{best_entity}' (Filing Date: {best_date_str})")
+                best_row.click()
+            else:
+                logger.warning("⚠️ No suitable matching result found to click.")
+                print("No suitable matching result found to click.")
+        except Exception as e:
+            logger.error(f"❌ ERROR: Could not process BizFileOnline result rows: {e}")
+            raise
+
+    def find_and_click_most_recent_filing_bizfile_result(self):
+        """
+        After BizFileOnline search, scroll down, locate all result rows (//table//tr[td]),
+        if one result, click the blue row's white arrow button. If multiple, extract Initial Filing Date from 2nd column,
+        click the white arrow in the row with the newest date. Print total results, all dates, and which was clicked.
+        """
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.support.ui import WebDriverWait
+        from selenium.webdriver.support import expected_conditions as EC
+        from datetime import datetime
+        import time
+        wait = WebDriverWait(self.driver, 15)
+        try:
+            logger.info("Scrolling down to ensure all BizFileOnline results are visible...")
+            self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            logger.info("Waiting 2 seconds for BizFileOnline search results to appear...")
+            time.sleep(2)
+            logger.info("Waiting for BizFileOnline result rows to be present (//table//tr[td])...")
+            rows = wait.until(
+                EC.presence_of_all_elements_located((By.XPATH, "//table//tr[td]"))
+            )
+            num_results = len(rows)
+            logger.info(f"✅ Found {num_results} result row(s).")
+            print(f"Found {num_results} result row(s).")
+            if num_results == 0:
+                logger.warning("⚠️ No result rows found on BizFileOnline.")
+                print("No result rows found on BizFileOnline.")
+                return
+            if num_results == 1:
+                logger.info("Only one result found. Clicking the blue row's white arrow button immediately.")
+                print("Only one result found. Clicking the blue row's white arrow button immediately.")
+                try:
+                    arrow = rows[0].find_element(By.XPATH, ".//button | .//a")
+                    arrow.click()
+                    logger.info("✅ Clicked the white arrow button in the only result row.")
+                    print("Clicked the white arrow button in the only result row.")
+                except Exception as click_e:
+                    logger.error(f"❌ ERROR: Could not click arrow/button in the row: {click_e}")
+                    print(f"Could not click arrow/button in the row: {click_e}")
+                return
+            # Multiple results: extract Filing Dates and click the newest
+            most_recent_date = None
+            most_recent_row = None
+            most_recent_date_str = None
+            all_dates = []
+            for row in rows:
+                try:
+                    date_str = row.find_element(By.XPATH, ".//td[2]").text.strip()
+                    all_dates.append(date_str)
+                    logger.info(f"Row Filing Date: {date_str}")
+                    print(f"Row Filing Date: {date_str}")
+                    try:
+                        date_val = datetime.strptime(date_str, "%m/%d/%Y")
+                    except Exception:
+                        date_val = None
+                    if date_val and (most_recent_date is None or date_val > most_recent_date):
+                        most_recent_date = date_val
+                        most_recent_row = row
+                        most_recent_date_str = date_str
+                except Exception as row_e:
+                    logger.warning(f"Could not process a result row: {row_e}")
+            logger.info(f"All Filing Dates: {all_dates}")
+            print(f"All Filing Dates: {all_dates}")
+            if most_recent_row is not None:
+                try:
+                    arrow = most_recent_row.find_element(By.XPATH, ".//button | .//a")
+                    logger.info(f"✅ Clicking arrow/button for result with most recent Filing Date: {most_recent_date_str}")
+                    print(f"Clicked result with most recent Filing Date: {most_recent_date_str}")
+                    arrow.click()
+                except Exception as click_e:
+                    logger.error(f"❌ ERROR: Could not click arrow/button in the row: {click_e}")
+                    print(f"Could not click arrow/button in the row: {click_e}")
+            else:
+                logger.warning("⚠️ No suitable result with a valid date found to click.")
+                print("No suitable result with a valid date found to click.")
+        except Exception as e:
+            logger.error(f"❌ ERROR: Could not process BizFileOnline result rows: {e}")
+            raise
+
+    def find_and_click_exact_or_newest_entity(self, payee_name):
+        """
+        After BizFileOnline search, wait for results, scroll, and:
+        - Identify the large blue rectangular row (by class or first result)
+        - Click the <a> in the first column of that row
+        - If only one result, click it without comparing text
+        - If multiple, compare business names, click exact match, else fallback to newest Initial Filing Date
+        """
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.support.ui import WebDriverWait
+        from selenium.webdriver.support import expected_conditions as EC
+        wait = WebDriverWait(self.driver, 15)
+        try:
+            logger.info("Waiting for at least one result row (//table//tr[td])...")
+            rows = wait.until(
+                EC.presence_of_all_elements_located((By.XPATH, "//table//tr[td]"))
+            )
+            num_rows = len(rows)
+            logger.info(f"Found {num_rows} result row(s).")
+            print(f"Found {num_rows} result row(s).")
+            # Scroll after results are visible
+            self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            # Try to identify the blue row (by class or just use the first row if only one)
+            blue_rows = [row for row in rows if 'blue' in (row.get_attribute('class') or '').lower()]
+            if not blue_rows and num_rows == 1:
+                blue_rows = [rows[0]]
+            if not blue_rows:
+                logger.warning("No blue row found, using all result rows for logic.")
+                blue_rows = rows
+            if len(blue_rows) == 1:
+                logger.info("Only one blue row. Clicking the <a> in the first column.")
+                print("Only one blue row. Clicking the <a> in the first column.")
+                try:
+                    link = blue_rows[0].find_element(By.XPATH, ".//td[1]//a")
+                    link.click()
+                    logger.info("✅ Clicked the only entity link in blue row.")
+                    print("Clicked the only entity link in blue row.")
+                except Exception as click_e:
+                    logger.error(f"❌ ERROR: Could not click entity link in the blue row: {click_e}")
+                    print(f"Could not click entity link in the blue row: {click_e}")
+                return
+            # Multiple blue rows or multiple results: try for perfect match
+            found_exact = False
+            for row in blue_rows:
+                try:
+                    link = row.find_element(By.XPATH, ".//td[1]//a")
+                    text = link.text.strip()
+                    entity_name = text.split('(')[0].strip().lower()
+                    search_name = payee_name.strip().lower()
+                    logger.info(f"Entity link: '{entity_name}' vs search: '{search_name}'")
+                    if entity_name == search_name:
+                        logger.info(f"✅ Perfect entity name match found: '{text}'. Clicking link.")
+                        print(f"Perfect entity name match found: '{text}'. Clicking link.")
+                        link.click()
+                        found_exact = True
+                        return
+                except Exception as row_e:
+                    logger.warning(f"Could not process a blue row for entity link: {row_e}")
+            if not found_exact:
+                logger.info("No perfect entity name match found in blue rows. Proceeding to Filing Date fallback.")
+                print("No perfect entity name match found in blue rows. Proceeding to Filing Date fallback.")
+                self.find_and_click_most_recent_filing_bizfile_result()
+        except Exception as e:
+            logger.error(f"❌ ERROR: Could not process entity name links or fallback: {e}")
+            raise
+
+    def search_bizfile_and_handle_results(self, payee_name):
+        """
+        On BizFileOnline:
+        - Type payee_name, press Enter to search (never click any green button)
+        - Wait for at least one result row (//table//tr[td])
+        - Scroll down
+        - Locate clickable entity name links (//table//tr//td[1]//a)
+        - If one result, click it
+        - If multiple, try for exact match, else fallback to newest Initial Filing Date
+        """
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.common.keys import Keys
+        from selenium.webdriver.support.ui import WebDriverWait
+        from selenium.webdriver.support import expected_conditions as EC
+        wait = WebDriverWait(self.driver, 15)
+        try:
+            # Find the search input, clear, and type payee_name, then press Enter
+            logger.info("Locating BizFileOnline search input...")
+            search_input = wait.until(
+                EC.presence_of_element_located((By.XPATH, "//input[@id='SearchCriteria']"))
+            )
+            search_input.clear()
+            search_input.send_keys(payee_name)
+            search_input.send_keys(Keys.ENTER)
+            logger.info(f"Typed '{payee_name}' and pressed Enter.")
+            print(f"Typed '{payee_name}' and pressed Enter.")
+            # Wait for at least one result row
+            logger.info("Waiting for at least one result row (//table//tr[td])...")
+            rows = wait.until(
+                EC.presence_of_all_elements_located((By.XPATH, "//table//tr[td]"))
+            )
+            num_rows = len(rows)
+            logger.info(f"Found {num_rows} result row(s).")
+            print(f"Found {num_rows} result row(s).")
+            # Scroll after results are visible
+            self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            # Locate all clickable entity name links
+            links = self.driver.find_elements(By.XPATH, "//table//tr//td[1]//a")
+            if not links:
+                logger.error("❌ No clickable entity name links found.")
+                print("No clickable entity name links found.")
+                return
+            if len(links) == 1:
+                logger.info("Only one result. Clicking the entity name link.")
+                print("Only one result. Clicking the entity name link.")
+                try:
+                    links[0].click()
+                    logger.info("✅ Clicked the only entity link.")
+                    print("Clicked the only entity link.")
+                except Exception as click_e:
+                    logger.error(f"❌ ERROR: Could not click entity link: {click_e}")
+                    print(f"Could not click entity link: {click_e}")
+                return
+            # Multiple results: try for perfect match
+            found_exact = False
+            search_name = payee_name.strip().lower()
+            for link in links:
+                text = link.text.strip()
+                entity_name = text.split('(')[0].strip().lower()
+                logger.info(f"Entity link: '{entity_name}' vs search: '{search_name}'")
+                if entity_name == search_name:
+                    logger.info(f"✅ Perfect entity name match found: '{text}'. Clicking link.")
+                    print(f"Perfect entity name match found: '{text}'. Clicking link.")
+                    link.click()
+                    found_exact = True
+                    return
+            if not found_exact:
+                logger.info("No perfect entity name match found. Proceeding to Filing Date fallback.")
+                print("No perfect entity name match found. Proceeding to Filing Date fallback.")
+                self.find_and_click_most_recent_filing_bizfile_result()
+        except Exception as e:
+            logger.error(f"❌ ERROR: BizFileOnline search/handle failed: {e}")
+            print(f"BizFileOnline search/handle failed: {e}")
+            raise
 
     def perform_custom_automation(self, search_text):
         """
-        Perform the custom automation steps: type into the search field and click the green search button.
+        Perform the custom automation steps: type into the search field, click the correct green Search button,
+        then extract the Payee name from the first row, double-click it, immediately navigate to bizfileonline,
+        and paste the Payee name into the search field. Only after this, pause or keep the browser open.
         Args:
             search_text (str): The text to search for in the field
         """
-        logger.info("=== PERFORMING CUSTOM AUTOMATION STEPS (TYPE + GREEN BUTTON) ===")
+        logger.info("=== PERFORMING CUSTOM AUTOMATION STEPS (TYPE + CLICK SEARCH BUTTON + PAYEE NAME EXTRACTION + BIZFILE SEARCH) ===")
         logger.info(f"Automation will target the search field under 'File' label")
         logger.info(f"Search text to enter: '{search_text}'")
         self.find_and_fill_file_search_field(search_text)
-        self.find_and_click_green_search_button()
-        logger.info("=== SEARCH FIELD ENTRY AND GREEN BUTTON CLICK COMPLETED ===")
+        logger.info("=== SEARCH FIELD ENTRY AND SEARCH BUTTON CLICK COMPLETED ===")
         # Wait for results to load (optional, for user observation)
-        time.sleep(5)
+        time.sleep(2)
+        payee_name = self.click_first_payee_and_store_name()
+        logger.info(f"=== PAYEE NAME EXTRACTED AND ROW DOUBLE-CLICKED: '{payee_name}' ===")
+        # Immediately navigate to bizfileonline and input the Payee name
+        logger.info("Navigating to bizfileonline.sos.ca.gov/search/business for Payee name search...")
+        self.driver.get("https://bizfileonline.sos.ca.gov/search/business")
+        wait = WebDriverWait(self.driver, 15)
+        try:
+            # Locate the business search input field using XPath //*[@id='root']//input
+            logger.info("Waiting for the business search input field to be present (//*[@id='root']//input)...")
+            search_input = wait.until(
+                EC.presence_of_element_located((By.XPATH, "//*[@id='root']//input"))
+            )
+            logger.info("✅ Business search input field is present and ready.")
+            # Clear the input field, type the Payee name, immediately send Enter/Return key to trigger search
+            search_input.clear()
+            search_input.send_keys(payee_name)
+            logger.info(f"✅ Typed Payee name into search: '{payee_name}'")
+            search_input.send_keys(Keys.RETURN)
+            logger.info("✅ Sent Enter/Return key to trigger the search.")
+            # Wait exactly 4 seconds after pressing Enter to allow search results to load
+            logger.info("Waiting exactly 4 seconds for search results to load...")
+            time.sleep(4)
+            # Scroll down the page to bring results into view
+            logger.info("Scrolling down to bring search results into view...")
+            self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            # Call self.find_and_click_exact_or_newest_entity(payee_name) to handle result clicking
+            self.find_and_click_exact_or_newest_entity(payee_name)
+        except Exception as e:
+            logger.error(f"❌ ERROR: Could not complete BizFileOnline automation: {e}")
+            print(f"BizFileOnline automation failed: {e}")
+            raise
+        logger.info(f"=== PAYEE NAME SEARCHED ON BIZFILE: '{payee_name}' ===")
+        # Now optionally pause or keep browser open for manual review
+        logger.info("Automation steps complete. Browser will remain open for manual review.")
+        time.sleep(30)
 
     def cleanup(self):
         """
@@ -541,4 +856,126 @@ class SeleniumAutomation:
             raise
         finally:
             # Always clean up
-            self.cleanup() 
+            self.cleanup()
+
+    def search_payee_on_bizfile(self, payee_name):
+        """
+        1. Navigate to BizFileOnline explicitly
+        2. Wait for the business search input field to be present (//*[@id='root']//input)
+        3. Once present, type the Payee name (example: "100 BILLABLE DAYS LLC")
+        4. Immediately after typing, send the Enter/Return key to the input field to trigger the search
+        5. Wait exactly 4 seconds after pressing Enter for results to load
+        6. Scroll down to bring results into view
+        7. Locate all result rows using XPath //table//tr[td]
+        8. If exactly one result: extract entity name, if exact match click immediately
+        9. If multiple results: loop through rows, find exact match, else fall back to newest Filing Date
+        """
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.common.keys import Keys
+        from selenium.webdriver.support.ui import WebDriverWait
+        from selenium.webdriver.support import expected_conditions as EC
+        import time
+        logger.info("Navigating to BizFileOnline: https://bizfileonline.sos.ca.gov/search/business")
+        self.driver.get("https://bizfileonline.sos.ca.gov/search/business")
+        wait = WebDriverWait(self.driver, 15)
+        try:
+            # Wait for the business search input field to be present
+            logger.info("Waiting for the business search input field to be present (//*[@id='root']//input)...")
+            search_input = wait.until(
+                EC.presence_of_element_located((By.XPATH, "//*[@id='root']//input"))
+            )
+            logger.info("✅ Business search input field is present and ready.")
+            # Once present, type the Payee name (example: "100 BILLABLE DAYS LLC")
+            search_input.clear()
+            search_input.send_keys(payee_name)
+            logger.info(f"✅ Typed Payee name into search: '{payee_name}'")
+            # Immediately after typing, send the Enter/Return key to the input field to trigger the search
+            search_input.send_keys(Keys.RETURN)
+            logger.info("✅ Sent Enter/Return key to trigger the search.")
+            # Wait exactly 4 seconds after pressing Enter for results to load
+            logger.info("Waiting exactly 4 seconds for search results to load...")
+            time.sleep(4)
+            # Scroll down to bring results into view
+            logger.info("Scrolling down to bring results into view...")
+            self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            # After scrolling, locate all result rows using XPath //table//tr[td]
+            logger.info("Locating all result rows using XPath //table//tr[td]...")
+            rows = self.driver.find_elements(By.XPATH, "//table//tr[td]")
+            num_rows = len(rows)
+            logger.info(f"Found {num_rows} result row(s).")
+            print(f"Found {num_rows} result row(s).")
+            if num_rows == 0:
+                logger.warning("No result rows found.")
+                print("No result rows found.")
+                return
+            # If there is exactly one result
+            if num_rows == 1:
+                logger.info("Exactly one result found. Extracting entity name...")
+                print("Exactly one result found. Extracting entity name...")
+                try:
+                    # Extract the visible entity name from that row (text from the blue button, link, or name area)
+                    row = rows[0]
+                    # Try to find clickable elements in the row (button, a, or other clickable elements)
+                    clickable_elements = row.find_elements(By.XPATH, ".//button | .//a | .//*[contains(@class, 'clickable')] | .//*[contains(@class, 'blue')]")
+                    if clickable_elements:
+                        entity_name = clickable_elements[0].text.strip()
+                        logger.info(f"Extracted entity name: '{entity_name}'")
+                        print(f"Extracted entity name: '{entity_name}'")
+                        # If the entity name is an exact match to the Payee name (case-insensitive, ignoring extra spaces)
+                        if self._normalize_text(entity_name) == self._normalize_text(payee_name):
+                            logger.info(f"✅ Exact match found. Clicking the blue button/row immediately.")
+                            print(f"✅ Exact match found. Clicking the blue button/row immediately.")
+                            clickable_elements[0].click()
+                            return
+                        else:
+                            logger.info("No exact match found in single result. Clicking anyway.")
+                            print("No exact match found in single result. Clicking anyway.")
+                            clickable_elements[0].click()
+                            return
+                    else:
+                        logger.warning("No clickable elements found in the single result row.")
+                        print("No clickable elements found in the single result row.")
+                        return
+                except Exception as e:
+                    logger.error(f"Error processing single result: {e}")
+                    print(f"Error processing single result: {e}")
+                    return
+            # If there are multiple results
+            else:
+                logger.info("Multiple results found. Looping through each result row...")
+                print("Multiple results found. Looping through each result row...")
+                found_exact = False
+                for i, row in enumerate(rows):
+                    try:
+                        # Extract the visible entity name
+                        clickable_elements = row.find_elements(By.XPATH, ".//button | .//a | .//*[contains(@class, 'clickable')] | .//*[contains(@class, 'blue')]")
+                        if clickable_elements:
+                            entity_name = clickable_elements[0].text.strip()
+                            logger.info(f"Row {i+1} entity name: '{entity_name}'")
+                            print(f"Row {i+1} entity name: '{entity_name}'")
+                            # If an entity name is an exact match (case-insensitive, ignoring extra spaces) to the Payee name
+                            if self._normalize_text(entity_name) == self._normalize_text(payee_name):
+                                logger.info(f"✅ Exact match found in row {i+1}. Clicking the blue button/row and exiting loop.")
+                                print(f"✅ Exact match found in row {i+1}. Clicking the blue button/row and exiting loop.")
+                                clickable_elements[0].click()
+                                found_exact = True
+                                break
+                    except Exception as row_e:
+                        logger.warning(f"Error processing row {i+1}: {row_e}")
+                        continue
+                # If no exact match is found, fall back to existing logic that clicks the row with the newest Filing Date
+                if not found_exact:
+                    logger.info("No exact match found. Falling back to newest Filing Date logic.")
+                    print("No exact match found. Falling back to newest Filing Date logic.")
+                    self.find_and_click_most_recent_filing_bizfile_result()
+        except Exception as e:
+            logger.error(f"❌ ERROR: Could not complete BizFileOnline automation: {e}")
+            raise
+
+    def _normalize_text(self, text):
+        """
+        Normalize text for comparison: lowercase, remove extra spaces, trim
+        """
+        if not text:
+            return ""
+        return " ".join(text.lower().split()) 
