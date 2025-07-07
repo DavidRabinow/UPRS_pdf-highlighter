@@ -872,19 +872,22 @@ class SeleniumAutomation:
                 EC.presence_of_element_located((By.XPATH, "//*[@id='root']//input"))
             )
             logger.info("✅ Business search input field is present and ready.")
-            # Clear the input field, type the Payee name, immediately send Enter/Return key to trigger search
+            # Type the full business name into the search input field
             search_input.clear()
-            search_input.send_keys(payee_name)
-            logger.info(f"✅ Typed Payee name into search: '{payee_name}'")
+            for char in payee_name:
+                search_input.send_keys(char)
+                time.sleep(0.02)  # slight delay for realism
+            logger.info(f"✅ Fully typed Payee name into search: '{payee_name}'")
+            # Only after the name is fully typed, send Enter/Return key to trigger the search
             search_input.send_keys(Keys.RETURN)
             logger.info("✅ Sent Enter/Return key to trigger the search.")
-            # Wait exactly 4 seconds after pressing Enter to allow search results to load
-            logger.info("Waiting exactly 4 seconds for search results to load...")
-            time.sleep(4)
-            # Scroll down the page to bring results into view
-            logger.info("Scrolling down to bring search results into view...")
+            # Wait 3 seconds to allow the search results to fully render
+            logger.info("Waiting 3 seconds for BizFileOnline search results to fully render...")
+            time.sleep(3)
+            # Scroll to the bottom of the page to ensure all content is visible
+            logger.info("Scrolling to the bottom of the BizFileOnline page to ensure all content is visible...")
             self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            # Call self.find_and_click_exact_or_newest_entity(payee_name) to handle result clicking
+            # After scrolling is complete, continue with the next automation steps
             self.find_and_click_exact_or_newest_entity(payee_name)
         except Exception as e:
             logger.error(f"❌ ERROR: Could not complete BizFileOnline automation: {e}")
