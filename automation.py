@@ -776,21 +776,98 @@ class SeleniumAutomation:
                         add_note_button.click()
                         logger.info("Clicked the + Add Note button.")
                         
-                        # Wait for the note dialog to appear and paste the download link
-                        time.sleep(1)  # Brief wait for dialog to load
+                        # Wait 1 second after clicking add note button
+                        time.sleep(1)
+                        
+                        # First left-click the note text box, then type the download link
                         try:
-                            # Find the note text area and paste the download link
-                            note_textarea = self.driver.find_element(By.XPATH, "//textarea[contains(@class, 'note') or contains(@id, 'note') or contains(@name, 'note')]")
-                            note_textarea.clear()
-                            note_textarea.send_keys(download_link)
-                            logger.info(f"Pasted download link into note: {download_link}")
+                            # Try multiple selectors to find the note box since ID is dynamic
+                            note_box = None
+                            selectors = [
+                                '//*[@id="1751926328502EditingInput"]',
+                                '//input[contains(@id, "EditingInput")]',
+                                '//textarea[contains(@id, "EditingInput")]',
+                                '//input[contains(@class, "note")]',
+                                '//textarea[contains(@class, "note")]',
+                                '//input[contains(@placeholder, "note")]',
+                                '//textarea[contains(@placeholder, "note")]'
+                            ]
                             
-                            # Click the Done button
+                            for selector in selectors:
+                                try:
+                                    note_box = self.driver.find_element(By.XPATH, selector)
+                                    logger.info(f"Found note box using selector: {selector}")
+                                    print(f"Found note box using selector: {selector}")
+                                    break
+                                except:
+                                    continue
+                            
+                            if note_box is None:
+                                # If no specific element found, try to click on body and type
+                                logger.info("No specific note box found, clicking on body")
+                                print("No specific note box found, clicking on body")
+                                body = self.driver.find_element(By.TAG_NAME, "body")
+                                body.click()
+                                time.sleep(0.5)
+                                
+                                # Type the download link directly to body
+                                body.send_keys(download_link)
+                                logger.info(f"Typed download link to body: {download_link}")
+                                print(f"Typed download link to body: {download_link}")
+                            else:
+                                # Click on the found note box
+                                note_box.click()
+                                logger.info("Left-clicked on note text box")
+                                print("Left-clicked on note text box")
+                                time.sleep(0.5)  # Brief wait after clicking
+                                
+                                # Wait 3 seconds before pasting
+                                time.sleep(3)
+                                
+                                # Type the download link directly into the note box
+                                note_box.send_keys(download_link)
+                                logger.info(f"Typed download link directly: {download_link}")
+                                print(f"Typed download link directly: {download_link}")
+                                
+                        except Exception as e:
+                            logger.error(f"Failed to click note box or type: {e}")
+                            print(f"Failed to click note box or type: {e}")
+                            
+                            # Final fallback: try ActionChains with the download link variable
+                            try:
+                                actions = ActionChains(self.driver)
+                                actions.send_keys(download_link).perform()
+                                logger.info(f"Typed using ActionChains fallback: {download_link}")
+                                print(f"Typed using ActionChains fallback: {download_link}")
+                            except Exception as e2:
+                                logger.error(f"ActionChains fallback also failed: {e2}")
+                                print(f"ActionChains fallback also failed: {e2}")
+                        except Exception as e:
+                            logger.error(f"Failed to click note box or paste: {e}")
+                            print(f"Failed to click note box or paste: {e}")
+                            
+                            # Fallback: try ActionChains
+                            try:
+                                actions = ActionChains(self.driver)
+                                actions.key_down(Keys.CONTROL).send_keys('v').key_up(Keys.CONTROL).perform()
+                                logger.info("Pasted using ActionChains fallback")
+                                print("Pasted using ActionChains fallback")
+                            except Exception as e2:
+                                logger.error(f"ActionChains fallback also failed: {e2}")
+                                print(f"ActionChains fallback also failed: {e2}")
+                        
+                        # Wait a moment for the paste to complete
+                        time.sleep(1)
+                        
+                        # Click the Done button
+                        try:
                             done_button = self.driver.find_element(By.XPATH, '//*[@id="notesGrid_updating_dialog_container_footer_buttonok"]')
                             done_button.click()
                             logger.info("Clicked the Done button.")
-                        except Exception as note_e:
-                            logger.error(f"Could not paste download link or click Done button: {note_e}")
+                            print("Clicked the Done button.")
+                        except Exception as done_e:
+                            logger.error(f"Could not click Done button: {done_e}")
+                            print(f"Could not click Done button: {done_e}")
                     except Exception as e:
                         logger.error(f"Could not click the + Add Note button: {e}")
             except Exception:
