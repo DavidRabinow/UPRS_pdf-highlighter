@@ -600,7 +600,7 @@ class SeleniumAutomation:
             logger.error(f"❌ ERROR: Could not process BizFileOnline result rows: {e}")
             raise
 
-    def find_and_click_exact_or_newest_entity(self, payee_name):
+    def find_and_click_exact_or_newest_entity(self, payee_name, property_tab=None):
         """
         After BizFileOnline search, wait for results, then:
         - Locate result rows using //table//tr[td]
@@ -650,7 +650,7 @@ class SeleniumAutomation:
                     logger.info("✅ Clicked the blue clickable element in the only result row.")
                     print("Clicked the blue clickable element in the only result row.")
                     # After click, wait for right panel and click 'View History'
-                    self._wait_and_click_view_history(wait)
+                    self._wait_and_click_view_history(wait, property_tab=property_tab)
                 else:
                     logger.warning("No blue clickable element found in the only result row.")
                     print("No blue clickable element found in the only result row.")
@@ -679,7 +679,7 @@ class SeleniumAutomation:
                         clickable.click()
                         found_exact = True
                         # After click, wait for right panel and click 'View History'
-                        self._wait_and_click_view_history(wait)
+                        self._wait_and_click_view_history(wait, property_tab=property_tab)
                         return
             if not found_exact:
                 logger.info("No exact entity name match found. No click performed.")
@@ -689,11 +689,9 @@ class SeleniumAutomation:
             print(f"BizFileOnline entity results processing failed: {e}")
             raise
 
-    def _wait_and_click_view_history(self, wait):
+    def _wait_and_click_view_history(self, wait, property_tab=None):
         """
-        Wait for the right-hand side panel to fully load, locate the 'View History' button by its visible text,
-        wait for it to become clickable, and left-click it. Uses XPath //button[.//text()[contains(.,'View History')]] or //div[.='View History'].
-        After clicking, wait for the History page to fully load, locate the first blue panel containing 'Statement of Information', and left-click it.
+        After clicking on a BizFileOnline result, wait for the right-hand side panel to load and click the 'View History' button.
         """
         from selenium.webdriver.common.by import By
         from selenium.webdriver.support import expected_conditions as EC
@@ -719,7 +717,7 @@ class SeleniumAutomation:
                 logger.info("✅ Clicked 'View History' button.")
                 print("Clicked 'View History' button.")
                 # After clicking, wait for the History page to fully load and click the correct panel
-                self._wait_and_click_statement_of_information_panel(wait)
+                self._wait_and_click_statement_of_information_panel(wait, property_tab=property_tab)
             else:
                 logger.warning("'View History' button not found after waiting.")
                 print("'View History' button not found after waiting.")
@@ -727,12 +725,13 @@ class SeleniumAutomation:
             logger.error(f"❌ ERROR: Could not click 'View History' button: {e}")
             print(f"Could not click 'View History' button: {e}")
 
-    def _wait_and_click_statement_of_information_panel(self, wait):
+    def _wait_and_click_statement_of_information_panel(self, wait, property_tab=None):
         """
         After clicking the 'View History' button, wait up to 3 seconds for the panel area to load.
         Then, left-click the button located at the fixed XPath /html/body/div[3]/div/div[1]/div[2]/div/div[2]/button.
         No scrolling is needed. If the button is not found, log an error and do not fail silently.
-        After expanding the 'Statement of Information' panel, extract the link address from the 'Download' button by reading its href attribute. Immediately output the link to the terminal or console log as a debugging step to confirm the correct link was captured.
+        After expanding the 'Statement of Information' panel, extract the link address from the 'Download' anchor by reading its href attribute. Immediately output the link to the terminal or console log as a debugging step to confirm the correct link was captured.
+        If property_tab is provided, switch back to it immediately after obtaining the download link (not after any button click).
         """
         from selenium.webdriver.common.by import By
         from selenium.webdriver.support import expected_conditions as EC
@@ -755,16 +754,48 @@ class SeleniumAutomation:
             logger.info("✅ Clicked the fixed panel button.")
             print("Clicked the fixed panel button.")
             time.sleep(0.5)
-            # Extract the link address from the 'Download' button after expansion
+            # Extract the link address from the 'Download' anchor after expansion
             download_xpath = "//a[contains(., 'Download')]"
             try:
                 download_button = wait.until(EC.presence_of_element_located((By.XPATH, download_xpath)))
                 download_link = download_button.get_attribute('href')
                 logger.info(f"Download link found: {download_link}")
                 print(f"Download link: {download_link}")
+                # Wait 3 seconds before switching back
+                time.sleep(3)
+                # Switch back to PropertyDetail tab as soon as download link is obtained
+                if property_tab:
+                    logger.info(f"Switching back to PropertyDetail tab: {property_tab}")
+                    self.driver.switch_to.window(property_tab)
+                    # Scroll to the bottom of the page
+                    self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                    logger.info("Scrolled to the bottom of the PropertyDetail page.")
+                    # Click the + Add Note button
+                    try:
+                        add_note_button = self.driver.find_element(By.XPATH, '//*[@id="btnAddNote"]')
+                        add_note_button.click()
+                        logger.info("Clicked the + Add Note button.")
+                        
+                        # Wait for the note dialog to appear and paste the download link
+                        time.sleep(1)  # Brief wait for dialog to load
+                        try:
+                            # Find the note text area and paste the download link
+                            note_textarea = self.driver.find_element(By.XPATH, "//textarea[contains(@class, 'note') or contains(@id, 'note') or contains(@name, 'note')]")
+                            note_textarea.clear()
+                            note_textarea.send_keys(download_link)
+                            logger.info(f"Pasted download link into note: {download_link}")
+                            
+                            # Click the Done button
+                            done_button = self.driver.find_element(By.XPATH, '//*[@id="notesGrid_updating_dialog_container_footer_buttonok"]')
+                            done_button.click()
+                            logger.info("Clicked the Done button.")
+                        except Exception as note_e:
+                            logger.error(f"Could not paste download link or click Done button: {note_e}")
+                    except Exception as e:
+                        logger.error(f"Could not click the + Add Note button: {e}")
             except Exception:
-                logger.error("Download button not found after expanding the panel.")
-                print("Download button not found after expanding the panel.")
+                logger.error("Download anchor not found after expanding the panel.")
+                print("Download anchor not found after expanding the panel.")
         except Exception as e:
             logger.error(f"❌ ERROR: Could not click the fixed panel button or extract download link: {e}")
             print(f"Could not click the fixed panel button or extract download link: {e}")
@@ -908,18 +939,12 @@ class SeleniumAutomation:
             logger.info("Scrolling to the bottom of the BizFileOnline page to ensure all content is visible...")
             self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             # After scrolling is complete, continue with the next automation steps
-            self.find_and_click_exact_or_newest_entity(payee_name)
+            self.find_and_click_exact_or_newest_entity(payee_name, property_tab=property_tab)
         except Exception as e:
             logger.error(f"❌ ERROR: Could not complete BizFileOnline automation: {e}")
             print(f"BizFileOnline automation failed: {e}")
             raise
         logger.info(f"=== PAYEE NAME SEARCHED ON BIZFILE: '{payee_name}' ===")
-        # Now optionally pause or keep browser open for manual review
-        logger.info("Automation steps complete. Browser will remain open for manual review.")
-        time.sleep(30)
-        # Switch back to the original tab after BizFileOnline work is done
-        logger.info(f"Switching back to PropertyDetail tab: {property_tab}")
-        self.driver.switch_to.window(property_tab)
 
     def cleanup(self):
         """
