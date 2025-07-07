@@ -861,9 +861,29 @@ class SeleniumAutomation:
         time.sleep(2)
         payee_name = self.click_first_payee_and_store_name()
         logger.info(f"=== PAYEE NAME EXTRACTED AND ROW DOUBLE-CLICKED: '{payee_name}' ===")
+        # Store the most recent PropertyDetail tab before opening BizFileOnline
+        property_tab = None
+        for handle in reversed(self.driver.window_handles):
+            self.driver.switch_to.window(handle)
+            url = self.driver.current_url
+            if "/PropertyDetail/" in url and "id=" in url:
+                property_tab = handle
+                logger.info(f"Found PropertyDetail tab: {url} (handle: {handle})")
+                break
+        if not property_tab:
+            property_tab = self.driver.current_window_handle
+            logger.info(f"No PropertyDetail tab found, using current tab: {property_tab}")
         # Immediately navigate to bizfileonline and input the Payee name
         logger.info("Navigating to bizfileonline.sos.ca.gov/search/business for Payee name search...")
-        self.driver.get("https://bizfileonline.sos.ca.gov/search/business")
+        # Open BizFileOnline in a new tab and switch to it
+        self.driver.execute_script("window.open('https://bizfileonline.sos.ca.gov/search/business', '_blank');")
+        time.sleep(1)  # Give the new tab a moment to open
+        # Switch to the new BizFileOnline tab
+        for handle in self.driver.window_handles:
+            self.driver.switch_to.window(handle)
+            if "bizfileonline.sos.ca.gov/search/business" in self.driver.current_url:
+                logger.info(f"Switched to BizFileOnline tab: {handle}")
+                break
         wait = WebDriverWait(self.driver, 15)
         try:
             # Locate the business search input field using XPath //*[@id='root']//input
@@ -897,6 +917,9 @@ class SeleniumAutomation:
         # Now optionally pause or keep browser open for manual review
         logger.info("Automation steps complete. Browser will remain open for manual review.")
         time.sleep(30)
+        # Switch back to the original tab after BizFileOnline work is done
+        logger.info(f"Switching back to PropertyDetail tab: {property_tab}")
+        self.driver.switch_to.window(property_tab)
 
     def cleanup(self):
         """
@@ -929,7 +952,7 @@ class SeleniumAutomation:
             
             # Step 1: Set up browser (VISIBLE - not headless)
             self.setup_browser()
-            
+
             # Step 2: Navigate to website
             self.navigate_to_website()
             
@@ -982,7 +1005,8 @@ class SeleniumAutomation:
         from selenium.webdriver.support import expected_conditions as EC
         import time
         logger.info("Navigating to BizFileOnline: https://bizfileonline.sos.ca.gov/search/business")
-        self.driver.get("https://bizfileonline.sos.ca.gov/search/business")
+        # REMOVED: Open BizFileOnline in a new tab and switch to it
+        # The tab is now opened and switched in perform_custom_automation only
         wait = WebDriverWait(self.driver, 15)
         try:
             # Wait for the business search input field to be present
