@@ -602,15 +602,20 @@ class SeleniumAutomation:
 
     def find_and_click_exact_or_newest_entity(self, payee_name):
         """
-        After BizFileOnline search, wait for results, scroll, and:
-        - Identify the large blue rectangular row (by class or first result)
-        - Click the <a> in the first column of that row
-        - If only one result, click it without comparing text
-        - If multiple, compare business names, click exact match, else fallback to newest Initial Filing Date
+        After BizFileOnline search, wait for results, then:
+        - Locate result rows using //table//tr[td]
+        - For each row, extract the entity name from the blue clickable area using:
+          .//td[1]//button | .//td[1]//div[contains(@class,'entity')] | .//td[1]//span
+        - Compare the extracted text to payee_name (case-insensitive, trim whitespace)
+        - When an exact match is found, left-click the blue clickable element (button or div)
+        - Fallback: If only one row exists, left-click the blue area regardless of match
+        - Remove any .//td[1]//a lookups
+        - After clicking, wait for the right-hand side panel to fully load, locate the 'View History' button by its visible text, wait for it to become clickable, and left-click it.
         """
         from selenium.webdriver.common.by import By
         from selenium.webdriver.support.ui import WebDriverWait
         from selenium.webdriver.support import expected_conditions as EC
+        import time
         wait = WebDriverWait(self.driver, 15)
         try:
             logger.info("Waiting for at least one result row (//table//tr[td])...")
@@ -620,51 +625,149 @@ class SeleniumAutomation:
             num_rows = len(rows)
             logger.info(f"Found {num_rows} result row(s).")
             print(f"Found {num_rows} result row(s).")
-            # Scroll after results are visible
             self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            # Try to identify the blue row (by class or just use the first row if only one)
-            blue_rows = [row for row in rows if 'blue' in (row.get_attribute('class') or '').lower()]
-            if not blue_rows and num_rows == 1:
-                blue_rows = [rows[0]]
-            if not blue_rows:
-                logger.warning("No blue row found, using all result rows for logic.")
-                blue_rows = rows
-            if len(blue_rows) == 1:
-                logger.info("Only one blue row. Clicking the <a> in the first column.")
-                print("Only one blue row. Clicking the <a> in the first column.")
-                try:
-                    link = blue_rows[0].find_element(By.XPATH, ".//td[1]//a")
-                    link.click()
-                    logger.info("✅ Clicked the only entity link in blue row.")
-                    print("Clicked the only entity link in blue row.")
-                except Exception as click_e:
-                    logger.error(f"❌ ERROR: Could not click entity link in the blue row: {click_e}")
-                    print(f"Could not click entity link in the blue row: {click_e}")
+            if num_rows == 0:
+                logger.warning("No result rows found on BizFileOnline.")
+                print("No result rows found on BizFileOnline.")
                 return
-            # Multiple blue rows or multiple results: try for perfect match
+            # Fallback: If only one row, click the blue area regardless of match
+            if num_rows == 1:
+                logger.info("Only one result row. Clicking the blue clickable area regardless of match.")
+                print("Only one result row. Clicking the blue clickable area regardless of match.")
+                row = rows[0]
+                clickable = None
+                for xpath in [
+                    ".//td[1]//button",
+                    ".//td[1]//div[contains(@class,'entity')]",
+                    ".//td[1]//span"
+                ]:
+                    elems = row.find_elements(By.XPATH, xpath)
+                    if elems:
+                        clickable = elems[0]
+                        break
+                if clickable:
+                    clickable.click()
+                    logger.info("✅ Clicked the blue clickable element in the only result row.")
+                    print("Clicked the blue clickable element in the only result row.")
+                    # After click, wait for right panel and click 'View History'
+                    self._wait_and_click_view_history(wait)
+                else:
+                    logger.warning("No blue clickable element found in the only result row.")
+                    print("No blue clickable element found in the only result row.")
+                return
+            # Multiple rows: look for exact match
             found_exact = False
-            for row in blue_rows:
-                try:
-                    link = row.find_element(By.XPATH, ".//td[1]//a")
-                    text = link.text.strip()
-                    entity_name = text.split('(')[0].strip().lower()
-                    search_name = payee_name.strip().lower()
-                    logger.info(f"Entity link: '{entity_name}' vs search: '{search_name}'")
-                    if entity_name == search_name:
-                        logger.info(f"✅ Perfect entity name match found: '{text}'. Clicking link.")
-                        print(f"Perfect entity name match found: '{text}'. Clicking link.")
-                        link.click()
+            search_name = payee_name.strip().lower()
+            for row in rows:
+                clickable = None
+                entity_text = None
+                for xpath in [
+                    ".//td[1]//button",
+                    ".//td[1]//div[contains(@class,'entity')]",
+                    ".//td[1]//span"
+                ]:
+                    elems = row.find_elements(By.XPATH, xpath)
+                    if elems:
+                        clickable = elems[0]
+                        entity_text = clickable.text.strip()
+                        break
+                if entity_text:
+                    logger.info(f"Entity candidate: '{entity_text}' vs search: '{search_name}'")
+                    if entity_text.strip().lower() == search_name:
+                        logger.info(f"✅ Exact entity name match found: '{entity_text}'. Clicking clickable element.")
+                        print(f"Exact entity name match found: '{entity_text}'. Clicking clickable element.")
+                        clickable.click()
                         found_exact = True
+                        # After click, wait for right panel and click 'View History'
+                        self._wait_and_click_view_history(wait)
                         return
-                except Exception as row_e:
-                    logger.warning(f"Could not process a blue row for entity link: {row_e}")
             if not found_exact:
-                logger.info("No perfect entity name match found in blue rows. Proceeding to Filing Date fallback.")
-                print("No perfect entity name match found in blue rows. Proceeding to Filing Date fallback.")
-                self.find_and_click_most_recent_filing_bizfile_result()
+                logger.info("No exact entity name match found. No click performed.")
+                print("No exact entity name match found. No click performed.")
         except Exception as e:
-            logger.error(f"❌ ERROR: Could not process entity name links or fallback: {e}")
+            logger.error(f"❌ ERROR: Could not process BizFileOnline entity results: {e}")
+            print(f"BizFileOnline entity results processing failed: {e}")
             raise
+
+    def _wait_and_click_view_history(self, wait):
+        """
+        Wait for the right-hand side panel to fully load, locate the 'View History' button by its visible text,
+        wait for it to become clickable, and left-click it. Uses XPath //button[.//text()[contains(.,'View History')]] or //div[.='View History'].
+        After clicking, wait for the History page to fully load, locate the first blue panel containing 'Statement of Information', and left-click it.
+        """
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.support import expected_conditions as EC
+        import time
+        try:
+            logger.info("Waiting for the right-hand side panel to load and 'View History' button to appear...")
+            # Wait for either the button or div to be present
+            view_history = None
+            for xpath in [
+                "//button[.//text()[contains(.,'View History')]]",
+                "//div[.='View History']"
+            ]:
+                try:
+                    view_history = wait.until(EC.element_to_be_clickable((By.XPATH, xpath)))
+                    if view_history:
+                        logger.info(f"'View History' button found with XPath: {xpath}")
+                        break
+                except Exception:
+                    continue
+            if view_history:
+                logger.info("Clicking 'View History' button...")
+                view_history.click()
+                logger.info("✅ Clicked 'View History' button.")
+                print("Clicked 'View History' button.")
+                # After clicking, wait for the History page to fully load and click the correct panel
+                self._wait_and_click_statement_of_information_panel(wait)
+            else:
+                logger.warning("'View History' button not found after waiting.")
+                print("'View History' button not found after waiting.")
+        except Exception as e:
+            logger.error(f"❌ ERROR: Could not click 'View History' button: {e}")
+            print(f"Could not click 'View History' button: {e}")
+
+    def _wait_and_click_statement_of_information_panel(self, wait):
+        """
+        After clicking the 'View History' button, wait up to 3 seconds for the panel area to load.
+        Then, left-click the button located at the fixed XPath /html/body/div[3]/div/div[1]/div[2]/div/div[2]/button.
+        No scrolling is needed. If the button is not found, log an error and do not fail silently.
+        After expanding the 'Statement of Information' panel, extract the link address from the 'Download' button by reading its href attribute. Immediately output the link to the terminal or console log as a debugging step to confirm the correct link was captured.
+        """
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.support import expected_conditions as EC
+        import time
+        try:
+            logger.info("Waiting up to 3 seconds for the fixed panel button to appear after 'View History' click...")
+            button_xpath = "/html/body/div[3]/div/div[1]/div[2]/div/div[2]/button"
+            try:
+                button = wait.until(EC.element_to_be_clickable((By.XPATH, button_xpath)))
+            except Exception:
+                logger.error("Panel button not present: No button found at the fixed XPath after waiting.")
+                print("Panel button not present: No button found at the fixed XPath after waiting.")
+                return
+            if not button:
+                logger.error("Panel button not present: No button found at the fixed XPath after waiting.")
+                print("Panel button not present: No button found at the fixed XPath after waiting.")
+                return
+            logger.info("Clicking the fixed panel button to expand the 'Statement of Information' panel...")
+            button.click()
+            logger.info("✅ Clicked the fixed panel button.")
+            print("Clicked the fixed panel button.")
+            time.sleep(0.5)
+            # Extract the link address from the 'Download' button after expansion
+            download_xpath = "//a[contains(., 'Download')]"
+            try:
+                download_button = wait.until(EC.presence_of_element_located((By.XPATH, download_xpath)))
+                download_link = download_button.get_attribute('href')
+                logger.info(f"Download link found: {download_link}")
+                print(f"Download link: {download_link}")
+            except Exception:
+                logger.error("Download button not found after expanding the panel.")
+                print("Download button not found after expanding the panel.")
+        except Exception as e:
+            logger.error(f"❌ ERROR: Could not click the fixed panel button or extract download link: {e}")
+            print(f"Could not click the fixed panel button or extract download link: {e}")
 
     def search_bizfile_and_handle_results(self, payee_name):
         """

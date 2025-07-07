@@ -834,3 +834,129 @@ Stacktrace:
 2025-07-03 20:04:16,596 - ERROR - All login button attempts including force click failed
 2025-07-03 20:04:16,596 - ERROR - Login failed. Stopping automation.
 2025-07-03 20:04:18,933 - INFO - Browser closed
+2025-07-07 10:09:06,783 - INFO - Chrome browser initialized successfully
+2025-07-07 10:09:06,783 - INFO - Starting UPRS web automation...
+2025-07-07 10:09:06,784 - INFO - Starting login process...
+2025-07-07 10:09:06,784 - INFO - Navigating to: https://rears.retainedequity.com/#/
+2025-07-07 10:09:09,621 - INFO - Successfully navigated to: https://rears.retainedequity.com/#/
+2025-07-07 10:09:12,633 - INFO - === DEBUGGING PAGE ELEMENTS ===
+2025-07-07 10:09:12,737 - INFO - Found 7 input elements:
+2025-07-07 10:09:12,836 - INFO -   Input 1: type='text', id='usern', name='no-name', class='uk-input uk-border-rounded'
+2025-07-07 10:09:12,948 - INFO -   Input 2: type='password', id='pass', name='no-name', class='uk-input uk-border-rounded'
+2025-07-07 10:09:13,003 - INFO -   Input 3: type='text', id='txtFirstName', name='no-name', class='no-class'
+2025-07-07 10:09:13,063 - INFO -   Input 4: type='text', id='txtLastName', name='no-name', class='no-class'
+2025-07-07 10:09:13,138 - INFO -   Input 5: type='text', id='txtLinkedIn', name='no-name', class='no-class'
+2025-07-07 10:09:13,201 - INFO -   Input 6: type='checkbox', id='chkPrimaryContact', name='no-name', class='no-class'
+2025-07-07 10:09:13,273 - INFO -   Input 7: type='text', id='txtPersonId', name='no-name', class='no-class'
+2025-07-07 10:09:13,293 - INFO - Found 1 button elements:
+2025-07-07 10:09:13,419 - INFO -   Button 1: text='LOGIN', id='no-id', class='uk-button uk-border-rounded uk-width-1-1 loginBtn button secondaryButton ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only', type='submit'
+2025-07-07 10:09:16,457 - INFO - Found 0 submit input elements:
+2025-07-07 10:09:16,458 - INFO - === END DEBUGGING ===
+2025-07-07 10:09:16,460 - INFO - Looking for input field: #usern
+2025-07-07 10:09:16,631 - INFO - Successfully entered text in: #usern
+2025-07-07 10:09:17,132 - INFO - Username entered using selector: #usern
+2025-07-07 10:09:17,132 - INFO - Looking for input field: #pass
+2025-07-07 10:09:17,350 - INFO - Successfully entered text in: #pass
+2025-07-07 10:09:17,851 - INFO - Password entered using selector: #pass
+2025-07-07 10:09:17,852 - INFO - Attempting to click login button with selector: .loginBtn
+2025-07-07 10:09:17,852 - INFO - Looking for element: .loginBtn
+2025-07-07 10:09:18,252 - INFO - Successfully clicked element: .loginBtn
+2025-07-07 10:09:19,254 - INFO - Login button successfully clicked using selector: .loginBtn
+2025-07-07 10:09:24,267 - INFO - Waiting for element: .nav
+2025-07-07 10:09:24,309 - INFO - Element found: .nav
+2025-07-07 10:09:24,315 - INFO - Login successful!
+2025-07-07 10:09:24,315 - INFO - Login successful! Proceeding with UPRS tasks...
+2025-07-07 10:09:24,317 - INFO - Navigating to: https://rears.retainedequity.com/#/
+2025-07-07 10:09:26,353 - INFO - Successfully navigated to: https://rears.retainedequity.com/#/
+2025-07-07 10:09:26,357 - INFO - Starting task: UPRS Navigation Tasks
+2025-07-07 10:09:26,365 - INFO - Starting UPRS-specific tasks...
+2025-07-07 10:09:29,502 - INFO - Screenshot saved: uprs_dashboard.png
+2025-07-07 10:09:29,503 - INFO - Attempting to navigate to: Search Properties
+2025-07-07 10:09:29,504 - INFO - Looking for element: a[href*='search'], .search-link, #search
+2025-07-07 10:09:36,585 - ERROR - Element not found or not clickable: a[href*='search'], .search-link, #search
+2025-07-07 10:09:36,586 - WARNING - Could not navigate to Search Properties: Message: 
+Stacktrace:
+	GetHandleVerifier [0x0x7ff6e3a46f95+76917]
+	GetHandleVerifier [0x0x7ff6e3a46ff0+77008]
+	(No symbol) [0x0x7ff6e37f9dea]
+	(No symbol) [0x0x7ff6e3850256]
+	(No symbol) [0x0x7ff6e385050c]
+	(No symbol) [0x0x7ff6e38a3887]
+	(No symbol) [0x0x7ff6e38784af]
+	(No symbol) [0x0x7ff6e38a065c]
+	(No symbol) [0x0x7ff6e3878243]
+	(No symbol) [0x0x7ff6e3841431]
+	(No symbol) [0x0x7ff6e38421c3]
+	GetHandleVerifier [0x0x7ff6e3d1d2cd+3051437]
+	GetHandleVerifier [0x0x7ff6e3d17923+3028483]
+	GetHandleVerifier [0x0x7ff6e3d358bd+3151261]
+	GetHandleVerifier [0x0x7ff6e3a6185e+185662]
+	GetHandleVerifier [0x0x7ff6e3a6971f+218111]
+	GetHandleVerifier [0x0x7ff6e3a4fb14+112628]
+	GetHandleVerifier [0x0x7ff6e3a4fcc9+113065]
+	GetHandleVerifier [0x0x7ff6e3a36c98+10616]
+	BaseThreadInitThunk [0x0x7ff92c9ce8d7+23]
+	RtlUserThreadStart [0x0x7ff92e61c34c+44]
+
+2025-07-07 10:09:36,631 - INFO - Attempting to navigate to: Client Detail
+2025-07-07 10:09:36,632 - INFO - Looking for element: a[href*='client'], .client-link, #client
+2025-07-07 10:09:42,048 - ERROR - Element not found or not clickable: a[href*='client'], .client-link, #client
+2025-07-07 10:09:42,049 - WARNING - Could not navigate to Client Detail: Message: 
+
+2025-07-07 10:09:42,050 - INFO - Attempting to navigate to: All Notes
+2025-07-07 10:09:42,051 - INFO - Looking for element: a[href*='notes'], .notes-link, #notes
+2025-07-07 10:09:49,190 - ERROR - Element not found or not clickable: a[href*='notes'], .notes-link, #notes
+2025-07-07 10:09:49,191 - WARNING - Could not navigate to All Notes: Message: 
+Stacktrace:
+	GetHandleVerifier [0x0x7ff6e3a46f95+76917]
+	GetHandleVerifier [0x0x7ff6e3a46ff0+77008]
+	(No symbol) [0x0x7ff6e37f9dea]
+	(No symbol) [0x0x7ff6e3850256]
+	(No symbol) [0x0x7ff6e385050c]
+	(No symbol) [0x0x7ff6e38a3887]
+	(No symbol) [0x0x7ff6e38784af]
+	(No symbol) [0x0x7ff6e38a065c]
+	(No symbol) [0x0x7ff6e3878243]
+	(No symbol) [0x0x7ff6e3841431]
+	(No symbol) [0x0x7ff6e38421c3]
+	GetHandleVerifier [0x0x7ff6e3d1d2cd+3051437]
+	GetHandleVerifier [0x0x7ff6e3d17923+3028483]
+	GetHandleVerifier [0x0x7ff6e3d358bd+3151261]
+	GetHandleVerifier [0x0x7ff6e3a6185e+185662]
+	GetHandleVerifier [0x0x7ff6e3a6971f+218111]
+	GetHandleVerifier [0x0x7ff6e3a4fb14+112628]
+	GetHandleVerifier [0x0x7ff6e3a4fcc9+113065]
+	GetHandleVerifier [0x0x7ff6e3a36c98+10616]
+	BaseThreadInitThunk [0x0x7ff92c9ce8d7+23]
+	RtlUserThreadStart [0x0x7ff92e61c34c+44]
+
+2025-07-07 10:09:49,192 - INFO - Attempting to navigate to: Marketing
+2025-07-07 10:09:49,193 - INFO - Looking for element: a[href*='marketing'], .marketing-link, #marketing
+2025-07-07 10:09:56,266 - ERROR - Element not found or not clickable: a[href*='marketing'], .marketing-link, #marketing
+2025-07-07 10:09:56,273 - WARNING - Could not navigate to Marketing: Message: 
+Stacktrace:
+	GetHandleVerifier [0x0x7ff6e3a46f95+76917]
+	GetHandleVerifier [0x0x7ff6e3a46ff0+77008]
+	(No symbol) [0x0x7ff6e37f9dea]
+	(No symbol) [0x0x7ff6e3850256]
+	(No symbol) [0x0x7ff6e385050c]
+	(No symbol) [0x0x7ff6e38a3887]
+	(No symbol) [0x0x7ff6e38784af]
+	(No symbol) [0x0x7ff6e38a065c]
+	(No symbol) [0x0x7ff6e3878243]
+	(No symbol) [0x0x7ff6e3841431]
+	(No symbol) [0x0x7ff6e38421c3]
+	GetHandleVerifier [0x0x7ff6e3d1d2cd+3051437]
+	GetHandleVerifier [0x0x7ff6e3d17923+3028483]
+	GetHandleVerifier [0x0x7ff6e3d358bd+3151261]
+	GetHandleVerifier [0x0x7ff6e3a6185e+185662]
+	GetHandleVerifier [0x0x7ff6e3a6971f+218111]
+	GetHandleVerifier [0x0x7ff6e3a4fb14+112628]
+	GetHandleVerifier [0x0x7ff6e3a4fcc9+113065]
+	GetHandleVerifier [0x0x7ff6e3a36c98+10616]
+	BaseThreadInitThunk [0x0x7ff92c9ce8d7+23]
+	RtlUserThreadStart [0x0x7ff92e61c34c+44]
+
+2025-07-07 10:09:56,280 - INFO - UPRS-specific tasks completed
+2025-07-07 10:09:56,281 - INFO - Completed task: UPRS Navigation Tasks
+2025-07-07 10:10:13,496 - INFO - UPRS automation completed successfully!
