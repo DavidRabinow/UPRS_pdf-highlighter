@@ -1360,11 +1360,72 @@ class SeleniumAutomation:
             print(f"[DEBUG] Could not check any box: {e}")
             logger.warning(f"[DEBUG] Could not check any box: {e}")
 
+    def check_off_duplicate_payee_rows(self, payee_name, start_index):
+        """
+        Check off all rows with the same Payee Name starting from the given index.
+        Returns the index of the next different Payee Name (or total rows if no more).
+        """
+        from selenium.webdriver.common.by import By
+        import time
+        
+        logger.info(f"Checking off duplicate rows for Payee Name: '{payee_name}' starting from index {start_index}")
+        
+        try:
+            rows = self.driver.find_elements(By.XPATH, '//*[@id="propsGrid"]/tbody/tr')
+            checked_count = 0
+            next_different_index = start_index
+            
+            for i in range(start_index, len(rows)):
+                try:
+                    # Extract Payee Name from the row
+                    payee_name_cell = rows[i].find_element(By.XPATH, ".//td[2]")
+                    current_payee_name = payee_name_cell.text.strip()
+                    
+                    # If Payee Name matches, check off the row
+                    if current_payee_name == payee_name:
+                        checkbox_xpath = f'//*[@id="propsGrid"]/tbody/tr[{i+1}]/th/span[2]/span'
+                        checkbox = self.driver.find_element(By.XPATH, checkbox_xpath)
+                        
+                        # Check if already checked
+                        checkbox_class = checkbox.get_attribute("class")
+                        aria_checked = checkbox.get_attribute("aria-checked")
+                        is_checked = "checked" in (checkbox_class or "") or aria_checked == "true"
+                        
+                        if not is_checked:
+                            self.driver.execute_script("arguments[0].scrollIntoView(true);", checkbox)
+                            time.sleep(0.2)
+                            checkbox.click()
+                            logger.info(f"✅ Checked off row {i+1} for Payee Name: '{payee_name}'")
+                            checked_count += 1
+                        else:
+                            logger.info(f"Row {i+1} already checked for Payee Name: '{payee_name}'")
+                            checked_count += 1
+                        
+                        next_different_index = i + 1  # Update to next position
+                    else:
+                        # Stop when we find a different Payee Name
+                        logger.info(f"Found different Payee Name at row {i+1}: '{current_payee_name}' - stopping duplicate check")
+                        next_different_index = i  # This is the next different Payee Name
+                        break
+                        
+                except Exception as e:
+                    logger.warning(f"Error checking row {i+1}: {e}")
+                    continue
+            
+            logger.info(f"✅ Checked off {checked_count} rows for Payee Name: '{payee_name}'")
+            logger.info(f"✅ Next different Payee Name will be at index: {next_different_index}")
+            return next_different_index
+            
+        except Exception as e:
+            logger.error(f"❌ ERROR: Could not check off duplicate rows: {e}")
+            return start_index
+
     def find_and_process_next_row(self):
         """
         Find the next row to process based on the last processed Payee Name.
         If last_payee_name is None, process the first row.
         Otherwise, scan for the row with last_payee_name, then process the row immediately after it.
+        If there are multiple rows with the same Payee Name, check them all off together.
         Returns the Payee Name of the processed row, or None if no row was processed.
         """
         from selenium.webdriver.common.by import By
@@ -1432,12 +1493,29 @@ class SeleniumAutomation:
             logger.info(f"✅ Processing row {target_row_index + 1} with Payee Name: '{payee_name}'")
             print(f"Processing Payee Name: {payee_name}")
             
-            # Double-click the row to open it
+            # Check off all rows with the same Payee Name and get the next different index
+            next_different_index = self.check_off_duplicate_payee_rows(payee_name, target_row_index)
+            
+            # Double-click the first row with this Payee Name to open it
             ActionChains(self.driver).double_click(target_row).perform()
             logger.info(f"✅ Double-clicked row {target_row_index + 1}")
             
-            # Update tracking
-            self.last_payee_name = payee_name
+            # Update tracking - store the next different Payee Name for the next iteration
+            if next_different_index < len(rows):
+                try:
+                    next_row = rows[next_different_index]
+                    next_payee_name_cell = next_row.find_element(By.XPATH, ".//td[2]")
+                    next_different_payee_name = next_payee_name_cell.text.strip()
+                    logger.info(f"Next iteration will start from Payee Name: '{next_different_payee_name}' at row {next_different_index + 1}")
+                    # Store the next different Payee Name so we can find it in the next iteration
+                    self.last_payee_name = next_different_payee_name
+                except Exception as e:
+                    logger.warning(f"Could not determine next Payee Name: {e}")
+                    self.last_payee_name = payee_name
+            else:
+                logger.info("No more rows after processing duplicates - reached end of table")
+                self.last_payee_name = payee_name
+            
             self.companies_processed += 1
             
             return payee_name
