@@ -868,6 +868,26 @@ class SeleniumAutomation:
                         except Exception as done_e:
                             logger.error(f"Could not click Done button: {done_e}")
                             print(f"Could not click Done button: {done_e}")
+                        
+                        # Wait a moment for the note to be saved
+                        time.sleep(1)
+                        
+                        # Scroll up and click the save button
+                        try:
+                            # Scroll to the top of the page
+                            self.driver.execute_script("window.scrollTo(0, 0);")
+                            logger.info("Scrolled to the top of the page")
+                            print("Scrolled to the top of the page")
+                            time.sleep(0.5)  # Brief wait after scrolling
+                            
+                            # Click the save button
+                            save_button = self.driver.find_element(By.XPATH, '//*[@id="btnPropertySave"]/span')
+                            save_button.click()
+                            logger.info("Clicked the save button")
+                            print("Clicked the save button")
+                        except Exception as save_e:
+                            logger.error(f"Could not scroll up or click save button: {save_e}")
+                            print(f"Could not scroll up or click save button: {save_e}")
                     except Exception as e:
                         logger.error(f"Could not click the + Add Note button: {e}")
             except Exception:
