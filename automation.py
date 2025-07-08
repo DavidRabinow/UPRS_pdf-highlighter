@@ -44,6 +44,12 @@ class SeleniumAutomation:
         self.search_properties_selector = "a[href*='search'], .search-link, #search"
         self.process_imported_files_selector = "a[href*='process'], .process-link, #process"
         
+        # Tracking variables for continuous processing
+        self.last_payee_name = None  # Store the last processed Payee Name
+        self.consecutive_failures = 0  # Track consecutive failures
+        self.max_companies = 50  # Maximum number of companies to process
+        self.companies_processed = 0  # Counter for processed companies
+        
         # PRECISE selectors for the search field under "File" with dropdown arrow
         # These selectors are designed to find the specific field with "select..." placeholder
         self.file_search_field_selectors = [
@@ -767,6 +773,20 @@ class SeleniumAutomation:
                 if property_tab:
                     logger.info(f"Switching back to PropertyDetail tab: {property_tab}")
                     self.driver.switch_to.window(property_tab)
+                    
+                    # Close the BizFileOnline tab
+                    try:
+                        for handle in self.driver.window_handles:
+                            self.driver.switch_to.window(handle)
+                            if "bizfileonline.sos.ca.gov" in self.driver.current_url:
+                                self.driver.close()
+                                logger.info("✅ Closed BizFileOnline tab")
+                                break
+                        # Switch back to PropertyDetail tab
+                        self.driver.switch_to.window(property_tab)
+                    except Exception as e:
+                        logger.warning(f"Could not close BizFileOnline tab: {e}")
+                    
                     # Scroll to the bottom of the page
                     self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                     logger.info("Scrolled to the bottom of the PropertyDetail page.")
@@ -1058,22 +1078,22 @@ class SeleniumAutomation:
             
     def run(self, search_text):
         """
-        Main method to run the complete automation process with precise targeting.
+        Main method to run the complete automation process with continuous processing.
         
         This method orchestrates the entire automation process:
         1. Browser setup (visible Chrome)
         2. Website navigation
         3. Login (if required)
         4. Navigation to target page
-        5. Precise search field interaction
-        6. Search execution
+        5. Continuous processing of Payee Names from the table
         
         Args:
-            search_text (str): The text to search for in the automation
+            search_text (str): The text to search for in the initial search field
         """
         try:
-            logger.info("=== STARTING PRECISE SELENIUM AUTOMATION ===")
-            logger.info(f"Search text provided: '{search_text}'")
+            logger.info("=== STARTING CONTINUOUS SELENIUM AUTOMATION ===")
+            logger.info(f"Initial search text provided: '{search_text}'")
+            logger.info(f"Maximum companies to process: {self.max_companies}")
             logger.info("Browser will remain VISIBLE throughout the process")
             
             # Step 1: Set up browser (VISIBLE - not headless)
@@ -1091,22 +1111,56 @@ class SeleniumAutomation:
             # Step 5: Navigate to Process Imported Files
             self.navigate_to_process_imported_files()
             
-            # Step 6: Perform precise custom automation steps with search text
-            self.perform_custom_automation(search_text)
+            # Step 6: Perform initial search to populate the table
+            self.find_and_fill_file_search_field(search_text)
+            logger.info("=== INITIAL SEARCH COMPLETED - TABLE SHOULD BE POPULATED ===")
             
-            # Step 7: Completion
-            logger.info("=== PRECISE AUTOMATION COMPLETED SUCCESSFULLY ===")
-            logger.info(f"✅ Successfully searched for text: '{search_text}'")
-            logger.info("✅ Search field under 'File' was located and filled correctly")
-            logger.info("✅ Bright green 'Search' button was clicked successfully")
-            logger.info("You should now be on the Process Imported Files page with search results.")
+            # Step 7: Continuous processing loop
+            logger.info("=== STARTING CONTINUOUS PROCESSING LOOP ===")
+            
+            while not self.should_stop_processing():
+                logger.info(f"=== PROCESSING ITERATION {self.companies_processed + 1} ===")
+                logger.info(f"Companies processed so far: {self.companies_processed}")
+                logger.info(f"Consecutive failures: {self.consecutive_failures}")
+                
+                # Find and process the next row
+                payee_name = self.find_and_process_next_row()
+                
+                if payee_name is None:
+                    logger.info("No more rows to process - reached end of table")
+                    break
+                
+                # Process the Payee Name through BizFileOnline
+                success = self.process_single_payee(payee_name)
+                
+                if success:
+                    logger.info(f"✅ Successfully processed Payee: '{payee_name}'")
+                    logger.info(f"Total companies processed: {self.companies_processed}")
+                else:
+                    logger.error(f"❌ Failed to process Payee: '{payee_name}'")
+                    logger.warning(f"Consecutive failures: {self.consecutive_failures}")
+                
+                # Brief pause between iterations
+                time.sleep(2)
+            
+            # Step 8: Completion
+            logger.info("=== CONTINUOUS AUTOMATION COMPLETED ===")
+            logger.info(f"✅ Total companies processed: {self.companies_processed}")
+            logger.info(f"✅ Final consecutive failures: {self.consecutive_failures}")
+            
+            if self.consecutive_failures >= 3:
+                logger.warning("⚠️ Automation stopped due to 3 consecutive failures")
+            elif self.companies_processed >= self.max_companies:
+                logger.info(f"✅ Automation completed - reached maximum limit of {self.max_companies} companies")
+            else:
+                logger.info("✅ Automation completed - reached end of table")
             
             # Keep browser open for a while so user can see the result
             logger.info("Keeping browser open for 30 seconds for manual verification...")
             time.sleep(30)
             
         except Exception as e:
-            logger.error(f"❌ PRECISE AUTOMATION FAILED: {e}")
+            logger.error(f"❌ CONTINUOUS AUTOMATION FAILED: {e}")
             logger.error("Please check the console logs above for detailed error information")
             raise
         finally:
@@ -1304,4 +1358,202 @@ class SeleniumAutomation:
                 logger.warning("All checkboxes are already checked or none found.")
         except Exception as e:
             print(f"[DEBUG] Could not check any box: {e}")
-            logger.warning(f"[DEBUG] Could not check any box: {e}") 
+            logger.warning(f"[DEBUG] Could not check any box: {e}")
+
+    def find_and_process_next_row(self):
+        """
+        Find the next row to process based on the last processed Payee Name.
+        If last_payee_name is None, process the first row.
+        Otherwise, scan for the row with last_payee_name, then process the row immediately after it.
+        Returns the Payee Name of the processed row, or None if no row was processed.
+        """
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.common.action_chains import ActionChains
+        from selenium.webdriver.support.ui import WebDriverWait
+        from selenium.webdriver.support import expected_conditions as EC
+        import time
+        
+        logger.info("=== FINDING AND PROCESSING NEXT ROW ===")
+        logger.info(f"Last processed Payee Name: {self.last_payee_name}")
+        
+        try:
+            # Wait for the table to be present
+            wait = WebDriverWait(self.driver, 20)
+            rows = wait.until(EC.presence_of_all_elements_located((By.XPATH, '//*[@id="propsGrid"]/tbody/tr')))
+            
+            if not rows:
+                logger.warning("No rows found in the table")
+                return None
+            
+            logger.info(f"Found {len(rows)} rows in the table")
+            
+            target_row_index = 0  # Default to first row
+            
+            if self.last_payee_name is not None:
+                # Find the row with the last processed Payee Name
+                logger.info(f"Searching for row with Payee Name: '{self.last_payee_name}'")
+                found_last_row = False
+                
+                for i, row in enumerate(rows):
+                    try:
+                        # Extract Payee Name from the row (assuming it's in the 2nd column)
+                        payee_name_cell = row.find_element(By.XPATH, ".//td[2]")
+                        payee_name = payee_name_cell.text.strip()
+                        
+                        logger.info(f"Row {i+1} Payee Name: '{payee_name}'")
+                        
+                        if payee_name == self.last_payee_name:
+                            logger.info(f"✅ Found last processed row at index {i}")
+                            found_last_row = True
+                            target_row_index = i + 1  # Process the next row
+                            break
+                            
+                    except Exception as e:
+                        logger.warning(f"Error processing row {i+1}: {e}")
+                        continue
+                
+                if not found_last_row:
+                    logger.warning(f"Could not find row with last processed Payee Name: '{self.last_payee_name}'")
+                    logger.info("Starting from the first row")
+                    target_row_index = 0
+            else:
+                logger.info("No last processed Payee Name - starting with first row")
+            
+            # Check if target row index is within bounds
+            if target_row_index >= len(rows):
+                logger.info("Target row index is beyond table bounds - reached end of table")
+                return None
+            
+            # Process the target row
+            target_row = rows[target_row_index]
+            payee_name_cell = target_row.find_element(By.XPATH, ".//td[2]")
+            payee_name = payee_name_cell.text.strip()
+            
+            logger.info(f"✅ Processing row {target_row_index + 1} with Payee Name: '{payee_name}'")
+            print(f"Processing Payee Name: {payee_name}")
+            
+            # Double-click the row to open it
+            ActionChains(self.driver).double_click(target_row).perform()
+            logger.info(f"✅ Double-clicked row {target_row_index + 1}")
+            
+            # Update tracking
+            self.last_payee_name = payee_name
+            self.companies_processed += 1
+            
+            return payee_name
+            
+        except Exception as e:
+            logger.error(f"❌ ERROR: Could not find and process next row: {e}")
+            self.consecutive_failures += 1
+            return None
+
+    def should_stop_processing(self):
+        """
+        Check if processing should stop based on stopping conditions.
+        Returns True if processing should stop, False otherwise.
+        """
+        if self.consecutive_failures >= 3:
+            logger.warning(f"❌ Stopping: {self.consecutive_failures} consecutive failures")
+            return True
+        
+        if self.companies_processed >= self.max_companies:
+            logger.info(f"✅ Stopping: Reached maximum companies limit ({self.max_companies})")
+            return True
+        
+        return False
+
+    def reset_failure_count(self):
+        """
+        Reset the consecutive failure count after a successful processing.
+        """
+        if self.consecutive_failures > 0:
+            logger.info(f"Resetting consecutive failure count from {self.consecutive_failures} to 0")
+            self.consecutive_failures = 0
+
+    def process_single_payee(self, payee_name):
+        """
+        Process a single Payee Name through the complete automation workflow.
+        This method assumes the browser is already set up and on the correct page.
+        
+        Args:
+            payee_name (str): The Payee Name to process
+            
+        Returns:
+            bool: True if processing was successful, False otherwise
+        """
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.common.keys import Keys
+        from selenium.webdriver.support.ui import WebDriverWait
+        from selenium.webdriver.support import expected_conditions as EC
+        import time
+        
+        logger.info(f"=== PROCESSING SINGLE PAYEE: '{payee_name}' ===")
+        
+        try:
+            # Store the most recent PropertyDetail tab before opening BizFileOnline
+            property_tab = None
+            for handle in reversed(self.driver.window_handles):
+                self.driver.switch_to.window(handle)
+                url = self.driver.current_url
+                if "/PropertyDetail/" in url and "id=" in url:
+                    property_tab = handle
+                    logger.info(f"Found PropertyDetail tab: {url} (handle: {handle})")
+                    break
+            
+            if not property_tab:
+                property_tab = self.driver.current_window_handle
+                logger.info(f"No PropertyDetail tab found, using current tab: {property_tab}")
+            
+            # Navigate to BizFileOnline and search for the Payee name
+            logger.info("Navigating to bizfileonline.sos.ca.gov/search/business for Payee name search...")
+            
+            # Open BizFileOnline in a new tab and switch to it
+            self.driver.execute_script("window.open('https://bizfileonline.sos.ca.gov/search/business', '_blank');")
+            time.sleep(1)  # Give the new tab a moment to open
+            
+            # Switch to the new BizFileOnline tab
+            for handle in self.driver.window_handles:
+                self.driver.switch_to.window(handle)
+                if "bizfileonline.sos.ca.gov/search/business" in self.driver.current_url:
+                    logger.info(f"Switched to BizFileOnline tab: {handle}")
+                    break
+            
+            wait = WebDriverWait(self.driver, 15)
+            
+            # Locate the business search input field and search
+            logger.info("Waiting for the business search input field to be present (//*[@id='root']//input)...")
+            search_input = wait.until(
+                EC.presence_of_element_located((By.XPATH, "//*[@id='root']//input"))
+            )
+            logger.info("✅ Business search input field is present and ready.")
+            
+            # Type the full business name into the search input field
+            search_input.clear()
+            for char in payee_name:
+                search_input.send_keys(char)
+                time.sleep(0.02)  # slight delay for realism
+            logger.info(f"✅ Fully typed Payee name into search: '{payee_name}'")
+            
+            # Send Enter/Return key to trigger the search
+            search_input.send_keys(Keys.RETURN)
+            logger.info("✅ Sent Enter/Return key to trigger the search.")
+            
+            # Wait for search results to fully render
+            logger.info("Waiting 3 seconds for BizFileOnline search results to fully render...")
+            time.sleep(3)
+            
+            # Scroll to the bottom of the page to ensure all content is visible
+            logger.info("Scrolling to the bottom of the BizFileOnline page to ensure all content is visible...")
+            self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            
+            # Process the search results
+            self.find_and_click_exact_or_newest_entity(payee_name, property_tab=property_tab)
+            
+            logger.info(f"✅ Successfully processed Payee: '{payee_name}'")
+            self.reset_failure_count()
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ ERROR: Failed to process Payee '{payee_name}': {e}")
+            self.consecutive_failures += 1
+            return False 
