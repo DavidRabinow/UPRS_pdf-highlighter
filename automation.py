@@ -887,6 +887,8 @@ class SeleniumAutomation:
                             print("Clicked the save button")
                             # Switch to Search Properties tab immediately after saving
                             self.switch_to_search_properties_tab()
+                            print("[DEBUG] About to call check_first_unchecked_checkbox")
+                            self.check_first_unchecked_checkbox()
                         except Exception as save_e:
                             logger.error(f"Could not scroll up or click save button: {save_e}")
                             print(f"Could not scroll up or click save button: {save_e}")
@@ -1249,3 +1251,57 @@ class SeleniumAutomation:
                 break
         if not found:
             logger.warning("❌ Could not find Search Properties tab.") 
+
+    def check_first_unchecked_checkbox(self):
+        """
+        After switching to the Search Properties tab, check the first unchecked checkbox in the table.
+        If the first is checked, check the next unchecked one and stop.
+        """
+        import time
+        from selenium.webdriver.common.by import By
+
+        print("[DEBUG] Starting check_first_unchecked_checkbox")
+        logger.info("[DEBUG] Starting check_first_unchecked_checkbox")
+        time.sleep(2)  # Wait for the page to be ready
+        try:
+            rows = self.driver.find_elements(By.XPATH, '//*[@id="propsGrid"]/tbody/tr')
+            print(f"[DEBUG] Found {len(rows)} rows in the table")
+            logger.info(f"[DEBUG] Found {len(rows)} rows in the table")
+            checked = False
+            for idx, row in enumerate(rows, start=1):
+                try:
+                    checkbox_xpath = f'//*[@id="propsGrid"]/tbody/tr[{idx}]/th/span[2]/span'
+                    print(f"[DEBUG] Trying to find checkbox at: {checkbox_xpath}")
+                    logger.info(f"[DEBUG] Trying to find checkbox at: {checkbox_xpath}")
+                    checkbox = self.driver.find_element(By.XPATH, checkbox_xpath)
+                    print(f"[DEBUG] Found checkbox element for row {idx}")
+                    logger.info(f"[DEBUG] Found checkbox element for row {idx}")
+                    # Try to determine if the checkbox is checked (by class or aria-checked)
+                    checkbox_class = checkbox.get_attribute("class")
+                    aria_checked = checkbox.get_attribute("aria-checked")
+                    print(f"[DEBUG] Row {idx}: checkbox class='{checkbox_class}', aria-checked='{aria_checked}'")
+                    logger.info(f"[DEBUG] Row {idx}: checkbox class='{checkbox_class}', aria-checked='{aria_checked}'")
+                    is_checked = "checked" in (checkbox_class or "") or aria_checked == "true"
+                    print(f"[DEBUG] Row {idx}: Checkbox checked = {is_checked}")
+                    logger.info(f"[DEBUG] Row {idx}: Checkbox checked = {is_checked}")
+                    if not is_checked:
+                        self.driver.execute_script("arguments[0].scrollIntoView(true);", checkbox)
+                        time.sleep(0.2)
+                        checkbox.click()
+                        print(f"[DEBUG] Checked the box at row {idx}")
+                        logger.info(f"Checked the box at row {idx}")
+                        checked = True
+                        break
+                    else:
+                        print(f"[DEBUG] Row {idx} already checked.")
+                        logger.info(f"[DEBUG] Row {idx} already checked.")
+                except Exception as e:
+                    print(f"[DEBUG] Exception in row {idx}: {e}")
+                    logger.warning(f"[DEBUG] Exception in row {idx}: {e}")
+                    continue
+            if not checked:
+                print("[DEBUG] All checkboxes are already checked or none found.")
+                logger.warning("All checkboxes are already checked or none found.")
+        except Exception as e:
+            print(f"[DEBUG] Could not check any box: {e}")
+            logger.warning(f"[DEBUG] Could not check any box: {e}") 
