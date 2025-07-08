@@ -885,6 +885,8 @@ class SeleniumAutomation:
                             save_button.click()
                             logger.info("Clicked the save button")
                             print("Clicked the save button")
+                            # Switch to Search Properties tab immediately after saving
+                            self.switch_to_search_properties_tab()
                         except Exception as save_e:
                             logger.error(f"Could not scroll up or click save button: {save_e}")
                             print(f"Could not scroll up or click save button: {save_e}")
@@ -1231,3 +1233,19 @@ class SeleniumAutomation:
         if not text:
             return ""
         return " ".join(text.lower().split()) 
+
+    def switch_to_search_properties_tab(self):
+        """
+        Switch to the already-open Search Properties tab (Process Imported Files) by URL.
+        Logs the result. Does not close any tabs.
+        """
+        found = False
+        for handle in self.driver.window_handles:
+            self.driver.switch_to.window(handle)
+            current_url = self.driver.current_url
+            if "rears.retainedequity.com/#/Search/:type=file" in current_url:
+                logger.info(f"Switched to Search Properties tab: {handle}")
+                found = True
+                break
+        if not found:
+            logger.warning("❌ Could not find Search Properties tab.") 
