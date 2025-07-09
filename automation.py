@@ -762,15 +762,23 @@ class SeleniumAutomation:
             time.sleep(0.5)
             # Extract the link address from the 'Download' anchor after expansion
             download_xpath = "//a[contains(., 'Download')]"
+            download_link = None
+            
             try:
+                # Wait for download button with a shorter timeout
                 download_button = wait.until(EC.presence_of_element_located((By.XPATH, download_xpath)))
                 download_link = download_button.get_attribute('href')
                 logger.info(f"Download link found: {download_link}")
                 print(f"Download link: {download_link}")
-                # Wait 3 seconds before switching back
-                time.sleep(3)
-                # Switch back to PropertyDetail tab as soon as download link is obtained
-                if property_tab:
+            except Exception:
+                logger.warning("No download link found - will add 'no download link invalid' note")
+                print("No download link found - will add 'no download link invalid' note")
+                download_link = "no download link invalid"
+            
+            # Wait 3 seconds before switching back
+            time.sleep(3)
+            # Switch back to PropertyDetail tab as soon as download link is obtained
+            if property_tab:
                     logger.info(f"Switching back to PropertyDetail tab: {property_tab}")
                     self.driver.switch_to.window(property_tab)
                     
@@ -914,9 +922,6 @@ class SeleniumAutomation:
                             print(f"Could not scroll up or click save button: {save_e}")
                     except Exception as e:
                         logger.error(f"Could not click the + Add Note button: {e}")
-            except Exception:
-                logger.error("Download anchor not found after expanding the panel.")
-                print("Download anchor not found after expanding the panel.")
         except Exception as e:
             logger.error(f"❌ ERROR: Could not click the fixed panel button or extract download link: {e}")
             print(f"Could not click the fixed panel button or extract download link: {e}")
