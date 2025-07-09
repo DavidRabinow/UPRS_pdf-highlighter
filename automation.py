@@ -1125,7 +1125,7 @@ class SeleniumAutomation:
             self.driver.quit()
             logger.info("Browser closed successfully")
             
-    def run(self, search_text):
+    def run(self, search_text, company_name=None, start_point="none"):
         """
         Main method to run the complete automation process with continuous processing.
         This method orchestrates the entire automation process:
@@ -1136,6 +1136,8 @@ class SeleniumAutomation:
         5. Continuous processing of Payee Names from the table
         Args:
             search_text (str): The text to search for in the initial search field
+            company_name (str): Optional company name to begin processing from
+            start_point (str): Starting point - "none" or "company"
         """
         try:
             logger.info("=== STARTING CONTINUOUS SELENIUM AUTOMATION ===")
@@ -1164,6 +1166,29 @@ class SeleniumAutomation:
             import time
             wait = WebDriverWait(self.driver, 20)
             current_row_index = 0
+            
+            # Handle starting from a specific company if specified
+            if start_point == "company" and company_name:
+                logger.info(f"Looking for company '{company_name}' to start processing from...")
+                rows = wait.until(EC.presence_of_all_elements_located((By.XPATH, '//*[@id="propsGrid"]/tbody/tr')))
+                found_company = False
+                for i, row in enumerate(rows):
+                    try:
+                        payee_name_cell = row.find_element(By.XPATH, ".//td[2]")
+                        payee_name = payee_name_cell.text.strip()
+                        if self._normalize_text(payee_name) == self._normalize_text(company_name):
+                            current_row_index = i
+                            found_company = True
+                            logger.info(f"✅ Found company '{company_name}' at row {current_row_index+1}")
+                            break
+                    except Exception as e:
+                        logger.warning(f"Could not extract Payee Name at row {i+1}: {e}")
+                        continue
+                
+                if not found_company:
+                    logger.warning(f"⚠️ Company '{company_name}' not found in table. Starting from the beginning.")
+                    current_row_index = 0
+            
             while self.companies_processed < self.max_companies:
                 # Refresh the rows list each iteration
                 rows = wait.until(EC.presence_of_all_elements_located((By.XPATH, '//*[@id="propsGrid"]/tbody/tr')))

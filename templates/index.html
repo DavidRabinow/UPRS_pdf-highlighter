@@ -160,6 +160,23 @@
           placeholder="Enter the text you want to search for..."
           value=""
         />
+
+        <label for="companyName" class="input-label"
+          >Company Name (Optional):</label
+        >
+        <input
+          type="text"
+          id="companyName"
+          class="text-input"
+          placeholder="Enter company name to begin with..."
+          value=""
+        />
+
+        <label for="startPoint" class="input-label">Starting Point:</label>
+        <select id="startPoint" class="text-input">
+          <option value="none">None (Start from top)</option>
+          <option value="company">Company Name</option>
+        </select>
       </div>
 
       <div class="button-container">
@@ -184,6 +201,13 @@
           </div>
           <div class="status-item status-idle">
             <strong>Search Text:</strong> <span id="searchTextDisplay">-</span>
+          </div>
+          <div class="status-item status-idle">
+            <strong>Company Name:</strong>
+            <span id="companyNameDisplay">-</span>
+          </div>
+          <div class="status-item status-idle">
+            <strong>Start Point:</strong> <span id="startPointDisplay">-</span>
           </div>
           <div class="status-item status-idle">
             <strong>Start Time:</strong> <span id="startTime">-</span>
@@ -214,11 +238,24 @@
         const button = document.getElementById("startButton");
         const statusText = document.getElementById("statusText");
         const searchTextInput = document.getElementById("searchText");
+        const companyNameInput = document.getElementById("companyName");
+        const startPointSelect = document.getElementById("startPoint");
+
         const searchText = searchTextInput.value.trim();
+        const companyName = companyNameInput.value.trim();
+        const startPoint = startPointSelect.value;
 
         // Validate input
         if (!searchText) {
           alert("Please enter some text to search for.");
+          return;
+        }
+
+        // Validate company name if starting point is set to company
+        if (startPoint === "company" && !companyName) {
+          alert(
+            "Please enter a company name when selecting 'Company Name' as starting point."
+          );
           return;
         }
 
@@ -228,7 +265,7 @@
         statusText.innerHTML =
           'Starting automation... <div class="loading"></div>';
 
-        // Make API call to start automation with search text
+        // Make API call to start automation with search text and additional parameters
         fetch("/start_automation", {
           method: "POST",
           headers: {
@@ -236,6 +273,8 @@
           },
           body: JSON.stringify({
             search_text: searchText,
+            company_name: companyName,
+            start_point: startPoint,
           }),
         })
           .then((response) => response.json())
@@ -295,6 +334,9 @@
         const statusText = document.getElementById("statusText");
         const currentStep = document.getElementById("currentStep");
         const searchTextDisplay = document.getElementById("searchTextDisplay");
+        const companyNameDisplay =
+          document.getElementById("companyNameDisplay");
+        const startPointDisplay = document.getElementById("startPointDisplay");
         const startTime = document.getElementById("startTime");
         const endTime = document.getElementById("endTime");
         const errorContainer = document.getElementById("errorContainer");
@@ -318,6 +360,8 @@
         // Update other fields
         currentStep.textContent = data.current_step || "No automation running";
         searchTextDisplay.textContent = data.search_text || "-";
+        companyNameDisplay.textContent = data.company_name || "-";
+        startPointDisplay.textContent = data.start_point || "-";
         startTime.textContent = data.start_time || "-";
         endTime.textContent = data.end_time || "-";
 
@@ -345,6 +389,8 @@
                 end_time: null,
                 current_step: null,
                 search_text: null,
+                company_name: null,
+                start_point: null,
               });
               console.log("Status reset successfully");
             }

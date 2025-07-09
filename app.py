@@ -31,27 +31,31 @@ automation_status = {
     'search_text': None
 }
 
-def run_automation_in_background(search_text):
+def run_automation_in_background(search_text, company_name=None, start_point="none"):
     """
     Background function to run Selenium automation.
     This runs in a separate thread so Flask remains responsive.
     
     Args:
         search_text (str): The text to search for in the automation
+        company_name (str): Optional company name to begin with
+        start_point (str): Starting point - "none" or "company"
     """
     global automation_status
     
     try:
-        logger.info(f"Starting Selenium automation in background with search text: '{search_text}'")
+        logger.info(f"Starting Selenium automation in background with search text: '{search_text}', company: '{company_name}', start point: '{start_point}'")
         automation_status['running'] = True
         automation_status['start_time'] = time.strftime('%Y-%m-%d %H:%M:%S')
         automation_status['error'] = None
         automation_status['current_step'] = 'Initializing...'
         automation_status['search_text'] = search_text
+        automation_status['company_name'] = company_name
+        automation_status['start_point'] = start_point
         
-        # Create and run automation with search text
+        # Create and run automation with search text and additional parameters
         automation = SeleniumAutomation()
-        automation.run(search_text)
+        automation.run(search_text, company_name, start_point)
         
         # Update status on completion
         automation_status['running'] = False
@@ -90,18 +94,34 @@ def start_automation():
             'message': 'Automation is already running'
         })
     
-    # Get search text from request
+    # Get parameters from request
     try:
         data = request.get_json()
         search_text = data.get('search_text', '').strip()
+        company_name = data.get('company_name', '').strip()
+        start_point = data.get('start_point', 'none')
         
         if not search_text:
             return jsonify({
                 'success': False,
                 'message': 'Search text is required'
             })
+        
+        # Validate start point
+        if start_point not in ['none', 'company']:
+            return jsonify({
+                'success': False,
+                'message': 'Invalid start point. Must be "none" or "company"'
+            })
+        
+        # Validate company name if start point is company
+        if start_point == 'company' and not company_name:
+            return jsonify({
+                'success': False,
+                'message': 'Company name is required when start point is "company"'
+            })
             
-        logger.info(f"Received automation request with search text: '{search_text}'")
+        logger.info(f"Received automation request with search text: '{search_text}', company: '{company_name}', start point: '{start_point}'")
         
     except Exception as e:
         logger.error(f"Error parsing request data: {e}")
@@ -118,19 +138,21 @@ def start_automation():
         'start_time': None,
         'end_time': None,
         'current_step': None,
-        'search_text': None
+        'search_text': None,
+        'company_name': None,
+        'start_point': None
     }
     
-    # Start automation in background thread with search text
-    automation_thread = threading.Thread(target=run_automation_in_background, args=(search_text,))
+    # Start automation in background thread with all parameters
+    automation_thread = threading.Thread(target=run_automation_in_background, args=(search_text, company_name, start_point))
     automation_thread.daemon = True  # Thread will stop when main app stops
     automation_thread.start()
     
-    logger.info(f"Automation thread started with search text: '{search_text}'")
+    logger.info(f"Automation thread started with search text: '{search_text}', company: '{company_name}', start point: '{start_point}'")
     
     return jsonify({
         'success': True,
-        'message': f'Automation started successfully with search text: "{search_text}"'
+        'message': f'Automation started successfully with search text: "{search_text}", company: "{company_name}", start point: "{start_point}"'
     })
 
 @app.route('/status')
@@ -155,7 +177,9 @@ def reset_status():
         'start_time': None,
         'end_time': None,
         'current_step': None,
-        'search_text': None
+        'search_text': None,
+        'company_name': None,
+        'start_point': None
     }
     return jsonify({'success': True, 'message': 'Status reset'})
 
