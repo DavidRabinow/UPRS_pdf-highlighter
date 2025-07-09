@@ -17,6 +17,8 @@ import logging
 from selenium.webdriver.common.action_chains import ActionChains
 import difflib
 from datetime import datetime
+import re
+import traceback
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -519,7 +521,22 @@ class SeleniumAutomation:
             if best_row is not None:
                 logger.info(f"✅ Clicking newest matching result: '{best_entity}' (Filing Date: {best_date_str})")
                 print(f"Clicked: '{best_entity}' (Filing Date: {best_date_str})")
-                best_row.click()
+                try:
+                    self.driver.execute_script("arguments[0].scrollIntoView(true);", best_row)
+                    from selenium.webdriver.common.action_chains import ActionChains
+                    row_text = best_row.text
+                    print(f"[DEBUG] About to click row {best_index+1} with text: {row_text}")
+                    ActionChains(self.driver).move_to_element(best_row).click().perform()
+                    print(f"[DEBUG] Successfully clicked row {best_index+1}")
+                except Exception as e:
+                    print(f"[ERROR] Failed to click row {best_index+1}: {e}")
+                    # Print the outer HTML of the row for further debugging
+                    try:
+                        print("[ERROR] Row outerHTML:", best_row.get_attribute('outerHTML'))
+                    except Exception as e2:
+                        print(f"[ERROR] Could not get outerHTML: {e2}")
+                    # Optionally, print the stack trace
+                    traceback.print_exc()
             else:
                 logger.warning("⚠️ No suitable matching result found to click.")
                 print("No suitable matching result found to click.")
@@ -606,7 +623,11 @@ class SeleniumAutomation:
             logger.error(f"❌ ERROR: Could not process BizFileOnline result rows: {e}")
             raise
 
-    def find_and_click_exact_or_newest_entity(self, payee_name, property_tab=None):
+    def find_and_click_exact_or_newest_entity(self, payee_name, property_tab=None, multiple_results=False, already_clicked=False):
+        if already_clicked:
+            # Skip click logic, just continue with the rest of the process
+            self._wait_and_click_view_history(wait, property_tab=property_tab, multiple_results=multiple_results)
+            return
         """
         After BizFileOnline search, wait for results, then:
         - Locate result rows using //table//tr[td]
@@ -656,46 +677,67 @@ class SeleniumAutomation:
                     logger.info("✅ Clicked the blue clickable element in the only result row.")
                     print("Clicked the blue clickable element in the only result row.")
                     # After click, wait for right panel and click 'View History'
-                    self._wait_and_click_view_history(wait, property_tab=property_tab)
+                    self._wait_and_click_view_history(wait, property_tab=property_tab, multiple_results=multiple_results)
                 else:
                     logger.warning("No blue clickable element found in the only result row.")
                     print("No blue clickable element found in the only result row.")
                 return
-            # Multiple rows: look for exact match
-            found_exact = False
+            # Multiple rows: look for best match using dynamic XPath
+            best_match = None
+            best_score = 0
             search_name = payee_name.strip().lower()
-            for row in rows:
+            
+            for i, row in enumerate(rows):
                 clickable = None
                 entity_text = None
-                for xpath in [
-                    ".//td[1]//button",
-                    ".//td[1]//div[contains(@class,'entity')]",
-                    ".//td[1]//span"
+                row_num = i + 1
+                for xpath_pattern in [
+                    "//*[@id='root']/div/div[1]/div/main/div[2]/table/tbody/tr[{row_num}]/td[1]//button",
+                    "//*[@id='root']/div/div[1]/div/main/div[2]/table/tbody/tr[{row_num}]/td[1]//div[contains(@class,'entity')]",
+                    "//*[@id='root']/div/div[1]/div/main/div[2]/table/tbody/tr[{row_num}]/td[1]//span"
                 ]:
-                    elems = row.find_elements(By.XPATH, xpath)
+                    xpath = xpath_pattern.format(row_num=row_num)
+                    elems = self.driver.find_elements(By.XPATH, xpath)
                     if elems:
                         clickable = elems[0]
                         entity_text = clickable.text.strip()
                         break
                 if entity_text:
                     logger.info(f"Entity candidate: '{entity_text}' vs search: '{search_name}'")
-                    if entity_text.strip().lower() == search_name:
-                        logger.info(f"✅ Exact entity name match found: '{entity_text}'. Clicking clickable element.")
-                        print(f"Exact entity name match found: '{entity_text}'. Clicking clickable element.")
-                        clickable.click()
-                        found_exact = True
-                        # After click, wait for right panel and click 'View History'
-                        self._wait_and_click_view_history(wait, property_tab=property_tab)
-                        return
-            if not found_exact:
-                logger.info("No exact entity name match found. No click performed.")
-                print("No exact entity name match found. No click performed.")
+                    # Calculate similarity score
+                    score = self._letters_in_common(entity_text.lower(), search_name)
+                    if score > best_score:
+                        best_score = score
+                        best_match = clickable
+                        logger.info(f"New best match: '{entity_text}' with score {score}")
+            
+            if best_match:
+                logger.info(f"✅ Best match found with score {best_score}. Clicking element.")
+                print(f"Best match found with score {best_score}. Clicking element.")
+                try:
+                    best_match.click()
+                    # After click, wait for right panel and click 'View History'
+                    self._wait_and_click_view_history(wait, property_tab=property_tab, multiple_results=multiple_results)
+                except Exception as e:
+                    logger.error(f"❌ ERROR: Click failed: {e}")
+                    print(f"Click failed: {e}")
+                    time.sleep(3)
+                    self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                    logger.info("Waited 3 seconds and scrolled to bottom of page.")
+                    print("Waited 3 seconds and scrolled to bottom of page.")
+            else:
+                logger.info("No suitable match found. No click performed.")
+                print("No suitable match found. No click performed.")
+                time.sleep(3)
+                self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                logger.info("Waited 3 seconds and scrolled to bottom of page.")
+                print("Waited 3 seconds and scrolled to bottom of page.")
         except Exception as e:
             logger.error(f"❌ ERROR: Could not process BizFileOnline entity results: {e}")
             print(f"BizFileOnline entity results processing failed: {e}")
             raise
 
-    def _wait_and_click_view_history(self, wait, property_tab=None):
+    def _wait_and_click_view_history(self, wait, property_tab=None, multiple_results=False):
         """
         After clicking on a BizFileOnline result, wait for the right-hand side panel to load and click the 'View History' button.
         """
@@ -723,7 +765,7 @@ class SeleniumAutomation:
                 logger.info("✅ Clicked 'View History' button.")
                 print("Clicked 'View History' button.")
                 # After clicking, wait for the History page to fully load and click the correct panel
-                self._wait_and_click_statement_of_information_panel(wait, property_tab=property_tab)
+                self._wait_and_click_statement_of_information_panel(wait, property_tab=property_tab, multiple_results=multiple_results)
             else:
                 logger.warning("'View History' button not found after waiting.")
                 print("'View History' button not found after waiting.")
@@ -731,7 +773,7 @@ class SeleniumAutomation:
             logger.error(f"❌ ERROR: Could not click 'View History' button: {e}")
             print(f"Could not click 'View History' button: {e}")
 
-    def _wait_and_click_statement_of_information_panel(self, wait, property_tab=None):
+    def _wait_and_click_statement_of_information_panel(self, wait, property_tab=None, multiple_results=False):
         """
         After clicking the 'View History' button, wait up to 3 seconds for the panel area to load.
         Then, left-click the button located at the fixed XPath /html/body/div[3]/div/div[1]/div[2]/div/div[2]/button.
@@ -768,6 +810,8 @@ class SeleniumAutomation:
                 # Wait for download button with a shorter timeout
                 download_button = wait.until(EC.presence_of_element_located((By.XPATH, download_xpath)))
                 download_link = download_button.get_attribute('href')
+                if multiple_results:
+                    download_link = f"{download_link} MULTIPLE RESULTS"
                 logger.info(f"Download link found: {download_link}")
                 print(f"Download link: {download_link}")
             except Exception:
@@ -1084,14 +1128,12 @@ class SeleniumAutomation:
     def run(self, search_text):
         """
         Main method to run the complete automation process with continuous processing.
-        
         This method orchestrates the entire automation process:
         1. Browser setup (visible Chrome)
         2. Website navigation
         3. Login (if required)
         4. Navigation to target page
         5. Continuous processing of Payee Names from the table
-        
         Args:
             search_text (str): The text to search for in the initial search field
         """
@@ -1100,70 +1142,77 @@ class SeleniumAutomation:
             logger.info(f"Initial search text provided: '{search_text}'")
             logger.info(f"Maximum companies to process: {self.max_companies}")
             logger.info("Browser will remain VISIBLE throughout the process")
-            
             # Step 1: Set up browser (VISIBLE - not headless)
             self.setup_browser()
-
             # Step 2: Navigate to website
             self.navigate_to_website()
-            
             # Step 3: Perform login (modify or remove as needed)
             self.perform_login()
-            
             # Step 4: Navigate to Search Properties
             self.navigate_to_search_properties()
-            
             # Step 5: Navigate to Process Imported Files
             self.navigate_to_process_imported_files()
-            
             # Step 6: Perform initial search to populate the table
             self.find_and_fill_file_search_field(search_text)
             logger.info("=== INITIAL SEARCH COMPLETED - TABLE SHOULD BE POPULATED ===")
-            
-            # Step 7: Continuous processing loop
-            logger.info("=== STARTING CONTINUOUS PROCESSING LOOP ===")
-            
-            while not self.should_stop_processing():
-                logger.info(f"=== PROCESSING ITERATION {self.companies_processed + 1} ===")
-                logger.info(f"Companies processed so far: {self.companies_processed}")
-                logger.info(f"Consecutive failures: {self.consecutive_failures}")
-                
-                # Find and process the next row
-                payee_name = self.find_and_process_next_row()
-                
-                if payee_name is None:
+            # Step 7: Continuous processing loop (index-based)
+            logger.info("=== STARTING CONTINUOUS PROCESSING LOOP (INDEX-BASED) ===")
+            from selenium.webdriver.common.by import By
+            from selenium.webdriver.common.action_chains import ActionChains
+            from selenium.webdriver.support.ui import WebDriverWait
+            from selenium.webdriver.support import expected_conditions as EC
+            import time
+            wait = WebDriverWait(self.driver, 20)
+            current_row_index = 0
+            while self.companies_processed < self.max_companies:
+                # Refresh the rows list each iteration
+                rows = wait.until(EC.presence_of_all_elements_located((By.XPATH, '//*[@id="propsGrid"]/tbody/tr')))
+                if current_row_index >= len(rows):
                     logger.info("No more rows to process - reached end of table")
                     break
-                
+                # Extract Payee Name from the current row
+                try:
+                    payee_name_cell = rows[current_row_index].find_element(By.XPATH, ".//td[2]")
+                    payee_name = payee_name_cell.text.strip()
+                except Exception as e:
+                    logger.warning(f"Could not extract Payee Name at row {current_row_index+1}: {e}")
+                    break
+                logger.info(f"Processing Payee Name: '{payee_name}' at row {current_row_index+1}")
+                print(f"Processing Payee Name: {payee_name}")
+                # Check off all rows with the same Payee Name and get the next different index
+                next_different_index = self.check_off_duplicate_payee_rows(payee_name, current_row_index)
+                # Double-click the first row of this group
+                try:
+                    ActionChains(self.driver).double_click(rows[current_row_index]).perform()
+                    logger.info(f"✅ Double-clicked row {current_row_index + 1}")
+                except Exception as e:
+                    logger.warning(f"Could not double-click row {current_row_index+1}: {e}")
                 # Process the Payee Name through BizFileOnline
                 success = self.process_single_payee(payee_name)
-                
                 if success:
                     logger.info(f"✅ Successfully processed Payee: '{payee_name}'")
                     logger.info(f"Total companies processed: {self.companies_processed}")
                 else:
                     logger.error(f"❌ Failed to process Payee: '{payee_name}'")
                     logger.warning(f"Consecutive failures: {self.consecutive_failures}")
-                
+                self.companies_processed += 1
+                # Move to the next unique Payee Name
+                current_row_index = next_different_index
                 # Brief pause between iterations
                 time.sleep(2)
-            
             # Step 8: Completion
             logger.info("=== CONTINUOUS AUTOMATION COMPLETED ===")
             logger.info(f"✅ Total companies processed: {self.companies_processed}")
             logger.info(f"✅ Final consecutive failures: {self.consecutive_failures}")
-            
             if self.consecutive_failures >= 3:
                 logger.warning("⚠️ Automation stopped due to 3 consecutive failures")
             elif self.companies_processed >= self.max_companies:
                 logger.info(f"✅ Automation completed - reached maximum limit of {self.max_companies} companies")
             else:
                 logger.info("✅ Automation completed - reached end of table")
-            
             # Keep browser open for a while so user can see the result
             logger.info("Keeping browser open for 30 seconds for manual verification...")
             time.sleep(30)
-            
         except Exception as e:
             logger.error(f"❌ CONTINUOUS AUTOMATION FAILED: {e}")
             logger.error("Please check the console logs above for detailed error information")
@@ -1182,7 +1231,7 @@ class SeleniumAutomation:
         6. Scroll down to bring results into view
         7. Locate all result rows using XPath //table//tr[td]
         8. If exactly one result: extract entity name, if exact match click immediately
-        9. If multiple results: loop through rows, find exact match, else fall back to newest Filing Date
+        9. If multiple results: click only the first result, and append 'multiple search results' to the download link/note
         """
         from selenium.webdriver.common.by import By
         from selenium.webdriver.common.keys import Keys
@@ -1190,62 +1239,53 @@ class SeleniumAutomation:
         from selenium.webdriver.support import expected_conditions as EC
         import time
         logger.info("Navigating to BizFileOnline: https://bizfileonline.sos.ca.gov/search/business")
-        # REMOVED: Open BizFileOnline in a new tab and switch to it
-        # The tab is now opened and switched in perform_custom_automation only
         wait = WebDriverWait(self.driver, 15)
         try:
-            # Wait for the business search input field to be present
             logger.info("Waiting for the business search input field to be present (//*[@id='root']//input)...")
             search_input = wait.until(
                 EC.presence_of_element_located((By.XPATH, "//*[@id='root']//input"))
             )
             logger.info("✅ Business search input field is present and ready.")
-            # Once present, type the Payee name (example: "100 BILLABLE DAYS LLC")
             search_input.clear()
             search_input.send_keys(payee_name)
             logger.info(f"✅ Typed Payee name into search: '{payee_name}'")
-            # Immediately after typing, send the Enter/Return key to the input field to trigger the search
             search_input.send_keys(Keys.RETURN)
             logger.info("✅ Sent Enter/Return key to trigger the search.")
-            # Wait exactly 4 seconds after pressing Enter for results to load
             logger.info("Waiting exactly 4 seconds for search results to load...")
             time.sleep(4)
-            # Scroll down to bring results into view
             logger.info("Scrolling down to bring results into view...")
             self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            # After scrolling, locate all result rows using XPath //table//tr[td]
             logger.info("Locating all result rows using XPath //table//tr[td]...")
             rows = self.driver.find_elements(By.XPATH, "//table//tr[td]")
             num_rows = len(rows)
             logger.info(f"Found {num_rows} result row(s).")
             print(f"Found {num_rows} result row(s).")
+            multiple_results = False
             if num_rows == 0:
                 logger.warning("No result rows found.")
                 print("No result rows found.")
                 return
-            # If there is exactly one result
             if num_rows == 1:
                 logger.info("Exactly one result found. Extracting entity name...")
                 print("Exactly one result found. Extracting entity name...")
                 try:
-                    # Extract the visible entity name from that row (text from the blue button, link, or name area)
                     row = rows[0]
-                    # Try to find clickable elements in the row (button, a, or other clickable elements)
                     clickable_elements = row.find_elements(By.XPATH, ".//button | .//a | .//*[contains(@class, 'clickable')] | .//*[contains(@class, 'blue')]")
                     if clickable_elements:
                         entity_name = clickable_elements[0].text.strip()
                         logger.info(f"Extracted entity name: '{entity_name}'")
                         print(f"Extracted entity name: '{entity_name}'")
-                        # If the entity name is an exact match to the Payee name (case-insensitive, ignoring extra spaces)
                         if self._normalize_text(entity_name) == self._normalize_text(payee_name):
                             logger.info(f"✅ Exact match found. Clicking the blue button/row immediately.")
                             print(f"✅ Exact match found. Clicking the blue button/row immediately.")
                             clickable_elements[0].click()
+                            self.find_and_click_exact_or_newest_entity(payee_name, property_tab=None, multiple_results=False)
                             return
                         else:
                             logger.info("No exact match found in single result. Clicking anyway.")
                             print("No exact match found in single result. Clicking anyway.")
                             clickable_elements[0].click()
+                            self.find_and_click_exact_or_newest_entity(payee_name, property_tab=None, multiple_results=False)
                             return
                     else:
                         logger.warning("No clickable elements found in the single result row.")
@@ -1255,34 +1295,44 @@ class SeleniumAutomation:
                     logger.error(f"Error processing single result: {e}")
                     print(f"Error processing single result: {e}")
                     return
-            # If there are multiple results
             else:
-                logger.info("Multiple results found. Looping through each result row...")
-                print("Multiple results found. Looping through each result row...")
-                found_exact = False
+                logger.info("Multiple results found. Selecting and clicking the best match by most letters in common...")
+                print("Multiple results found. Selecting and clicking the best match by most letters in common...")
+                rows = self.driver.find_elements(By.XPATH, "//tr[contains(@class, 'div-table-row')]")
+                max_common = -1
+                best_index = -1
+                best_entity_name = None
+
                 for i, row in enumerate(rows):
+                    spans = row.find_elements(By.XPATH, ".//span[@class='cell']")
+                    if spans:
+                        entity_name = spans[0].text.strip()
+                        common = self._letters_in_common(payee_name, entity_name)
+                        if common > max_common:
+                            max_common = common
+                            best_index = i
+                            best_entity_name = entity_name
+
+                if best_index != -1:
+                    row_index = best_index + 1  # XPath is 1-based
+                    xpath = f'//*[@id="root"]/div/div[1]/div/main/div[2]/table/tbody/tr[{row_index}]/td[2]'
                     try:
-                        # Extract the visible entity name
-                        clickable_elements = row.find_elements(By.XPATH, ".//button | .//a | .//*[contains(@class, 'clickable')] | .//*[contains(@class, 'blue')]")
-                        if clickable_elements:
-                            entity_name = clickable_elements[0].text.strip()
-                            logger.info(f"Row {i+1} entity name: '{entity_name}'")
-                            print(f"Row {i+1} entity name: '{entity_name}'")
-                            # If an entity name is an exact match (case-insensitive, ignoring extra spaces) to the Payee name
-                            if self._normalize_text(entity_name) == self._normalize_text(payee_name):
-                                logger.info(f"✅ Exact match found in row {i+1}. Clicking the blue button/row and exiting loop.")
-                                print(f"✅ Exact match found in row {i+1}. Clicking the blue button/row and exiting loop.")
-                                clickable_elements[0].click()
-                                found_exact = True
-                                break
-                    except Exception as row_e:
-                        logger.warning(f"Error processing row {i+1}: {row_e}")
-                        continue
-                # If no exact match is found, fall back to existing logic that clicks the row with the newest Filing Date
-                if not found_exact:
-                    logger.info("No exact match found. Falling back to newest Filing Date logic.")
-                    print("No exact match found. Falling back to newest Filing Date logic.")
-                    self.find_and_click_most_recent_filing_bizfile_result()
+                        cell_elem = self.driver.find_element(By.XPATH, xpath)
+                        self.driver.execute_script("arguments[0].scrollIntoView(true);", cell_elem)
+                        print(f"[DEBUG] Trying ActionChains click on row {row_index} td[2] with text: {cell_elem.text}")
+                        from selenium.webdriver.common.action_chains import ActionChains
+                        ActionChains(self.driver).move_to_element(cell_elem).click().perform()
+                        print(f"[DEBUG] Successfully clicked row {row_index} td[2]")
+                    except Exception as e:
+                        print(f"[ERROR] Could not click row {row_index} td[2]: {e}")
+                        try:
+                            print("[ERROR] Cell outerHTML:", cell_elem.get_attribute('outerHTML'))
+                        except Exception as e2:
+                            print(f"[ERROR] Could not get outerHTML: {e2}")
+                        import traceback
+                        traceback.print_exc()
+                    self.find_and_click_exact_or_newest_entity(payee_name, property_tab=None, multiple_results=True, already_clicked=True)
+                    return
         except Exception as e:
             logger.error(f"❌ ERROR: Could not complete BizFileOnline automation: {e}")
             raise
@@ -1640,3 +1690,18 @@ class SeleniumAutomation:
             logger.error(f"❌ ERROR: Failed to process Payee '{payee_name}': {e}")
             self.consecutive_failures += 1
             return False 
+
+    def _normalize_for_similarity(self, text):
+        if not text:
+            return ""
+        # Lowercase, remove non-alphanumeric except spaces, collapse spaces
+        text = text.lower()
+        text = re.sub(r'[^a-z0-9 ]+', '', text)
+        text = re.sub(r'\\s+', ' ', text)
+        return text.strip()
+
+    def _letters_in_common(self, a, b):
+        import re
+        a = re.sub(r'[^a-z]', '', a.lower())
+        b = re.sub(r'[^a-z]', '', b.lower())
+        return len(set(a) & set(b))
