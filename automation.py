@@ -663,8 +663,20 @@ class SeleniumAutomation:
             if num_rows == 0:
                 logger.warning("No result rows found on BizFileOnline.")
                 print("No result rows found on BizFileOnline.")
-                # If property_tab is provided, switch to it and add the note
-                if property_tab:
+                # Close all BizFileOnline tabs first
+                bizfile_handles = []
+                for handle in self.driver.window_handles:
+                    self.driver.switch_to.window(handle)
+                    if "bizfileonline.sos.ca.gov" in self.driver.current_url:
+                        bizfile_handles.append(handle)
+                for handle in bizfile_handles:
+                    try:
+                        self.driver.switch_to.window(handle)
+                        self.driver.close()
+                    except Exception as e:
+                        logger.warning(f"Could not close BizFileOnline tab: {e}")
+                # After closing, switch to property tab and add the note
+                if property_tab in self.driver.window_handles:
                     self.driver.switch_to.window(property_tab)
                     self.add_note_to_property("NO RESULTS WERE FOUND")
                 return
@@ -855,17 +867,18 @@ class SeleniumAutomation:
                     self.driver.switch_to.window(property_tab)
                     
                     # Close the BizFileOnline tab
-                    try:
-                        for handle in self.driver.window_handles:
-                            self.driver.switch_to.window(handle)
-                            if "bizfileonline.sos.ca.gov" in self.driver.current_url:
-                                self.driver.close()
-                                logger.info("✅ Closed BizFileOnline tab")
-                                break
-                        # Switch back to PropertyDetail tab
+                    handles_before = self.driver.window_handles[:]
+                    bizfile_tab_closed = False
+                    for handle in handles_before:
+                        self.driver.switch_to.window(handle)
+                        if "bizfileonline.sos.ca.gov" in self.driver.current_url:
+                            self.driver.close()
+                            bizfile_tab_closed = True
+                            break
+                    # After closing, refresh the window handles
+                    handles_after = self.driver.window_handles
+                    if property_tab in handles_after:
                         self.driver.switch_to.window(property_tab)
-                    except Exception as e:
-                        logger.warning(f"Could not close BizFileOnline tab: {e}")
                     
                     # Scroll to the bottom of the page
                     self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
