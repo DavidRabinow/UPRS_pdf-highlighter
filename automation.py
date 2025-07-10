@@ -623,6 +623,13 @@ class SeleniumAutomation:
             logger.error(f"❌ ERROR: Could not process BizFileOnline result rows: {e}")
             raise
 
+    def _normalize_entity_name(self, name):
+        import re
+        # Remove parenthesis and their contents, punctuation, lowercase, collapse spaces
+        name = re.sub(r'\\([^)]*\\)', '', name)
+        name = re.sub(r'[^a-z0-9 ]+', '', name.lower())
+        return ' '.join(name.split())
+
     def find_and_click_exact_or_newest_entity(self, payee_name, property_tab=None, multiple_results=False, already_clicked=False):
         if already_clicked:
             # Skip click logic, just continue with the rest of the process
@@ -683,10 +690,10 @@ class SeleniumAutomation:
                     print("No blue clickable element found in the only result row.")
                 return
             # Multiple rows: look for best match using dynamic XPath
+            normalized_payee = self._normalize_entity_name(payee_name)
             best_match = None
             best_score = 0
-            search_name = payee_name.strip().lower()
-            
+            best_length = float('inf')
             for i, row in enumerate(rows):
                 clickable = None
                 entity_text = None
@@ -703,14 +710,27 @@ class SeleniumAutomation:
                         entity_text = clickable.text.strip()
                         break
                 if entity_text:
-                    logger.info(f"Entity candidate: '{entity_text}' vs search: '{search_name}'")
-                    # Calculate similarity score
-                    score = self._letters_in_common(entity_text.lower(), search_name)
-                    if score > best_score:
-                        best_score = score
-                        best_match = clickable
-                        logger.info(f"New best match: '{entity_text}' with score {score}")
-            
+                    logger.info(f"Entity candidate: '{entity_text}' vs search: '{normalized_payee}'")
+                    normalized_entity = self._normalize_entity_name(entity_text)
+                    if normalized_entity == normalized_payee:
+                        # Exact match, click and return
+                        clickable.click()
+                        logger.info(f"✅ Exact match found. Clicking element.")
+                        print(f"Exact match found. Clicking element.")
+                        # After click, wait for right panel and click 'View History'
+                        self._wait_and_click_view_history(wait, property_tab=property_tab, multiple_results=multiple_results)
+                        return
+                    if normalized_payee in normalized_entity:
+                        # Substring match, prefer shorter
+                        if len(normalized_entity) < best_length:
+                            best_match = clickable
+                            best_length = len(normalized_entity)
+                    else:
+                        # Fallback: most letters in common
+                        score = self._letters_in_common(normalized_entity, normalized_payee)
+                        if score > best_score:
+                            best_match = clickable
+                            best_score = score
             if best_match:
                 logger.info(f"✅ Best match found with score {best_score}. Clicking element.")
                 print(f"Best match found with score {best_score}. Clicking element.")
