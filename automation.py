@@ -1266,6 +1266,60 @@ class SeleniumAutomation:
                 current_row_index = next_different_index
                 # Brief pause between iterations
                 time.sleep(2)
+            # Step 8: Pagination - Click 'Next' if available and process next page
+            try:
+                next_button_xpath = '//*[@id="propsGrid_pager"]/div/div[4]'
+                wait = WebDriverWait(self.driver, 10)
+                while True:
+                    try:
+                        next_button = wait.until(EC.presence_of_element_located((By.XPATH, next_button_xpath)))
+                        # Check if the button is enabled (not disabled)
+                        is_disabled = next_button.get_attribute('class')
+                        if is_disabled and ('disabled' in is_disabled or 'ui-state-disabled' in is_disabled):
+                            logger.info("No more pages to process. 'Next' button is disabled.")
+                            break
+                        # Click the next button
+                        self.driver.execute_script("arguments[0].scrollIntoView(true);", next_button)
+                        time.sleep(0.5)
+                        next_button.click()
+                        logger.info("Clicked 'Next' button to process next page of results.")
+                        time.sleep(2)  # Wait for new page to load
+                        # Reset row index and process next page
+                        current_row_index = 0
+                        while self.companies_processed < self.max_companies:
+                            rows = wait.until(EC.presence_of_all_elements_located((By.XPATH, '//*[@id="propsGrid"]/tbody/tr')))
+                            if current_row_index >= len(rows):
+                                logger.info("No more rows to process - reached end of table on this page")
+                                break
+                            try:
+                                payee_name_cell = rows[current_row_index].find_element(By.XPATH, ".//td[2]")
+                                payee_name = payee_name_cell.text.strip()
+                            except Exception as e:
+                                logger.warning(f"Could not extract Payee Name at row {current_row_index+1}: {e}")
+                                break
+                            logger.info(f"Processing Payee Name: '{payee_name}' at row {current_row_index+1}")
+                            print(f"Processing Payee Name: {payee_name}")
+                            next_different_index = self.check_off_duplicate_payee_rows(payee_name, current_row_index)
+                            try:
+                                ActionChains(self.driver).double_click(rows[current_row_index]).perform()
+                                logger.info(f"✅ Double-clicked row {current_row_index + 1}")
+                            except Exception as e:
+                                logger.warning(f"Could not double-click row {current_row_index+1}: {e}")
+                            success = self.process_single_payee(payee_name)
+                            if success:
+                                logger.info(f"✅ Successfully processed Payee: '{payee_name}'")
+                                logger.info(f"Total companies processed: {self.companies_processed}")
+                            else:
+                                logger.error(f"❌ Failed to process Payee: '{payee_name}'")
+                                logger.warning(f"Consecutive failures: {self.consecutive_failures}")
+                            self.companies_processed += 1
+                            current_row_index = next_different_index
+                            time.sleep(2)
+                    except TimeoutException:
+                        logger.info("No 'Next' button found. Pagination complete.")
+                        break
+            except Exception as e:
+                logger.error(f"Error during pagination: {e}")
             # Step 8: Completion
             logger.info("=== CONTINUOUS AUTOMATION COMPLETED ===")
             logger.info(f"✅ Total companies processed: {self.companies_processed}")

@@ -146,16 +146,67 @@
       .stux-footer a:hover {
         color: #fff;
       }
+      .uprs-navbar {
+        width: 100%;
+        background: #232b43;
+        padding: 0 0 0 0;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 200;
+        box-shadow: 0 2px 8px rgba(26, 34, 54, 0.1);
+        display: flex;
+        align-items: center;
+        height: 56px;
+      }
+      .uprs-navbar-logo {
+        height: 40px;
+        width: auto;
+        margin-left: 24px;
+        margin-right: 18px;
+        display: block;
+      }
+      .uprs-navbar-link {
+        color: #e5e7eb;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-decoration: none;
+        letter-spacing: 1px;
+        transition: color 0.2s;
+        margin-left: 8px;
+      }
+      .uprs-navbar-link:hover {
+        color: #fff;
+        text-decoration: underline;
+      }
+      .uprs-navbar-link-secondary {
+        margin-left: 24px;
+      }
+      .container {
+        margin-top: 70px; /* Add space for fixed navbar */
+      }
     </style>
   </head>
   <body>
-    <div class="uprs-logo-corner">
+    <nav class="uprs-navbar">
       <img
         src="/static/assets/uprs.png"
         alt="UPRS Logo"
-        style="height: 60px; width: auto; display: block"
+        class="uprs-navbar-logo"
       />
-    </div>
+      <a
+        href="https://rears.retainedequity.com/#/"
+        target="_blank"
+        class="uprs-navbar-link"
+        >REARS Home</a
+      >
+      <a
+        href="https://www.uprsgroup.com/"
+        target="_blank"
+        class="uprs-navbar-link uprs-navbar-link-secondary"
+        >UPRS Group Website</a
+      >
+    </nav>
     <div class="container">
       <div class="automation-header">
         <span
@@ -250,7 +301,7 @@
     <footer class="stux-footer">
       Created by
       <a href="https://stuxtechnologies.com" target="_blank"
-        >STUXTECHNOLOGIES LLC.</a
+        >STUX TECHNOLOGIES LLC.</a
       >
     </footer>
 
