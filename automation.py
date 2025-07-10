@@ -663,6 +663,10 @@ class SeleniumAutomation:
             if num_rows == 0:
                 logger.warning("No result rows found on BizFileOnline.")
                 print("No result rows found on BizFileOnline.")
+                # If property_tab is provided, switch to it and add the note
+                if property_tab:
+                    self.driver.switch_to.window(property_tab)
+                    self.add_note_to_property("NO RESULTS WERE FOUND")
                 return
             # Fallback: If only one row, click the blue area regardless of match
             if num_rows == 1:
@@ -755,7 +759,11 @@ class SeleniumAutomation:
         except Exception as e:
             logger.error(f"❌ ERROR: Could not process BizFileOnline entity results: {e}")
             print(f"BizFileOnline entity results processing failed: {e}")
-            raise
+            # Switch back to property tab and add note if possible
+            if property_tab:
+                self.driver.switch_to.window(property_tab)
+                self.add_note_to_property(f"NO RESULTS WERE FOUND (error: {e})")
+            return
 
     def _wait_and_click_view_history(self, wait, property_tab=None, multiple_results=False):
         """
@@ -1750,3 +1758,88 @@ class SeleniumAutomation:
         a = re.sub(r'[^a-z]', '', a.lower())
         b = re.sub(r'[^a-z]', '', b.lower())
         return len(set(a) & set(b))
+
+    def add_note_to_property(self, note_text):
+        """
+        Add a note to the property using the + Add Note button and the provided note_text.
+        Handles finding the note box, entering the note, clicking Done, and saving.
+        """
+        import time
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.support.ui import WebDriverWait
+        from selenium.webdriver.support import expected_conditions as EC
+        # Always scroll to the bottom before looking for the Add Note button
+        self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(0.5)
+        try:
+            add_note_button = self.driver.find_element(By.XPATH, '//*[@id="btnAddNote"]')
+            add_note_button.click()
+            logger.info("Clicked the + Add Note button.")
+            # Debug: print the HTML of the note area
+            try:
+                note_area = self.driver.find_element(By.XPATH, "//body")
+                print("[DEBUG] Note area outerHTML:", note_area.get_attribute("outerHTML"))
+            except Exception as debug_e:
+                print("[DEBUG] Could not get note area HTML:", debug_e)
+            # Wait for the note input to appear
+            selectors = [
+                '//textarea[@data-editor-for-notetext="true"]',
+                '//textarea[contains(@class, "ui-igedit-textarea")]',
+                '//textarea'
+            ]
+            note_box = None
+            wait = WebDriverWait(self.driver, 5)
+            for selector in selectors:
+                try:
+                    note_box = wait.until(EC.presence_of_element_located((By.XPATH, selector)))
+                    logger.info(f"Found note box using selector: {selector}")
+                    break
+                except Exception:
+                    continue
+            if note_box is None:
+                logger.warning("No note input box found after waiting. Trying body fallback.")
+                body = self.driver.find_element(By.TAG_NAME, "body")
+                body.click()
+                time.sleep(0.5)
+                from selenium.webdriver.common.action_chains import ActionChains
+                actions = ActionChains(self.driver)
+                actions.send_keys(note_text).perform()
+                logger.info(f"Typed '{note_text}' to body as note using ActionChains fallback.")
+            else:
+                note_box.click()
+                time.sleep(0.2)
+                try:
+                    note_box.clear()
+                except Exception:
+                    pass
+                time.sleep(0.2)
+                note_box.send_keys(note_text)
+                logger.info(f"Typed '{note_text}' directly as note.")
+                # Fallback: if text not entered, try ActionChains
+                if note_box.get_attribute('value') == '' and note_box.get_attribute('textContent') == '':
+                    from selenium.webdriver.common.action_chains import ActionChains
+                    actions = ActionChains(self.driver)
+                    actions.move_to_element(note_box).click().send_keys(note_text).perform()
+                    logger.info(f"Retried typing '{note_text}' using ActionChains on note_box.")
+            time.sleep(1)
+            # Click the Done button
+            try:
+                done_button = self.driver.find_element(By.XPATH, '//*[@id="notesGrid_updating_dialog_container_footer_buttonok"]')
+                done_button.click()
+                logger.info("Clicked the Done button.")
+            except Exception as done_e:
+                logger.error(f"Could not click Done button: {done_e}")
+            time.sleep(1)
+            # Save and return
+            try:
+                self.driver.execute_script("window.scrollTo(0, 0);")
+                time.sleep(0.5)
+                save_button = self.driver.find_element(By.XPATH, '//*[@id="btnPropertySave"]/span')
+                save_button.click()
+                logger.info("Clicked the save button")
+                self.switch_to_search_properties_tab()
+                self.check_first_unchecked_checkbox()
+            except Exception as save_e:
+                logger.error(f"Could not scroll up or click save button: {save_e}")
+        except Exception as note_e:
+            logger.error(f"Could not add note: {note_e}")
