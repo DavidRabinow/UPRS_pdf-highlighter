@@ -751,7 +751,11 @@ class SeleniumAutomation:
                 logger.info(f"✅ Best match found with score {best_score}. Clicking element.")
                 print(f"Best match found with score {best_score}. Clicking element.")
                 try:
-                    best_match.click()
+                    # Scroll the best match into view (centered)
+                    self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", best_match)
+                    time.sleep(0.5)
+                    from selenium.webdriver.common.action_chains import ActionChains
+                    ActionChains(self.driver).move_to_element(best_match).click().perform()
                     # After click, wait for right panel and click 'View History'
                     self._wait_and_click_view_history(wait, property_tab=property_tab, multiple_results=multiple_results)
                 except Exception as e:
