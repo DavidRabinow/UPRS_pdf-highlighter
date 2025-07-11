@@ -31,7 +31,7 @@ automation_status = {
     'search_text': None
 }
 
-def run_automation_in_background(search_text, company_name=None, start_point="none"):
+def run_automation_in_background(search_text, company_name=None, start_point="none", start_page=None):
     """
     Background function to run Selenium automation.
     This runs in a separate thread so Flask remains responsive.
@@ -52,10 +52,11 @@ def run_automation_in_background(search_text, company_name=None, start_point="no
         automation_status['search_text'] = search_text
         automation_status['company_name'] = company_name
         automation_status['start_point'] = start_point
+        automation_status['start_page'] = start_page
         
         # Create and run automation with search text and additional parameters
         automation = SeleniumAutomation()
-        automation.run(search_text, company_name, start_point)
+        automation.run(search_text, company_name, start_point, start_page)
         
         # Update status on completion
         automation_status['running'] = False
@@ -100,6 +101,19 @@ def start_automation():
         search_text = data.get('search_text', '').strip()
         company_name = data.get('company_name', '').strip()
         start_point = data.get('start_point', 'none')
+        start_page = data.get('start_page', None)
+        if start_page is not None:
+            try:
+                start_page = int(start_page)
+                if start_page < 1:
+                    raise ValueError
+            except Exception:
+                return jsonify({
+                    'success': False,
+                    'message': 'Start page must be a positive integer.'
+                })
+        else:
+            start_page = None
         
         if not search_text:
             return jsonify({
@@ -121,7 +135,7 @@ def start_automation():
                 'message': 'Company name is required when start point is "company"'
             })
             
-        logger.info(f"Received automation request with search text: '{search_text}', company: '{company_name}', start point: '{start_point}'")
+        logger.info(f"Received automation request with search text: '{search_text}', company: '{company_name}', start point: '{start_point}', start page: '{start_page}'")
         
     except Exception as e:
         logger.error(f"Error parsing request data: {e}")
@@ -140,11 +154,12 @@ def start_automation():
         'current_step': None,
         'search_text': None,
         'company_name': None,
-        'start_point': None
+        'start_point': None,
+        'start_page': None
     }
     
     # Start automation in background thread with all parameters
-    automation_thread = threading.Thread(target=run_automation_in_background, args=(search_text, company_name, start_point))
+    automation_thread = threading.Thread(target=run_automation_in_background, args=(search_text, company_name, start_point, start_page))
     automation_thread.daemon = True  # Thread will stop when main app stops
     automation_thread.start()
     

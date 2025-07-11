@@ -1166,7 +1166,7 @@ class SeleniumAutomation:
             self.driver.quit()
             logger.info("Browser closed successfully")
             
-    def run(self, search_text, company_name=None, start_point="none"):
+    def run(self, search_text, company_name=None, start_point="none", start_page=None):
         """
         Main method to run the complete automation process with continuous processing.
         This method orchestrates the entire automation process:
@@ -1179,6 +1179,7 @@ class SeleniumAutomation:
             search_text (str): The text to search for in the initial search field
             company_name (str): Optional company name to begin processing from
             start_point (str): Starting point - "none" or "company"
+            start_page (int or None): Page number to start from (1-based)
         """
         try:
             logger.info("=== STARTING CONTINUOUS SELENIUM AUTOMATION ===")
@@ -1198,6 +1199,30 @@ class SeleniumAutomation:
             # Step 6: Perform initial search to populate the table
             self.find_and_fill_file_search_field(search_text)
             logger.info("=== INITIAL SEARCH COMPLETED - TABLE SHOULD BE POPULATED ===")
+            # Step 6.5: If start_page is specified and > 1, advance to that page before processing
+            if start_page is not None and int(start_page) > 1:
+                from selenium.webdriver.common.by import By
+                from selenium.webdriver.support.ui import WebDriverWait
+                from selenium.webdriver.support import expected_conditions as EC
+                import time
+                wait = WebDriverWait(self.driver, 10)
+                next_button_xpath = '//*[@id="propsGrid_pager"]/div/div[4]'
+                logger.info(f"Advancing to page {start_page} before processing...")
+                for page_num in range(1, int(start_page)):
+                    try:
+                        next_button = wait.until(EC.presence_of_element_located((By.XPATH, next_button_xpath)))
+                        is_disabled = next_button.get_attribute('class')
+                        if is_disabled and ('disabled' in is_disabled or 'ui-state-disabled' in is_disabled):
+                            logger.warning(f"Cannot advance to page {start_page}: 'Next' button is disabled at page {page_num}.")
+                            break
+                        self.driver.execute_script("arguments[0].scrollIntoView(true);", next_button)
+                        time.sleep(0.5)
+                        next_button.click()
+                        logger.info(f"Advanced to page {page_num + 1}")
+                        time.sleep(2)  # Wait for new page to load
+                    except Exception as e:
+                        logger.error(f"Error advancing to page {page_num + 1}: {e}")
+                        break
             # Step 7: Continuous processing loop (index-based)
             logger.info("=== STARTING CONTINUOUS PROCESSING LOOP (INDEX-BASED) ===")
             from selenium.webdriver.common.by import By
