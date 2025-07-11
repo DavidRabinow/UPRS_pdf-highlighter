@@ -1207,10 +1207,17 @@ class SeleniumAutomation:
                 import time
                 wait = WebDriverWait(self.driver, 10)
                 next_button_xpath = '//*[@id="propsGrid_pager"]/div/div[4]'
+                table_row_xpath = '//*[@id="propsGrid"]/tbody/tr[1]'
                 logger.info(f"Advancing to page {start_page} before processing...")
                 for page_num in range(1, int(start_page)):
                     try:
-                        next_button = wait.until(EC.presence_of_element_located((By.XPATH, next_button_xpath)))
+                        # Get the text of the first row before clicking next
+                        try:
+                            first_row = self.driver.find_element(By.XPATH, table_row_xpath)
+                            first_row_text = first_row.text
+                        except Exception:
+                            first_row_text = None
+                        next_button = wait.until(EC.element_to_be_clickable((By.XPATH, next_button_xpath)))
                         is_disabled = next_button.get_attribute('class')
                         if is_disabled and ('disabled' in is_disabled or 'ui-state-disabled' in is_disabled):
                             logger.warning(f"Cannot advance to page {start_page}: 'Next' button is disabled at page {page_num}.")
@@ -1218,8 +1225,11 @@ class SeleniumAutomation:
                         self.driver.execute_script("arguments[0].scrollIntoView(true);", next_button)
                         time.sleep(0.5)
                         next_button.click()
-                        logger.info(f"Advanced to page {page_num + 1}")
-                        time.sleep(2)  # Wait for new page to load
+                        logger.info(f"Clicked 'Next' to advance to page {page_num + 1}")
+                        # Wait for the first row to change (table update)
+                        WebDriverWait(self.driver, 10).until(
+                            lambda d: d.find_element(By.XPATH, table_row_xpath).text != first_row_text
+                        )
                     except Exception as e:
                         logger.error(f"Error advancing to page {page_num + 1}: {e}")
                         break
