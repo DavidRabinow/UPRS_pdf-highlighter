@@ -1006,6 +1006,8 @@ class SeleniumAutomation:
                             self.switch_to_search_properties_tab()
                             print("[DEBUG] About to call check_first_unchecked_checkbox")
                             self.check_first_unchecked_checkbox()
+                            # Close PropertyDetail tab if needed
+                            self.close_propertydetail_tab_if_needed()
                         except Exception as save_e:
                             logger.error(f"Could not scroll up or click save button: {save_e}")
                             print(f"Could not scroll up or click save button: {save_e}")
@@ -1945,7 +1947,21 @@ class SeleniumAutomation:
                 logger.info("Clicked the save button")
                 self.switch_to_search_properties_tab()
                 self.check_first_unchecked_checkbox()
+                # Close PropertyDetail tab if needed
+                self.close_propertydetail_tab_if_needed()
             except Exception as save_e:
                 logger.error(f"Could not scroll up or click save button: {save_e}")
         except Exception as note_e:
             logger.error(f"Could not add note: {note_e}")
+
+    def close_propertydetail_tab_if_needed(self):
+        """
+        Close the current tab ONLY if it is a PropertyDetail page and NOT a Search page.
+        """
+        current_url = self.driver.current_url
+        # Only close if it's a PropertyDetail page and NOT a Search page
+        if "/PropertyDetail/" in current_url and "/Search/:type=file" not in current_url:
+            logger.info(f"Closing PropertyDetail tab: {current_url}")
+            self.driver.close()
+        else:
+            logger.info(f"Not closing tab: {current_url}")
