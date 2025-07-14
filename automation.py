@@ -862,7 +862,38 @@ class SeleniumAutomation:
                 logger.warning("No download link found - will add 'no download link invalid' note")
                 print("No download link found - will add 'no download link invalid' note")
                 download_link = "no download link invalid"
-            
+
+            # Extract the status (Active, Terminated, etc.)
+            status_text = None
+            try:
+                # Use the provided XPath for the status value
+                status_elem = self.driver.find_element(By.XPATH, "//*[@id='root']/div/div[1]/div/main/div[3]/div/div[2]/div/div/table/tbody/tr[2]/td[2]")
+                status_text = status_elem.text.strip()
+            except Exception:
+                try:
+                    # Pattern 1: "Status: Active" in the same element
+                    status_elem = self.driver.find_element(By.XPATH, "//*[contains(text(), 'Status:')]")
+                    status_text = status_elem.text.split('Status:')[-1].strip()
+                    if not status_text:
+                        raise Exception("No status after 'Status:'")
+                except Exception:
+                    try:
+                        # Pattern 2: Table cell with label, value in next cell
+                        status_elem = self.driver.find_element(By.XPATH, "//*[text()='Status:']/following-sibling::*[1]")
+                        status_text = status_elem.text.strip()
+                    except Exception:
+                        try:
+                            # Pattern 3: Any element with 'Active' or 'Terminated'
+                            status_elem = self.driver.find_element(By.XPATH, "//*[contains(text(), 'Active') or contains(text(), 'Terminated')]")
+                            status_text = status_elem.text.strip()
+                        except Exception:
+                            status_text = "Status not found"
+            logger.info(f"Extracted status: {status_text}")
+            print(f"Extracted status: {status_text}")
+
+            # Combine status and download link for the note
+            note_text = f"Status: {status_text}\nDownload: {download_link}"
+
             # Wait 3 seconds before switching back
             time.sleep(3)
             # Switch back to PropertyDetail tab as soon as download link is obtained
@@ -928,9 +959,9 @@ class SeleniumAutomation:
                                 time.sleep(0.5)
                                 
                                 # Type the download link directly to body
-                                body.send_keys(download_link)
-                                logger.info(f"Typed download link to body: {download_link}")
-                                print(f"Typed download link to body: {download_link}")
+                                body.send_keys(note_text)
+                                logger.info(f"Typed note text to body: {note_text}")
+                                print(f"Typed note text to body: {note_text}")
                             else:
                                 # Click on the found note box
                                 note_box.click()
@@ -942,9 +973,9 @@ class SeleniumAutomation:
                                 time.sleep(3)
                                 
                                 # Type the download link directly into the note box
-                                note_box.send_keys(download_link)
-                                logger.info(f"Typed download link directly: {download_link}")
-                                print(f"Typed download link directly: {download_link}")
+                                note_box.send_keys(note_text)
+                                logger.info(f"Typed note text directly: {note_text}")
+                                print(f"Typed note text directly: {note_text}")
                                 
                         except Exception as e:
                             logger.error(f"Failed to click note box or type: {e}")
@@ -953,9 +984,9 @@ class SeleniumAutomation:
                             # Final fallback: try ActionChains with the download link variable
                             try:
                                 actions = ActionChains(self.driver)
-                                actions.send_keys(download_link).perform()
-                                logger.info(f"Typed using ActionChains fallback: {download_link}")
-                                print(f"Typed using ActionChains fallback: {download_link}")
+                                actions.send_keys(note_text).perform()
+                                logger.info(f"Typed using ActionChains fallback: {note_text}")
+                                print(f"Typed using ActionChains fallback: {note_text}")
                             except Exception as e2:
                                 logger.error(f"ActionChains fallback also failed: {e2}")
                                 print(f"ActionChains fallback also failed: {e2}")
