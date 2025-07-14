@@ -11,7 +11,7 @@ from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
-from selenium.common.exceptions import NoSuchElementException, TimeoutException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException, StaleElementReferenceException
 import time
 import logging
 from selenium.webdriver.common.action_chains import ActionChains
@@ -754,6 +754,9 @@ class SeleniumAutomation:
                     # Scroll the best match into view (centered)
                     self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", best_match)
                     time.sleep(0.5)
+                    # Ensure the page is scrolled to the top of the best match before clicking
+                    best_match.location_once_scrolled_into_view  # This triggers Selenium to scroll to the element
+                    time.sleep(0.2)
                     from selenium.webdriver.common.action_chains import ActionChains
                     ActionChains(self.driver).move_to_element(best_match).click().perform()
                     # After click, wait for right panel and click 'View History'
@@ -865,31 +868,82 @@ class SeleniumAutomation:
 
             # Extract the status (Active, Terminated, etc.)
             status_text = None
+            import datetime
+            from selenium.common.exceptions import StaleElementReferenceException
+            # First attempt to extract status
             try:
-                # Use the provided XPath for the status value
                 status_elem = self.driver.find_element(By.XPATH, "//*[@id='root']/div/div[1]/div/main/div[3]/div/div[2]/div/div/table/tbody/tr[2]/td[2]")
                 status_text = status_elem.text.strip()
+            except StaleElementReferenceException:
+                status_text = "Status not found"
+                logger.warning("Stale element reference on status extraction (first attempt). Will retry after re-hitting Enter and scrolling.")
             except Exception:
                 try:
-                    # Pattern 1: "Status: Active" in the same element
                     status_elem = self.driver.find_element(By.XPATH, "//*[contains(text(), 'Status:')]")
                     status_text = status_elem.text.split('Status:')[-1].strip()
                     if not status_text:
                         raise Exception("No status after 'Status:'")
                 except Exception:
                     try:
-                        # Pattern 2: Table cell with label, value in next cell
                         status_elem = self.driver.find_element(By.XPATH, "//*[text()='Status:']/following-sibling::*[1]")
                         status_text = status_elem.text.strip()
                     except Exception:
                         try:
-                            # Pattern 3: Any element with 'Active' or 'Terminated'
                             status_elem = self.driver.find_element(By.XPATH, "//*[contains(text(), 'Active') or contains(text(), 'Terminated')]")
                             status_text = status_elem.text.strip()
                         except Exception:
                             status_text = "Status not found"
-            logger.info(f"Extracted status: {status_text}")
-            print(f"Extracted status: {status_text}")
+            logger.info(f"Extracted status (first attempt): {status_text}")
+            print(f"Extracted status (first attempt): {status_text}")
+
+            # If status not found or stale, retry ONCE: re-hit Enter, wait, scroll, and try again
+            if status_text == "Status not found":
+                # Take a screenshot for debugging
+                timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                screenshot_path = f"status_not_found_{timestamp}.png"
+                self.driver.save_screenshot(screenshot_path)
+                logger.warning(f"Status not found, screenshot saved: {screenshot_path}")
+                print(f"Status not found, screenshot saved: {screenshot_path}")
+                # Try to refresh the panel by hitting Enter in the search field (if possible)
+                try:
+                    from selenium.webdriver.common.keys import Keys
+                    search_inputs = self.driver.find_elements(By.XPATH, "//input[@id='SearchCriteria']")
+                    if search_inputs:
+                        search_inputs[0].send_keys(Keys.RETURN)
+                        logger.info("Retried status extraction by hitting Enter in the search field.")
+                        print("Retried status extraction by hitting Enter in the search field.")
+                        time.sleep(3)
+                        self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                        logger.info("Scrolled to the bottom of the page after retry.")
+                        print("Scrolled to the bottom of the page after retry.")
+                except Exception as e:
+                    logger.warning(f"Could not re-hit Enter in search field: {e}")
+                    print(f"Could not re-hit Enter in search field: {e}")
+                # Retry status extraction ONCE
+                try:
+                    status_elem = self.driver.find_element(By.XPATH, "//*[@id='root']/div/div[1]/div/main/div[3]/div/div[2]/div/div/table/tbody/tr[2]/td[2]")
+                    status_text = status_elem.text.strip()
+                except StaleElementReferenceException:
+                    status_text = "Status not found"
+                    logger.warning("Stale element reference on status extraction (retry). Giving up.")
+                except Exception:
+                    try:
+                        status_elem = self.driver.find_element(By.XPATH, "//*[contains(text(), 'Status:')]")
+                        status_text = status_elem.text.split('Status:')[-1].strip()
+                        if not status_text:
+                            raise Exception("No status after 'Status:'")
+                    except Exception:
+                        try:
+                            status_elem = self.driver.find_element(By.XPATH, "//*[text()='Status:']/following-sibling::*[1]")
+                            status_text = status_elem.text.strip()
+                        except Exception:
+                            try:
+                                status_elem = self.driver.find_element(By.XPATH, "//*[contains(text(), 'Active') or contains(text(), 'Terminated')]")
+                                status_text = status_elem.text.strip()
+                            except Exception:
+                                status_text = "Status not found"
+                logger.info(f"Extracted status (retry): {status_text}")
+                print(f"Extracted status (retry): {status_text}")
 
             # Combine status and download link for the note
             note_text = f"Status: {status_text}\nDownload: {download_link}"
@@ -951,32 +1005,68 @@ class SeleniumAutomation:
                                     continue
                             
                             if note_box is None:
-                                # If no specific element found, try to click on body and type
                                 logger.info("No specific note box found, clicking on body")
                                 print("No specific note box found, clicking on body")
                                 body = self.driver.find_element(By.TAG_NAME, "body")
                                 body.click()
                                 time.sleep(0.5)
-                                
-                                # Type the download link directly to body
-                                body.send_keys(note_text)
-                                logger.info(f"Typed note text to body: {note_text}")
-                                print(f"Typed note text to body: {note_text}")
+                                try:
+                                    body.send_keys(note_text)
+                                    logger.info(f"Typed note text to body: {note_text}")
+                                    print(f"Typed note text to body: {note_text}")
+                                except Exception as e:
+                                    if 'stale element reference' in str(e).lower():
+                                        # Handle stale element: re-hit Enter, wait, scroll, retry once
+                                        logger.warning("Stale element reference on body. Retrying after re-hitting Enter and scrolling.")
+                                        print("Stale element reference on body. Retrying after re-hitting Enter and scrolling.")
+                                        search_inputs = self.driver.find_elements(By.XPATH, "//input[@id='SearchCriteria']")
+                                        if search_inputs:
+                                            search_inputs[0].send_keys(Keys.RETURN)
+                                            time.sleep(3)
+                                            self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                                            time.sleep(1)
+                                            # Try to find the body again and send keys
+                                            body = self.driver.find_element(By.TAG_NAME, "body")
+                                            body.click()
+                                            time.sleep(0.5)
+                                            body.send_keys(note_text)
+                                    else:
+                                        raise
                             else:
-                                # Click on the found note box
                                 note_box.click()
                                 logger.info("Left-clicked on note text box")
                                 print("Left-clicked on note text box")
-                                time.sleep(0.5)  # Brief wait after clicking
-                                
-                                # Wait 3 seconds before pasting
+                                time.sleep(0.5)
                                 time.sleep(3)
-                                
-                                # Type the download link directly into the note box
-                                note_box.send_keys(note_text)
-                                logger.info(f"Typed note text directly: {note_text}")
-                                print(f"Typed note text directly: {note_text}")
-                                
+                                try:
+                                    note_box.send_keys(note_text)
+                                    logger.info(f"Typed note text directly: {note_text}")
+                                    print(f"Typed note text directly: {note_text}")
+                                except Exception as e:
+                                    if 'stale element reference' in str(e).lower():
+                                        # Handle stale element: re-hit Enter, wait, scroll, retry once
+                                        logger.warning("Stale element reference on note box. Retrying after re-hitting Enter and scrolling.")
+                                        print("Stale element reference on note box. Retrying after re-hitting Enter and scrolling.")
+                                        search_inputs = self.driver.find_elements(By.XPATH, "//input[@id='SearchCriteria']")
+                                        if search_inputs:
+                                            search_inputs[0].send_keys(Keys.RETURN)
+                                            time.sleep(3)
+                                            self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                                            time.sleep(1)
+                                            # Try to find the note box again and send keys
+                                            for selector in selectors:
+                                                try:
+                                                    note_box = self.driver.find_element(By.XPATH, selector)
+                                                    note_box.click()
+                                                    time.sleep(0.5)
+                                                    note_box.send_keys(note_text)
+                                                    logger.info(f"Retried typing note text after stale element: {note_text}")
+                                                    print(f"Retried typing note text after stale element: {note_text}")
+                                                    break
+                                                except:
+                                                    continue
+                                    else:
+                                        raise
                         except Exception as e:
                             logger.error(f"Failed to click note box or type: {e}")
                             print(f"Failed to click note box or type: {e}")
@@ -1336,6 +1426,14 @@ class SeleniumAutomation:
                 self.companies_processed += 1
                 # Move to the next unique Payee Name
                 current_row_index = next_different_index
+                # --- NEW LOGIC: Close all other tabs except the main one (after returning to main page) ---
+                main_handle = self.driver.current_window_handle
+                handles = self.driver.window_handles[:]
+                for handle in handles:
+                    if handle != main_handle:
+                        self.driver.switch_to.window(handle)
+                        self.driver.close()
+                self.driver.switch_to.window(main_handle)
                 # Brief pause between iterations
                 time.sleep(2)
             # Step 8: Pagination - Click 'Next' if available and process next page
