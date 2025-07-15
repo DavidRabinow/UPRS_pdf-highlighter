@@ -166,7 +166,8 @@ class SeleniumAutomation:
         chrome_options.add_argument("--disable-blink-features=AutomationControlled")
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option('useAutomationExtension', False)
-        
+        # Open Chrome in incognito mode
+        chrome_options.add_argument("--incognito")
         # Set window size for better visibility
         chrome_options.add_argument("--window-size=1200,800")
         
@@ -1270,12 +1271,19 @@ class SeleniumAutomation:
             # Only after the name is fully typed, send Enter/Return key to trigger the search
             search_input.send_keys(Keys.RETURN)
             logger.info("✅ Sent Enter/Return key to trigger the search.")
-            # Wait 3 seconds to allow the search results to fully render
-            logger.info("Waiting 3 seconds for BizFileOnline search results to fully render...")
-            time.sleep(3)
+            # Wait for at least one result row to appear before scrolling
+            logger.info("Waiting for at least one result row (//table//tr[td]) to appear on BizFileOnline...")
+            try:
+                wait.until(EC.presence_of_element_located((By.XPATH, "//table//tr[td]")))
+                logger.info("✅ At least one result row is present.")
+            except Exception as e:
+                logger.warning(f"No result rows appeared after search: {e}")
             # Scroll to the bottom of the page to ensure all content is visible
             logger.info("Scrolling to the bottom of the BizFileOnline page to ensure all content is visible...")
             self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            # Add a longer delay to allow results to visually render after scrolling
+            logger.info("Waiting 5 seconds after scrolling to allow results to visually render...")
+            time.sleep(5)
             # After scrolling is complete, continue with the next automation steps
             self.find_and_click_exact_or_newest_entity(payee_name, property_tab=property_tab)
         except Exception as e:
@@ -1968,6 +1976,9 @@ class SeleniumAutomation:
             # Scroll to the bottom of the page to ensure all content is visible
             logger.info("Scrolling to the bottom of the BizFileOnline page to ensure all content is visible...")
             self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            # Add a longer delay to allow results to visually render after scrolling
+            logger.info("Waiting 5 seconds after scrolling to allow results to visually render...")
+            time.sleep(5)
             
             # Process the search results
             self.find_and_click_exact_or_newest_entity(payee_name, property_tab=property_tab)
