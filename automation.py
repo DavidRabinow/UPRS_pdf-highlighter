@@ -49,7 +49,7 @@ class SeleniumAutomation:
         # Tracking variables for continuous processing
         self.last_payee_name = None  # Store the last processed Payee Name
         self.consecutive_failures = 0  # Track consecutive failures
-        self.max_companies = 50  # Maximum number of companies to process
+        self.max_companies = 999999  # Maximum number of companies to process (set very high for unlimited)
         self.companies_processed = 0  # Counter for processed companies
         
         # PRECISE selectors for the search field under "File" with dropdown arrow
@@ -1448,7 +1448,7 @@ class SeleniumAutomation:
             try:
                 next_button_xpath = '//*[@id="propsGrid_pager"]/div/div[4]'
                 wait = WebDriverWait(self.driver, 10)
-                while True:
+                while True:  # Remove limit check - process all available companies
                     try:
                         next_button = wait.until(EC.presence_of_element_located((By.XPATH, next_button_xpath)))
                         # Check if the button is enabled (not disabled)
@@ -1464,7 +1464,7 @@ class SeleniumAutomation:
                         time.sleep(2)  # Wait for new page to load
                         # Reset row index and process next page
                         current_row_index = 0
-                        while self.companies_processed < self.max_companies:
+                        while True:  # Remove limit check - process all rows on this page
                             rows = wait.until(EC.presence_of_all_elements_located((By.XPATH, '//*[@id="propsGrid"]/tbody/tr')))
                             if current_row_index >= len(rows):
                                 logger.info("No more rows to process - reached end of table on this page")
@@ -1498,16 +1498,21 @@ class SeleniumAutomation:
                         break
             except Exception as e:
                 logger.error(f"Error during pagination: {e}")
+                # Check if it's a browser session error
+                if "invalid session id" in str(e) or "session deleted" in str(e):
+                    logger.warning("Browser session was closed. Stopping pagination gracefully.")
+                    break
+                else:
+                    # Re-raise other exceptions
+                    raise
             # Step 8: Completion
             logger.info("=== CONTINUOUS AUTOMATION COMPLETED ===")
             logger.info(f"✅ Total companies processed: {self.companies_processed}")
             logger.info(f"✅ Final consecutive failures: {self.consecutive_failures}")
             if self.consecutive_failures >= 3:
                 logger.warning("⚠️ Automation stopped due to 3 consecutive failures")
-            elif self.companies_processed >= self.max_companies:
-                logger.info(f"✅ Automation completed - reached maximum limit of {self.max_companies} companies")
             else:
-                logger.info("✅ Automation completed - reached end of table")
+                logger.info("✅ Automation completed - processed all available companies")
             # Keep browser open for a while so user can see the result
             logger.info("Keeping browser open for 30 seconds for manual verification...")
             time.sleep(30)
@@ -1880,15 +1885,10 @@ class SeleniumAutomation:
 
     def should_stop_processing(self):
         """
-        Check if processing should stop based on stopping conditions.
-        Returns True if processing should stop, False otherwise.
+        Check if processing should stop based on failure count.
         """
         if self.consecutive_failures >= 3:
             logger.warning(f"❌ Stopping: {self.consecutive_failures} consecutive failures")
-            return True
-        
-        if self.companies_processed >= self.max_companies:
-            logger.info(f"✅ Stopping: Reached maximum companies limit ({self.max_companies})")
             return True
         
         return False
