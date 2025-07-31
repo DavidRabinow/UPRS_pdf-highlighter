@@ -1496,15 +1496,18 @@ class SeleniumAutomation:
                     except TimeoutException:
                         logger.info("No 'Next' button found. Pagination complete.")
                         break
+                    except Exception as e:
+                        logger.error(f"Error during pagination: {e}")
+                        # Check if it's a browser session error
+                        if "invalid session id" in str(e) or "session deleted" in str(e):
+                            logger.warning("Browser session was closed. Stopping pagination gracefully.")
+                            break
+                        else:
+                            # Re-raise other exceptions
+                            raise
             except Exception as e:
-                logger.error(f"Error during pagination: {e}")
-                # Check if it's a browser session error
-                if "invalid session id" in str(e) or "session deleted" in str(e):
-                    logger.warning("Browser session was closed. Stopping pagination gracefully.")
-                    break
-                else:
-                    # Re-raise other exceptions
-                    raise
+                logger.error(f"Error during pagination process: {e}")
+                raise
             # Step 8: Completion
             logger.info("=== CONTINUOUS AUTOMATION COMPLETED ===")
             logger.info(f"✅ Total companies processed: {self.companies_processed}")
