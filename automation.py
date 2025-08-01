@@ -1594,7 +1594,11 @@ class SeleniumAutomation:
                             # Re-raise other exceptions
                             raise
             except Exception as e:
+<<<<<<< HEAD
                 logger.error(f"Error during pagination process: {e}")
+=======
+                logger.error(f"Error during pagination setup: {e}")
+>>>>>>> 360c2ab5c4f469723f302a54e39c37097d4b413a
                 raise
             # Step 8: Completion
             logger.info("=== CONTINUOUS AUTOMATION COMPLETED ===")
