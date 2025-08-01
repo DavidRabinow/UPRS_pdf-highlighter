@@ -460,7 +460,41 @@ class SeleniumAutomation:
             if best_elem is not None:
                 logger.info(f"✅ Clicking best match: '{best_text}' (score: {best_score:.3f})")
                 print(f"Best match: '{best_text}' (score: {best_score:.3f})")
-                best_elem.click()
+                try:
+                    # First, ensure the element is still valid and visible
+                    logger.info("Ensuring best match element is still valid and visible...")
+                    
+                    # Get the element's location and size
+                    element_location = best_elem.location
+                    element_size = best_elem.size
+                    logger.info(f"Element location: {element_location}, size: {element_size}")
+                    
+                    # Scroll the best match into view (centered) with better error handling
+                    logger.info("Scrolling best match element to center of viewport...")
+                    self.driver.execute_script("arguments[0].scrollIntoView({block: 'center', inline: 'center'});", best_elem)
+                    time.sleep(1)  # Give more time for scroll to complete
+                    
+                    # Verify the element is now visible and clickable
+                    logger.info("Verifying element is visible and clickable...")
+                    if best_elem.is_displayed() and best_elem.is_enabled():
+                        logger.info("Element is visible and enabled, proceeding with click...")
+                        
+                        # Use JavaScript to click if regular click fails
+                        try:
+                            best_elem.click()
+                            logger.info("✅ Successfully clicked best match using regular click.")
+                        except Exception as click_error:
+                            logger.warning(f"Regular click failed, trying JavaScript click: {click_error}")
+                            self.driver.execute_script("arguments[0].click();", best_elem)
+                            logger.info("✅ Successfully clicked best match using JavaScript.")
+                    else:
+                        logger.error("Element is not visible or enabled after scrolling")
+                        raise Exception("Element not visible or enabled after scrolling")
+                        
+                except Exception as e:
+                    logger.error(f"❌ ERROR: Click failed: {e}")
+                    print(f"Click failed: {e}")
+                    raise
             else:
                 logger.warning("⚠️ No suitable search result found to click.")
                 print("No suitable search result found to click.")
@@ -523,12 +557,42 @@ class SeleniumAutomation:
                 logger.info(f"✅ Clicking newest matching result: '{best_entity}' (Filing Date: {best_date_str})")
                 print(f"Clicked: '{best_entity}' (Filing Date: {best_date_str})")
                 try:
-                    self.driver.execute_script("arguments[0].scrollIntoView(true);", best_row)
-                    from selenium.webdriver.common.action_chains import ActionChains
-                    row_text = best_row.text
-                    print(f"[DEBUG] About to click row {best_index+1} with text: {row_text}")
-                    ActionChains(self.driver).move_to_element(best_row).click().perform()
-                    print(f"[DEBUG] Successfully clicked row {best_index+1}")
+                    # First, ensure the element is still valid and visible
+                    logger.info("Ensuring best row element is still valid and visible...")
+                    
+                    # Get the element's location and size
+                    element_location = best_row.location
+                    element_size = best_row.size
+                    logger.info(f"Element location: {element_location}, size: {element_size}")
+                    
+                    # Scroll the best row into view (centered) with better error handling
+                    logger.info("Scrolling best row element to center of viewport...")
+                    self.driver.execute_script("arguments[0].scrollIntoView({block: 'center', inline: 'center'});", best_row)
+                    time.sleep(1)  # Give more time for scroll to complete
+                    
+                    # Verify the element is now visible and clickable
+                    logger.info("Verifying element is visible and clickable...")
+                    if best_row.is_displayed() and best_row.is_enabled():
+                        logger.info("Element is visible and enabled, proceeding with click...")
+                        
+                        row_text = best_row.text
+                        print(f"[DEBUG] About to click row {best_index+1} with text: {row_text}")
+                        
+                        # Use JavaScript to click if regular click fails
+                        try:
+                            from selenium.webdriver.common.action_chains import ActionChains
+                            ActionChains(self.driver).move_to_element(best_row).click().perform()
+                            logger.info("✅ Successfully clicked best row using ActionChains.")
+                            print(f"[DEBUG] Successfully clicked row {best_index+1}")
+                        except Exception as click_error:
+                            logger.warning(f"ActionChains click failed, trying JavaScript click: {click_error}")
+                            self.driver.execute_script("arguments[0].click();", best_row)
+                            logger.info("✅ Successfully clicked best row using JavaScript.")
+                            print(f"[DEBUG] Successfully clicked row {best_index+1}")
+                    else:
+                        logger.error("Element is not visible or enabled after scrolling")
+                        raise Exception("Element not visible or enabled after scrolling")
+                        
                 except Exception as e:
                     print(f"[ERROR] Failed to click row {best_index+1}: {e}")
                     # Print the outer HTML of the row for further debugging
@@ -752,16 +816,40 @@ class SeleniumAutomation:
                 logger.info(f"✅ Best match found with score {best_score}. Clicking element.")
                 print(f"Best match found with score {best_score}. Clicking element.")
                 try:
-                    # Scroll the best match into view (centered)
-                    self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", best_match)
-                    time.sleep(0.5)
-                    # Ensure the page is scrolled to the top of the best match before clicking
-                    best_match.location_once_scrolled_into_view  # This triggers Selenium to scroll to the element
-                    time.sleep(0.2)
-                    from selenium.webdriver.common.action_chains import ActionChains
-                    ActionChains(self.driver).move_to_element(best_match).click().perform()
-                    # After click, wait for right panel and click 'View History'
-                    self._wait_and_click_view_history(wait, property_tab=property_tab, multiple_results=multiple_results)
+                    # First, ensure the element is still valid and visible
+                    logger.info("Ensuring best match element is still valid and visible...")
+                    
+                    # Get the element's location and size
+                    element_location = best_match.location
+                    element_size = best_match.size
+                    logger.info(f"Element location: {element_location}, size: {element_size}")
+                    
+                    # Scroll the best match into view (centered) with better error handling
+                    logger.info("Scrolling best match element to center of viewport...")
+                    self.driver.execute_script("arguments[0].scrollIntoView({block: 'center', inline: 'center'});", best_match)
+                    time.sleep(1)  # Give more time for scroll to complete
+                    
+                    # Verify the element is now visible and clickable
+                    logger.info("Verifying element is visible and clickable...")
+                    if best_match.is_displayed() and best_match.is_enabled():
+                        logger.info("Element is visible and enabled, proceeding with click...")
+                        
+                        # Use JavaScript to click if regular click fails
+                        try:
+                            from selenium.webdriver.common.action_chains import ActionChains
+                            ActionChains(self.driver).move_to_element(best_match).click().perform()
+                            logger.info("✅ Successfully clicked best match using ActionChains.")
+                        except Exception as click_error:
+                            logger.warning(f"ActionChains click failed, trying JavaScript click: {click_error}")
+                            self.driver.execute_script("arguments[0].click();", best_match)
+                            logger.info("✅ Successfully clicked best match using JavaScript.")
+                        
+                        # After click, wait for right panel and click 'View History'
+                        self._wait_and_click_view_history(wait, property_tab=property_tab, multiple_results=multiple_results)
+                    else:
+                        logger.error("Element is not visible or enabled after scrolling")
+                        raise Exception("Element not visible or enabled after scrolling")
+                        
                 except Exception as e:
                     logger.error(f"❌ ERROR: Click failed: {e}")
                     print(f"Click failed: {e}")
