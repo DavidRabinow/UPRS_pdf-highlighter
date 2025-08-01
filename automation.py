@@ -912,8 +912,8 @@ class SeleniumAutomation:
     def _wait_and_click_statement_of_information_panel(self, wait, property_tab=None, multiple_results=False):
         """
         After clicking the 'View History' button, wait up to 3 seconds for the panel area to load.
-        Then, left-click the button located at the fixed XPath /html/body/div[3]/div/div[1]/div[2]/div/div[2]/button.
-        No scrolling is needed. If the button is not found, log an error and do not fail silently.
+        Check if the panel is already expanded by looking for download links or expanded content.
+        Only click the button if the panel is not already expanded.
         After expanding the 'Statement of Information' panel, extract the link address from the 'Download' anchor by reading its href attribute. Immediately output the link to the terminal or console log as a debugging step to confirm the correct link was captured.
         If property_tab is provided, switch back to it immediately after obtaining the download link (not after any button click).
         """
@@ -933,13 +933,31 @@ class SeleniumAutomation:
                 logger.error("Panel button not present: No button found at the fixed XPath after waiting.")
                 print("Panel button not present: No button found at the fixed XPath after waiting.")
                 return
-            logger.info("Clicking the fixed panel button to expand the 'Statement of Information' panel...")
-            button.click()
-            logger.info("✅ Clicked the fixed panel button.")
-            print("Clicked the fixed panel button.")
-            time.sleep(0.5)
-            # Extract the link address from the 'Download' anchor after expansion
+            
+            # Check if the panel is already expanded by looking for download links
             download_xpath = "//a[contains(., 'Download')]"
+            try:
+                # Wait a short time to see if download links are already visible
+                download_button = wait.until(EC.presence_of_element_located((By.XPATH, download_xpath)))
+                logger.info("Panel appears to be already expanded - download link found without clicking")
+                print("Panel appears to be already expanded - download link found without clicking")
+                panel_already_expanded = True
+            except Exception:
+                logger.info("Panel appears to be collapsed - will click to expand")
+                print("Panel appears to be collapsed - will click to expand")
+                panel_already_expanded = False
+            
+            # Only click if the panel is not already expanded
+            if not panel_already_expanded:
+                logger.info("Clicking the fixed panel button to expand the 'Statement of Information' panel...")
+                button.click()
+                logger.info("✅ Clicked the fixed panel button.")
+                print("Clicked the fixed panel button.")
+                time.sleep(0.5)
+            else:
+                logger.info("Panel already expanded - skipping click")
+                print("Panel already expanded - skipping click")
+            # Extract the link address from the 'Download' anchor after expansion
             download_link = None
             
             try:
@@ -1594,11 +1612,7 @@ class SeleniumAutomation:
                             # Re-raise other exceptions
                             raise
             except Exception as e:
-<<<<<<< HEAD
                 logger.error(f"Error during pagination process: {e}")
-=======
-                logger.error(f"Error during pagination setup: {e}")
->>>>>>> 360c2ab5c4f469723f302a54e39c37097d4b413a
                 raise
             # Step 8: Completion
             logger.info("=== CONTINUOUS AUTOMATION COMPLETED ===")
