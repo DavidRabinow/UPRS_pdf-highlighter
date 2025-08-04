@@ -33,18 +33,18 @@ class SeleniumAutomation:
         Initialize the automation with configuration.
         """
         # Configuration - UPDATE THESE VALUES AS NEEDED
-        self.website_url = "https://rears.retainedequity.com/#/"
-        self.username = "aaron"
-        self.password = "Welcome1"
+        self.website_url = "https://uprs-group-llc.monday.com/boards/9740813045"
+        self.username = "drabinow2@gmail.com"
+        self.password = "ELEGOOPRINTERS"
         
         # Element selectors - UPDATE THESE IF NEEDED
-        self.username_selector = "#usern"
-        self.password_selector = "#pass"
-        self.login_button_selector = ".loginBtn"
+        self.username_selector = "input[type='email'], input[name='email'], #email"
+        self.password_selector = "input[type='password'], input[name='password'], #password"
+        self.login_button_selector = "button[type='submit'], input[type='submit'], .login-btn"
         
         # Navigation selectors
-        self.search_properties_selector = "a[href*='search'], .search-link, #search"
-        self.process_imported_files_selector = "a[href*='process'], .process-link, #process"
+        self.search_properties_selector = "a[href*='search'], .search-link, #search, .board-item"
+        self.process_imported_files_selector = "a[href*='process'], .process-link, #process, .board-item"
         
         # Tracking variables for continuous processing
         self.last_payee_name = None  # Store the last processed Payee Name
@@ -179,7 +179,7 @@ class SeleniumAutomation:
         
     def navigate_to_website(self):
         """
-        Navigate to the target website.
+        Navigate to the Monday.com board.
         """
         logger.info(f"Navigating to: {self.website_url}")
         self.driver.get(self.website_url)
@@ -188,41 +188,129 @@ class SeleniumAutomation:
         
     def perform_login(self):
         """
-        Perform login process (if needed).
+        Perform login process to Monday.com (if needed).
         You can modify this method or remove it if login is not required.
         """
-        logger.info("=== STARTING LOGIN PROCESS ===")
+        logger.info("=== STARTING MONDAY.COM LOGIN PROCESS ===")
         
-        # Enter username
-        logger.info("Looking for username field...")
-        try:
-            username_field = self.driver.find_element(By.CSS_SELECTOR, self.username_selector)
-            username_field.clear()
-            username_field.send_keys(self.username)
-            logger.info(f"Username '{self.username}' entered successfully")
-        except NoSuchElementException:
-            logger.error(f"ERROR: Username field not found with selector: {self.username_selector}")
-            raise
+        # Wait for page to load completely
+        logger.info("Waiting for login page to load...")
+        time.sleep(3)
         
-        # Enter password
-        logger.info("Looking for password field...")
-        try:
-            password_field = self.driver.find_element(By.CSS_SELECTOR, self.password_selector)
-            password_field.clear()
-            password_field.send_keys(self.password)
-            logger.info("Password entered successfully")
-        except NoSuchElementException:
-            logger.error(f"ERROR: Password field not found with selector: {self.password_selector}")
-            raise
+        # Try multiple selectors for username field
+        username_selectors = [
+            "//*[@id='user_email']",  # Exact XPath provided by user
+            "#user_email",  # CSS selector for the same ID
+            "input[type='email']",
+            "input[name='email']", 
+            "input[placeholder='Email']",
+            "input[placeholder*='email']",
+            "input[placeholder*='Email']",
+            "#email",
+            "//input[@placeholder='Email']",
+            "//input[@type='email']"
+        ]
         
-        # Click login button
-        logger.info("Looking for login button...")
-        try:
-            login_button = self.driver.find_element(By.CSS_SELECTOR, self.login_button_selector)
-            logger.info("Login button found successfully")
-        except NoSuchElementException:
-            logger.error(f"ERROR: Login button not found with selector: {self.login_button_selector}")
-            raise
+        username_field = None
+        for selector in username_selectors:
+            try:
+                if selector.startswith("//"):
+                    username_field = self.driver.find_element(By.XPATH, selector)
+                else:
+                    username_field = self.driver.find_element(By.CSS_SELECTOR, selector)
+                logger.info(f"Found username field with selector: {selector}")
+                break
+            except NoSuchElementException:
+                continue
+        
+        if not username_field:
+            logger.error("ERROR: Username field not found with any selector")
+            # Log all input fields on the page for debugging
+            try:
+                all_inputs = self.driver.find_elements(By.TAG_NAME, "input")
+                logger.info(f"Found {len(all_inputs)} input fields on page:")
+                for i, inp in enumerate(all_inputs):
+                    logger.info(f"  Input {i}: type='{inp.get_attribute('type')}', placeholder='{inp.get_attribute('placeholder')}', name='{inp.get_attribute('name')}'")
+            except Exception as e:
+                logger.error(f"Error getting input fields: {e}")
+            raise Exception("Username field not found")
+        
+        # Clear and enter username
+        username_field.clear()
+        username_field.send_keys(self.username)
+        logger.info(f"Username '{self.username}' entered successfully")
+        
+        # Try multiple selectors for password field
+        password_selectors = [
+            "//*[@id='user_password']",  # Exact XPath provided by user
+            "#user_password",  # CSS selector for the same ID
+            "input[type='password']",
+            "input[name='password']",
+            "input[placeholder='Password']", 
+            "input[placeholder*='password']",
+            "input[placeholder*='Password']",
+            "#password",
+            "//input[@placeholder='Password']",
+            "//input[@type='password']"
+        ]
+        
+        password_field = None
+        for selector in password_selectors:
+            try:
+                if selector.startswith("//"):
+                    password_field = self.driver.find_element(By.XPATH, selector)
+                else:
+                    password_field = self.driver.find_element(By.CSS_SELECTOR, selector)
+                logger.info(f"Found password field with selector: {selector}")
+                break
+            except NoSuchElementException:
+                continue
+        
+        if not password_field:
+            logger.error("ERROR: Password field not found with any selector")
+            raise Exception("Password field not found")
+        
+        # Clear and enter password
+        password_field.clear()
+        password_field.send_keys(self.password)
+        logger.info("Password entered successfully")
+        
+        # Try multiple selectors for login button
+        login_button_selectors = [
+            "//*[@id='login-monday-container']/div/div[2]/div/div[1]/div/div[4]/div/button",  # Exact XPath provided by user
+            "button[type='submit']",
+            "input[type='submit']",
+            "button:contains('Log in')",
+            "button:contains('Login')",
+            "button[data-testid='login-button']",
+            "//button[contains(text(), 'Log in')]",
+            "//button[contains(text(), 'Login')]",
+            "//input[@type='submit']"
+        ]
+        
+        login_button = None
+        for selector in login_button_selectors:
+            try:
+                if selector.startswith("//"):
+                    login_button = self.driver.find_element(By.XPATH, selector)
+                else:
+                    login_button = self.driver.find_element(By.CSS_SELECTOR, selector)
+                logger.info(f"Found login button with selector: {selector}")
+                break
+            except NoSuchElementException:
+                continue
+        
+        if not login_button:
+            logger.error("ERROR: Login button not found with any selector")
+            # Log all buttons on the page for debugging
+            try:
+                all_buttons = self.driver.find_elements(By.TAG_NAME, "button")
+                logger.info(f"Found {len(all_buttons)} buttons on page:")
+                for i, btn in enumerate(all_buttons):
+                    logger.info(f"  Button {i}: text='{btn.text}', type='{btn.get_attribute('type')}'")
+            except Exception as e:
+                logger.error(f"Error getting buttons: {e}")
+            raise Exception("Login button not found")
         
         logger.info("Clicking login button...")
         login_button.click()
@@ -231,7 +319,7 @@ class SeleniumAutomation:
         # Wait for login to complete
         logger.info("Waiting for login to complete...")
         time.sleep(5)
-        logger.info("Login completed successfully!")
+        logger.info("Monday.com login completed successfully!")
         
     def navigate_to_search_properties(self):
         """
@@ -1412,19 +1500,19 @@ class SeleniumAutomation:
         Main method to run the complete automation process with continuous processing.
         This method orchestrates the entire automation process:
         1. Browser setup (visible Chrome)
-        2. Website navigation
-        3. Login (if required)
-        4. Navigation to target page
+        2. Navigate to Monday.com board (https://uprs-group-llc.monday.com/boards/9740813045)
+        3. Login to Monday.com (if required)
+        4. Navigate to target page
         5. Continuous processing of Payee Names from the table
         Args:
-            search_text (str): The text to search for in the initial search field
+            search_text (str): The text to import to the Monday.com board
             company_name (str): Optional company name to begin processing from
             start_point (str): Starting point - "none" or "company"
             start_page (int or None): Page number to start from (1-based)
         """
         try:
-            logger.info("=== STARTING CONTINUOUS SELENIUM AUTOMATION ===")
-            logger.info(f"Initial search text provided: '{search_text}'")
+            logger.info("=== STARTING MONDAY.COM BOARD IMPORT AUTOMATION ===")
+            logger.info(f"Text to import: '{search_text}'")
             logger.info(f"Maximum companies to process: {self.max_companies}")
             logger.info("Browser will remain VISIBLE throughout the process")
             # Step 1: Set up browser (VISIBLE - not headless)
@@ -1506,114 +1594,142 @@ class SeleniumAutomation:
                     logger.warning(f"⚠️ Company '{company_name}' not found in table. Starting from the beginning.")
                     current_row_index = 0
             
-            while self.companies_processed < self.max_companies:
-                # Refresh the rows list each iteration
-                rows = wait.until(EC.presence_of_all_elements_located((By.XPATH, '//*[@id="propsGrid"]/tbody/tr')))
-                if current_row_index >= len(rows):
-                    logger.info("No more rows to process - reached end of table")
-                    break
-                # Extract Payee Name from the current row
-                try:
-                    payee_name_cell = rows[current_row_index].find_element(By.XPATH, ".//td[2]")
-                    payee_name = payee_name_cell.text.strip()
-                except Exception as e:
-                    logger.warning(f"Could not extract Payee Name at row {current_row_index+1}: {e}")
-                    break
-                logger.info(f"Processing Payee Name: '{payee_name}' at row {current_row_index+1}")
-                print(f"Processing Payee Name: {payee_name}")
-                # Check off all rows with the same Payee Name and get the next different index
-                next_different_index = self.check_off_duplicate_payee_rows(payee_name, current_row_index)
-                # Double-click the first row of this group
-                try:
-                    ActionChains(self.driver).double_click(rows[current_row_index]).perform()
-                    logger.info(f"✅ Double-clicked row {current_row_index + 1}")
-                except Exception as e:
-                    logger.warning(f"Could not double-click row {current_row_index+1}: {e}")
-                # Process the Payee Name through BizFileOnline
-                success = self.process_single_payee(payee_name)
-                if success:
-                    logger.info(f"✅ Successfully processed Payee: '{payee_name}'")
-                    logger.info(f"Total companies processed: {self.companies_processed}")
-                else:
-                    logger.error(f"❌ Failed to process Payee: '{payee_name}'")
-                    logger.warning(f"Consecutive failures: {self.consecutive_failures}")
-                self.companies_processed += 1
-                # Move to the next unique Payee Name
-                current_row_index = next_different_index
-                # --- NEW LOGIC: Close all other tabs except the main one (after returning to main page) ---
-                main_handle = self.driver.current_window_handle
-                handles = self.driver.window_handles[:]
-                for handle in handles:
-                    if handle != main_handle:
-                        self.driver.switch_to.window(handle)
-                        self.driver.close()
-                self.driver.switch_to.window(main_handle)
-                # Brief pause between iterations
-                time.sleep(2)
-            # Step 8: Pagination - Click 'Next' if available and process next page
+            # Process Monday.com board items - extract company names from the "Lead" column
+            # and process them through BizFileOnline (same as REARS process)
+            logger.info("=== EXTRACTING COMPANY NAMES FROM MONDAY.COM BOARD ===")
+            
+            # Wait for the board to load and find all lead rows
+            wait = WebDriverWait(self.driver, 20)
+            
+            # Find all lead rows in the Monday.com board
+            # Monday.com uses a different structure than REARS table
             try:
-                next_button_xpath = '//*[@id="propsGrid_pager"]/div/div[4]'
-                wait = WebDriverWait(self.driver, 10)
-                while True:  # Remove limit check - process all available companies
+                # Try multiple selectors for Monday.com board rows
+                lead_row_selectors = [
+                    "//div[contains(@class, 'row')]",
+                    "//div[contains(@class, 'item')]",
+                    "//div[contains(@class, 'board-item')]",
+                    "//div[contains(@data-testid, 'row')]",
+                    "//div[contains(@class, 'board-row')]"
+                ]
+                
+                lead_rows = []
+                for selector in lead_row_selectors:
                     try:
-                        next_button = wait.until(EC.presence_of_element_located((By.XPATH, next_button_xpath)))
-                        # Check if the button is enabled (not disabled)
-                        is_disabled = next_button.get_attribute('class')
-                        if is_disabled and ('disabled' in is_disabled or 'ui-state-disabled' in is_disabled):
-                            logger.info("No more pages to process. 'Next' button is disabled.")
+                        lead_rows = self.driver.find_elements(By.XPATH, selector)
+                        if lead_rows:
+                            logger.info(f"Found {len(lead_rows)} lead rows using selector: {selector}")
                             break
-                        # Click the next button
-                        self.driver.execute_script("arguments[0].scrollIntoView(true);", next_button)
-                        time.sleep(0.5)
-                        next_button.click()
-                        logger.info("Clicked 'Next' button to process next page of results.")
-                        time.sleep(2)  # Wait for new page to load
-                        # Reset row index and process next page
-                        current_row_index = 0
-                        while True:  # Remove limit check - process all rows on this page
-                            rows = wait.until(EC.presence_of_all_elements_located((By.XPATH, '//*[@id="propsGrid"]/tbody/tr')))
-                            if current_row_index >= len(rows):
-                                logger.info("No more rows to process - reached end of table on this page")
-                                break
-                            try:
-                                payee_name_cell = rows[current_row_index].find_element(By.XPATH, ".//td[2]")
-                                payee_name = payee_name_cell.text.strip()
-                            except Exception as e:
-                                logger.warning(f"Could not extract Payee Name at row {current_row_index+1}: {e}")
-                                break
-                            logger.info(f"Processing Payee Name: '{payee_name}' at row {current_row_index+1}")
-                            print(f"Processing Payee Name: {payee_name}")
-                            next_different_index = self.check_off_duplicate_payee_rows(payee_name, current_row_index)
-                            try:
-                                ActionChains(self.driver).double_click(rows[current_row_index]).perform()
-                                logger.info(f"✅ Double-clicked row {current_row_index + 1}")
-                            except Exception as e:
-                                logger.warning(f"Could not double-click row {current_row_index+1}: {e}")
-                            success = self.process_single_payee(payee_name)
-                            if success:
-                                logger.info(f"✅ Successfully processed Payee: '{payee_name}'")
-                                logger.info(f"Total companies processed: {self.companies_processed}")
-                            else:
-                                logger.error(f"❌ Failed to process Payee: '{payee_name}'")
-                                logger.warning(f"Consecutive failures: {self.consecutive_failures}")
-                            self.companies_processed += 1
-                            current_row_index = next_different_index
-                            time.sleep(2)
-                    except TimeoutException:
-                        logger.info("No 'Next' button found. Pagination complete.")
+                    except Exception:
+                        continue
+                
+                if not lead_rows:
+                    logger.warning("No lead rows found with any selector. Trying alternative approach...")
+                    # Try to find any clickable elements that might be rows
+                    lead_rows = self.driver.find_elements(By.XPATH, "//div[contains(@class, 'clickable') or contains(@class, 'item')]")
+                    logger.info(f"Found {len(lead_rows)} potential lead rows with alternative approach")
+                
+                logger.info(f"Processing {len(lead_rows)} lead rows from Monday.com board")
+                
+                for row_index, row in enumerate(lead_rows):
+                    if self.companies_processed >= self.max_companies:
+                        logger.info("Reached maximum companies limit")
                         break
-                    except Exception as e:
-                        logger.error(f"Error during pagination: {e}")
-                        # Check if it's a browser session error
-                        if "invalid session id" in str(e) or "session deleted" in str(e):
-                            logger.warning("Browser session was closed. Stopping pagination gracefully.")
-                            break
+                    
+                    try:
+                        # Extract company name from the "Lead" column
+                        # Try multiple selectors for the company name
+                        company_name_selectors = [
+                            ".//div[contains(@class, 'cell')]//span[contains(text(), '')]",
+                            ".//div[contains(@class, 'column')]//span[contains(text(), '')]",
+                            ".//span[contains(@class, 'text')]",
+                            ".//div[contains(@class, 'text')]",
+                            ".//span[not(contains(@class, 'icon'))]",
+                            ".//div[contains(@class, 'lead')]//span",
+                            ".//div[contains(@class, 'name')]//span"
+                        ]
+                        
+                        company_name = None
+                        for selector in company_name_selectors:
+                            try:
+                                company_name_element = row.find_element(By.XPATH, selector)
+                                company_name = company_name_element.text.strip()
+                                if company_name and len(company_name) > 2:  # Ensure it's not just whitespace or very short
+                                    logger.info(f"Found company name with selector: {selector}")
+                                    break
+                            except Exception:
+                                continue
+                        
+                        if not company_name:
+                            logger.warning(f"Could not extract company name at row {row_index + 1}, skipping...")
+                            continue
+                        
+                        logger.info(f"=== PROCESSING ROW {row_index + 1}: '{company_name}' ===")
+                        
+                        # Check the checkbox for this row (same as REARS process)
+                        try:
+                            checkbox_selectors = [
+                                ".//input[@type='checkbox']",
+                                ".//div[contains(@class, 'checkbox')]",
+                                ".//div[contains(@class, 'check')]",
+                                ".//input[contains(@class, 'checkbox')]"
+                            ]
+                            
+                            checkbox = None
+                            for selector in checkbox_selectors:
+                                try:
+                                    checkbox = row.find_element(By.XPATH, selector)
+                                    break
+                                except Exception:
+                                    continue
+                            
+                            if checkbox and not checkbox.is_selected():
+                                checkbox.click()
+                                logger.info(f"✅ Checked checkbox for row {row_index + 1}")
+                        except Exception as e:
+                            logger.warning(f"Could not check checkbox for row {row_index + 1}: {e}")
+                        
+                        # Process the company name through BizFileOnline (same as REARS process)
+                        success = self.process_single_payee(company_name)
+                        if success:
+                            logger.info(f"✅ Successfully processed company: '{company_name}'")
+                            logger.info(f"Total companies processed: {self.companies_processed}")
                         else:
-                            # Re-raise other exceptions
-                            raise
+                            logger.error(f"❌ Failed to process company: '{company_name}'")
+                            logger.warning(f"Consecutive failures: {self.consecutive_failures}")
+                        
+                        self.companies_processed += 1
+                        
+                        # Close any extra tabs and return to Monday.com board
+                        main_handle = self.driver.current_window_handle
+                        handles = self.driver.window_handles[:]
+                        for handle in handles:
+                            if handle != main_handle:
+                                self.driver.switch_to.window(handle)
+                                self.driver.close()
+                        self.driver.switch_to.window(main_handle)
+                        
+                        # Brief pause between iterations
+                        time.sleep(2)
+                        
+                    except Exception as e:
+                        logger.error(f"Error processing row {row_index + 1}: {e}")
+                        self.consecutive_failures += 1
+                        
+                        if self.consecutive_failures >= 3:
+                            logger.error("Too many consecutive failures, stopping automation")
+                            break
+                
             except Exception as e:
-                logger.error(f"Error during pagination process: {e}")
+                logger.error(f"Error finding lead rows: {e}")
                 raise
+            
+            logger.info("=== MONDAY.COM BOARD PROCESSING COMPLETED ===")
+            
+            # Step 8: Cleanup and completion
+            logger.info("=== AUTOMATION COMPLETED SUCCESSFULLY ===")
+            logger.info(f"Total companies processed: {self.companies_processed}")
+            logger.info("Browser will remain open for manual inspection")
             # Step 8: Completion
             logger.info("=== CONTINUOUS AUTOMATION COMPLETED ===")
             logger.info(f"✅ Total companies processed: {self.companies_processed}")

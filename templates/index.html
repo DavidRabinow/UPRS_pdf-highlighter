@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Selenium Automation Control Panel</title>
+    <title>Monday.com Board Import Tool</title>
     <style>
       body {
         background: #1a2236;
@@ -195,10 +195,10 @@
         class="uprs-navbar-logo"
       />
       <a
-        href="https://rears.retainedequity.com/#/"
+        href="https://uprs-group-llc.monday.com/boards/9740813045"
         target="_blank"
         class="uprs-navbar-link"
-        >REARS Home</a
+        >Monday.com Board</a
       >
       <a
         href="https://www.uprsgroup.com/"
@@ -216,17 +216,17 @@
             letter-spacing: 2px;
             color: #fff;
           "
-          >Selenium Automation Control Panel</span
+          >Monday.com Board Import Tool</span
         >
       </div>
 
       <div class="input-container">
-        <label for="searchText" class="input-label">Enter search text:</label>
+        <label for="searchText" class="input-label">Enter text to import:</label>
         <input
           type="text"
           id="searchText"
           class="text-input"
-          placeholder="Enter the text you want to search for..."
+          placeholder="Enter the text you want to import to Monday.com board..."
           value=""
         />
 
@@ -265,7 +265,7 @@
           class="start-button"
           onclick="startAutomation()"
         >
-          Start Automation
+          Import to Monday.com Board
         </button>
       </div>
 
@@ -280,7 +280,7 @@
             <span id="currentStep">No automation running</span>
           </div>
           <div class="status-item status-idle">
-            <strong>Search Text:</strong> <span id="searchTextDisplay">-</span>
+            <strong>Import Text:</strong> <span id="searchTextDisplay">-</span>
           </div>
           <div class="status-item status-idle">
             <strong>Company Name:</strong>
@@ -333,7 +333,7 @@
 
         // Validate input
         if (!searchText) {
-          alert("Please enter some text to search for.");
+          alert("Please enter some text to import to the Monday.com board.");
           return;
         }
 
@@ -347,9 +347,9 @@
 
         // Disable button and show loading
         button.disabled = true;
-        button.innerHTML = '🔄 Starting... <div class="loading"></div>';
+        button.innerHTML = '🔄 Navigating to Monday.com... <div class="loading"></div>';
         statusText.innerHTML =
-          'Starting automation... <div class="loading"></div>';
+          'Navigating to Monday.com board... <div class="loading"></div>';
 
         // Make API call to start automation with search text and additional parameters
         fetch("/start_automation", {
@@ -368,7 +368,7 @@
           .then((data) => {
             if (data.success) {
               console.log(
-                "Automation started successfully with search text:",
+                "Import started successfully with text:",
                 searchText
               );
               // Start polling for status updates
@@ -389,7 +389,7 @@
       function resetButton() {
         const button = document.getElementById("startButton");
         button.disabled = false;
-        button.innerHTML = "🚀 Start Automation";
+        button.innerHTML = "🚀 Import to Monday.com Board";
       }
 
       // Start polling for status updates

@@ -44,7 +44,7 @@ def run_automation_in_background(search_text, company_name=None, start_point="no
     global automation_status
     
     try:
-        logger.info(f"Starting Selenium automation in background with search text: '{search_text}', company: '{company_name}', start point: '{start_point}'")
+        logger.info(f"Starting Monday.com board import automation in background with text: '{search_text}', company: '{company_name}', start point: '{start_point}'")
         automation_status['running'] = True
         automation_status['start_time'] = time.strftime('%Y-%m-%d %H:%M:%S')
         automation_status['error'] = None
@@ -63,7 +63,7 @@ def run_automation_in_background(search_text, company_name=None, start_point="no
         automation_status['completed'] = True
         automation_status['end_time'] = time.strftime('%Y-%m-%d %H:%M:%S')
         automation_status['current_step'] = 'Automation completed successfully'
-        logger.info("Selenium automation completed successfully")
+        logger.info("Monday.com board import automation completed successfully")
         
     except Exception as e:
         # Update status on error
@@ -71,7 +71,7 @@ def run_automation_in_background(search_text, company_name=None, start_point="no
         automation_status['error'] = str(e)
         automation_status['end_time'] = time.strftime('%Y-%m-%d %H:%M:%S')
         automation_status['current_step'] = f'Error: {str(e)}'
-        logger.error(f"Selenium automation failed: {e}")
+        logger.error(f"Monday.com board import automation failed: {e}")
 
 @app.route('/')
 def index():
@@ -135,7 +135,7 @@ def start_automation():
                 'message': 'Company name is required when start point is "company"'
             })
             
-        logger.info(f"Received automation request with search text: '{search_text}', company: '{company_name}', start point: '{start_point}', start page: '{start_page}'")
+        logger.info(f"Received Monday.com board import request with text: '{search_text}', company: '{company_name}', start point: '{start_point}', start page: '{start_page}'")
         
     except Exception as e:
         logger.error(f"Error parsing request data: {e}")
@@ -163,11 +163,11 @@ def start_automation():
     automation_thread.daemon = True  # Thread will stop when main app stops
     automation_thread.start()
     
-    logger.info(f"Automation thread started with search text: '{search_text}', company: '{company_name}', start point: '{start_point}'")
+    logger.info(f"Monday.com board import thread started with text: '{search_text}', company: '{company_name}', start point: '{start_point}'")
     
     return jsonify({
         'success': True,
-        'message': f'Automation started successfully with search text: "{search_text}", company: "{company_name}", start point: "{start_point}"'
+        'message': f'Monday.com board import started successfully with text: "{search_text}", company: "{company_name}", start point: "{start_point}"'
     })
 
 @app.route('/status')
