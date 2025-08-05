@@ -1527,7 +1527,7 @@ class SeleniumAutomation:
             self.driver.quit()
             logger.info("Browser closed successfully")
             
-    def run(self, search_text, company_name=None, start_point="none", start_page=None):
+    def run(self, search_text, company_name=None, start_point="none", start_page=None, highlight_text=None):
         """
         Main method to run the complete automation process.
         This method orchestrates the entire automation process:
@@ -1542,6 +1542,7 @@ class SeleniumAutomation:
             company_name (str): Optional company name (not used in this RPA)
             start_point (str): Starting point (not used in this RPA)
             start_page (int or None): Page number (not used in this RPA)
+            highlight_text (str): Optional custom text for ChatGPT highlighting
         """
         try:
             logger.info("=== STARTING RPA AUTOMATION ===")
@@ -1611,17 +1612,24 @@ class SeleniumAutomation:
                     import subprocess
                     import sys
                     
-                    # Run the PDF highlighter script with visible output
-                    logger.info("Starting PDF highlighting process...")
-                    result = subprocess.run([
-                        "venv\\Scripts\\python.exe", "pdf_highlighter.py"
-                    ], capture_output=True, text=True, timeout=300)
+                    # Run the ChatGPT processor script with custom highlight text and file highlighting
+                    logger.info("Starting ChatGPT processing and file highlighting with custom highlight text...")
+                    
+                    # Prepare command with highlight text if provided
+                    cmd = ["venv\\Scripts\\python.exe", "chatgpt_processor_with_highlight.py"]
+                    if highlight_text:
+                        cmd.append(highlight_text)
+                        logger.info(f"Using custom highlight text: '{highlight_text}'")
+                    else:
+                        logger.info("No custom highlight text provided, using default")
+                    
+                    result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
                     
                     if result.returncode == 0:
-                        logger.info("✅ PDF highlighting completed successfully!")
+                        logger.info("✅ ChatGPT processing and file highlighting completed successfully!")
                         logger.info(f"Processing details: {result.stdout}")
                         
-                        # Display PDF highlighting success in browser
+                        # Display success in browser
                         try:
                             self.driver.execute_script("""
                                 // Create a notification in the browser
@@ -1638,7 +1646,7 @@ class SeleniumAutomation:
                                     font-family: Arial, sans-serif;
                                     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
                                 `;
-                                notification.innerHTML = '✅ PDF highlighting completed! Check Downloads for highlighted ZIP file.';
+                                notification.innerHTML = '✅ Processing completed! Check Downloads for highlighted ZIP file and chatgpt_response.txt for analysis.';
                                 document.body.appendChild(notification);
                                 
                                 // Remove notification after 5 seconds
@@ -1652,9 +1660,9 @@ class SeleniumAutomation:
                             logger.warning(f"Could not display browser notification: {e}")
                             
                     else:
-                        logger.warning(f"❌ PDF highlighting failed: {result.stderr}")
+                        logger.warning(f"❌ Processing failed: {result.stderr}")
                         
-                        # Display PDF highlighting failure in browser
+                        # Display failure in browser
                         try:
                             self.driver.execute_script("""
                                 // Create a notification in the browser
@@ -1671,7 +1679,7 @@ class SeleniumAutomation:
                                     font-family: Arial, sans-serif;
                                     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
                                 `;
-                                notification.innerHTML = '❌ PDF highlighting failed. Check logs for details.';
+                                notification.innerHTML = '❌ Processing failed. Check logs for details.';
                                 document.body.appendChild(notification);
                                 
                                 // Remove notification after 5 seconds
@@ -1685,10 +1693,10 @@ class SeleniumAutomation:
                             logger.warning(f"Could not display browser notification: {e}")
                         
                 except Exception as e:
-                    logger.warning(f"Error running PDF highlighting script: {e}")
+                    logger.warning(f"Error running processing script: {e}")
                     
                 # Keep browser open for user to see the process
-                logger.info("PDF highlighting completed. Browser will remain open for inspection.")
+                logger.info("Processing completed. Browser will remain open for inspection.")
                 logger.info("You can see the processing results in the browser and logs.")
                 
                 # Add a longer pause so user can see the results

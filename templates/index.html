@@ -259,6 +259,17 @@
           min="1"
           value=""
         />
+
+        <label for="highlightText" class="input-label"
+          >Highlight Text (Optional):</label
+        >
+        <input
+          type="text"
+          id="highlightText"
+          class="text-input"
+          placeholder="Enter what you want ChatGPT to highlight (e.g., signatures, dates, names)..."
+          value=""
+        />
       </div>
 
       <div class="button-container">
@@ -267,7 +278,7 @@
           class="start-button"
           onclick="startAutomation()"
         >
-          Navigate to URL
+          Start Automation
         </button>
       </div>
 
@@ -290,6 +301,10 @@
           </div>
           <div class="status-item status-idle">
             <strong>Start Point:</strong> <span id="startPointDisplay">-</span>
+          </div>
+          <div class="status-item status-idle">
+            <strong>Highlight Text:</strong>
+            <span id="highlightTextDisplay">-</span>
           </div>
           <div class="status-item status-idle">
             <strong>Start Time:</strong> <span id="startTime">-</span>
@@ -328,10 +343,12 @@
         const searchTextInput = document.getElementById("searchText");
         const companyNameInput = document.getElementById("companyName");
         const startPointSelect = document.getElementById("startPoint");
+        const highlightTextInput = document.getElementById("highlightText");
 
         const searchText = searchTextInput.value.trim();
         const companyName = companyNameInput.value.trim();
         const startPoint = startPointSelect.value;
+        const highlightText = highlightTextInput.value.trim();
 
         // Validate input
         if (!searchText) {
@@ -359,9 +376,9 @@
         // Disable button and show loading
         button.disabled = true;
         button.innerHTML =
-          '🔄 Navigating to URL... <div class="loading"></div>';
+          '🔄 Starting automation... <div class="loading"></div>';
         statusText.innerHTML =
-          'Navigating to URL... <div class="loading"></div>';
+          'Starting automation... <div class="loading"></div>';
 
         // Make API call to start automation with search text and additional parameters
         fetch("/start_automation", {
@@ -374,6 +391,7 @@
             company_name: companyName,
             start_point: startPoint,
             start_page: document.getElementById("startPage").value || null,
+            highlight_text: highlightText,
           }),
         })
           .then((response) => response.json())
@@ -398,7 +416,7 @@
       function resetButton() {
         const button = document.getElementById("startButton");
         button.disabled = false;
-        button.innerHTML = "🚀 Navigate to URL";
+        button.innerHTML = "🚀 Start Automation";
       }
 
       // Start polling for status updates
@@ -433,6 +451,9 @@
         const companyNameDisplay =
           document.getElementById("companyNameDisplay");
         const startPointDisplay = document.getElementById("startPointDisplay");
+        const highlightTextDisplay = document.getElementById(
+          "highlightTextDisplay"
+        );
         const startTime = document.getElementById("startTime");
         const endTime = document.getElementById("endTime");
         const errorContainer = document.getElementById("errorContainer");
@@ -458,6 +479,7 @@
         searchTextDisplay.textContent = data.search_text || "-";
         companyNameDisplay.textContent = data.company_name || "-";
         startPointDisplay.textContent = data.start_point || "-";
+        highlightTextDisplay.textContent = data.highlight_text || "-";
         startTime.textContent = data.start_time || "-";
         endTime.textContent = data.end_time || "-";
 
@@ -487,6 +509,7 @@
                 search_text: null,
                 company_name: null,
                 start_point: null,
+                highlight_text: null,
               });
               console.log("Status reset successfully");
             }

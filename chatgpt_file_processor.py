@@ -48,13 +48,14 @@ def find_most_recent_file():
     
     return most_recent
 
-def upload_file_to_chatgpt(file_path, api_key):
+def upload_file_to_chatgpt(file_path, api_key, highlight_text=None):
     """
     Upload a file to ChatGPT and send a specific prompt about PDF highlighting.
     
     Args:
         file_path (Path): Path to the file to upload
         api_key (str): OpenAI API key
+        highlight_text (str): Optional custom text for highlighting (e.g., "signatures", "dates", "names")
     
     Returns:
         str or None: ChatGPT response if successful, None if failed
@@ -82,7 +83,21 @@ def upload_file_to_chatgpt(file_path, api_key):
         # Check if we can use the chat API (quota check)
         try:
             # Use the newer Chat API with file attachment and longer timeout
-            prompt = """I want to highlight specific text in a PDF, but I need to make sure the text remains fully visible. The highlight should:
+            if highlight_text:
+                # Use custom highlight text in the prompt
+                prompt = f"""I want to highlight specific text in a PDF, but I need to make sure the text remains fully visible. The highlight should:
+
+Be placed behind the text, never on top of it.
+Use a light or semi-transparent color (e.g. pale yellow) that doesn't interfere with readability.
+Only cover the dimensions of the text itself, not the full line or paragraph.
+Work for scanned or text-based PDFs where the text is extractable.
+
+Specifically, I want to highlight: {highlight_text}
+
+Please analyze the uploaded file and provide specific guidance on how to achieve this type of highlighting for the specified text."""
+            else:
+                # Use default prompt
+                prompt = """I want to highlight specific text in a PDF, but I need to make sure the text remains fully visible. The highlight should:
 
 Be placed behind the text, never on top of it.
 Use a light or semi-transparent color (e.g. pale yellow) that doesn't interfere with readability.
@@ -116,11 +131,13 @@ Please analyze the uploaded file and provide specific guidance on how to achieve
         except Exception as chat_error:
             if "insufficient_quota" in str(chat_error) or "429" in str(chat_error):
                 logger.warning("API quota exceeded. Providing basic file analysis instead.")
+                custom_text_info = f"Custom highlight text: {highlight_text}" if highlight_text else "No custom highlight text specified"
                 return f"""File Analysis Complete
 
 File: {file_path.name}
 File ID: {file_id}
 Size: {file_path.stat().st_size:,} bytes
+{custom_text_info}
 
 PDF Highlighting Recommendations:
 
@@ -151,7 +168,7 @@ The uploaded file has been processed and is ready for highlighting work."""
         logger.error(f"Error processing file with ChatGPT: {e}")
         return None
 
-def main():
+def main(highlight_text=None):
     """Main function to process the most recent download."""
     print("=" * 70)
     print("ChatGPT File Processor - PDF Highlighting Analysis")
@@ -182,11 +199,15 @@ def main():
     print(f"Size: {file_path.stat().st_size:,} bytes")
     print(f"Modified: {datetime.fromtimestamp(file_path.stat().st_mtime)}")
     
+    # Display highlight text if provided
+    if highlight_text:
+        print(f"Custom highlight text: {highlight_text}")
+    
     # Upload and process with ChatGPT
     print(f"\nUploading to ChatGPT and sending PDF highlighting prompt...")
     print("This may take a few minutes...")
     
-    response = upload_file_to_chatgpt(file_path, api_key)
+    response = upload_file_to_chatgpt(file_path, api_key, highlight_text)
     
     if response:
         print("\n" + "=" * 70)

@@ -31,7 +31,7 @@ automation_status = {
     'search_text': None
 }
 
-def run_automation_in_background(search_text, company_name=None, start_point="none", start_page=None):
+def run_automation_in_background(search_text, company_name=None, start_point="none", start_page=None, highlight_text=None):
     """
     Background function to run Selenium automation.
     This runs in a separate thread so Flask remains responsive.
@@ -40,6 +40,7 @@ def run_automation_in_background(search_text, company_name=None, start_point="no
         search_text (str): The URL to navigate to (e.g., Monday.com board URL)
         company_name (str): Optional company name to begin with
         start_point (str): Starting point - "none" or "company"
+        highlight_text (str): Optional custom text for ChatGPT highlighting
     """
     global automation_status
     
@@ -53,10 +54,11 @@ def run_automation_in_background(search_text, company_name=None, start_point="no
         automation_status['company_name'] = company_name
         automation_status['start_point'] = start_point
         automation_status['start_page'] = start_page
+        automation_status['highlight_text'] = highlight_text
         
         # Create and run automation with URL and additional parameters
         automation = SeleniumAutomation()
-        automation.run(search_text, company_name, start_point, start_page)
+        automation.run(search_text, company_name, start_point, start_page, highlight_text)
         
         # Update status on completion
         automation_status['running'] = False
@@ -102,6 +104,7 @@ def start_automation():
         company_name = data.get('company_name', '').strip()
         start_point = data.get('start_point', 'none')
         start_page = data.get('start_page', None)
+        highlight_text = data.get('highlight_text', '').strip()
         if start_page is not None:
             try:
                 start_page = int(start_page)
@@ -162,15 +165,16 @@ def start_automation():
         'search_text': None,
         'company_name': None,
         'start_point': None,
-        'start_page': None
+        'start_page': None,
+        'highlight_text': None
     }
     
     # Start automation in background thread with all parameters
-    automation_thread = threading.Thread(target=run_automation_in_background, args=(search_text, company_name, start_point, start_page))
+    automation_thread = threading.Thread(target=run_automation_in_background, args=(search_text, company_name, start_point, start_page, highlight_text))
     automation_thread.daemon = True  # Thread will stop when main app stops
     automation_thread.start()
     
-    logger.info(f"Dynamic navigation thread started with URL: '{search_text}', company: '{company_name}', start point: '{start_point}'")
+    logger.info(f"Dynamic navigation thread started with URL: '{search_text}', company: '{company_name}', start point: '{start_point}', highlight text: '{highlight_text}'")
     
     return jsonify({
         'success': True,

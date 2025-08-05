@@ -124,13 +124,14 @@ def find_pdf_files(directory: Path) -> List[Path]:
     logger.info(f"Found {len(pdf_files)} PDF files")
     return pdf_files
 
-def highlight_pdf_pymupdf(pdf_path: Path, output_path: Path) -> bool:
+def highlight_pdf_pymupdf(pdf_path: Path, output_path: Path, highlight_text: str = None) -> bool:
     """
     Add highlights to a PDF using PyMuPDF.
     
     Args:
         pdf_path (Path): Path to input PDF
         output_path (Path): Path to output highlighted PDF
+        highlight_text (str): Custom text to highlight (e.g., "signatures", "dates", "names")
     
     Returns:
         bool: True if successful, False otherwise
@@ -150,26 +151,69 @@ def highlight_pdf_pymupdf(pdf_path: Path, output_path: Path) -> bool:
                 if "lines" in block:
                     for line in block["lines"]:
                         for span in line["spans"]:
-                            # Highlight ONLY signature lines (customize this logic)
                             text = span["text"].lower()
-                            if any(keyword in text for keyword in [
-                                "signature of claimant",
-                                "signature of the notary public"
-                            ]):
-                                # Create highlight rectangle
-                                rect = fitz.Rect(span["bbox"])
+                            
+                            # Use custom highlight text if provided, otherwise use default
+                            if highlight_text:
+                                # Split highlight text into keywords and check for similar matches
+                                keywords = [kw.strip().lower() for kw in highlight_text.split(',')]
                                 
-                                # Add yellow highlight
-                                highlight = page.add_highlight_annot(rect)
-                                highlight.set_colors(stroke=[1, 1, 0])  # Yellow
-                                highlight.set_opacity(0.3)  # 30% opacity
-                                highlight.update()
+                                # Check for similar word matches (including variations and word order)
+                                text_lower = text.lower()
+                                should_highlight = False
+                                
+                                for keyword in keywords:
+                                    # Check for exact word match
+                                    if keyword in text_lower.split():
+                                        should_highlight = True
+                                        break
+                                    
+                                    # Check for similar variations (word order, partial matches)
+                                    keyword_parts = keyword.split()
+                                    if len(keyword_parts) > 1:
+                                        # For multi-word terms, check if all parts are present
+                                        if all(part in text_lower for part in keyword_parts):
+                                            should_highlight = True
+                                            break
+                                    else:
+                                        # For single words, check for partial matches and variations
+                                        if (keyword in text_lower or 
+                                            any(word.startswith(keyword) or keyword.startswith(word) 
+                                                for word in text_lower.split() if len(word) > 2)):
+                                            should_highlight = True
+                                            break
+                                
+                                if should_highlight:
+                                    # Create highlight rectangle
+                                    rect = fitz.Rect(span["bbox"])
+                                    
+                                    # Add yellow highlight
+                                    highlight = page.add_highlight_annot(rect)
+                                    highlight.set_colors(stroke=[1, 1, 0])  # Yellow
+                                    highlight.set_opacity(0.3)  # 30% opacity
+                                    highlight.update()
+                            else:
+                                # Default highlighting logic (signatures)
+                                if any(keyword in text for keyword in [
+                                    "signature of claimant",
+                                    "signature of the notary public"
+                                ]):
+                                    # Create highlight rectangle
+                                    rect = fitz.Rect(span["bbox"])
+                                    
+                                    # Add yellow highlight
+                                    highlight = page.add_highlight_annot(rect)
+                                    highlight.set_colors(stroke=[1, 1, 0])  # Yellow
+                                    highlight.set_opacity(0.3)  # 30% opacity
+                                    highlight.update()
         
         # Save the highlighted PDF
         doc.save(str(output_path))
         doc.close()
         
         logger.info(f"Highlighted PDF saved: {output_path.name}")
+        if highlight_text:
+            logger.info(f"Used custom highlight text: '{highlight_text}'")
         return True
         
     except Exception as e:
@@ -207,13 +251,14 @@ def highlight_pdf_pypdf2(pdf_path: Path, output_path: Path) -> bool:
         logger.error(f"Error processing PDF with PyPDF2: {e}")
         return False
 
-def highlight_pdf_file(pdf_path: Path, output_dir: Path) -> Optional[Path]:
+def highlight_pdf_file(pdf_path: Path, output_dir: Path, highlight_text: str = None) -> Optional[Path]:
     """
     Highlight a PDF file using available libraries.
     
     Args:
         pdf_path (Path): Path to input PDF
         output_dir (Path): Directory to save highlighted PDF
+        highlight_text (str): Custom text to highlight (e.g., "signatures", "dates", "names")
     
     Returns:
         Optional[Path]: Path to highlighted PDF if successful, None otherwise
@@ -222,7 +267,7 @@ def highlight_pdf_file(pdf_path: Path, output_dir: Path) -> Optional[Path]:
     
     # Try PyMuPDF first (better highlighting capabilities)
     if PYMUPDF_AVAILABLE:
-        if highlight_pdf_pymupdf(pdf_path, output_path):
+        if highlight_pdf_pymupdf(pdf_path, output_path, highlight_text):
             return output_path
     
     # Fallback to PyPDF2
@@ -233,13 +278,14 @@ def highlight_pdf_file(pdf_path: Path, output_dir: Path) -> Optional[Path]:
     logger.error(f"Could not highlight PDF: {pdf_path.name}")
     return None
 
-def process_pdf_files(pdf_files: List[Path], output_dir: Path) -> List[Path]:
+def process_pdf_files(pdf_files: List[Path], output_dir: Path, highlight_text: str = None) -> List[Path]:
     """
     Process multiple PDF files and add highlights.
     
     Args:
         pdf_files (List[Path]): List of PDF files to process
         output_dir (Path): Directory to save highlighted PDFs
+        highlight_text (str): Custom text to highlight (e.g., "signatures", "dates", "names")
     
     Returns:
         List[Path]: List of highlighted PDF paths
@@ -247,11 +293,13 @@ def process_pdf_files(pdf_files: List[Path], output_dir: Path) -> List[Path]:
     highlighted_files = []
     
     logger.info(f"Processing {len(pdf_files)} PDF files...")
+    if highlight_text:
+        logger.info(f"Using custom highlight text: '{highlight_text}'")
     
     for i, pdf_path in enumerate(pdf_files, 1):
         logger.info(f"Processing {i}/{len(pdf_files)}: {pdf_path.name}")
         
-        highlighted_path = highlight_pdf_file(pdf_path, output_dir)
+        highlighted_path = highlight_pdf_file(pdf_path, output_dir, highlight_text)
         if highlighted_path:
             highlighted_files.append(highlighted_path)
     
@@ -297,11 +345,14 @@ def cleanup_temp_files(extract_dir: Path, output_dir: Path):
     except Exception as e:
         logger.warning(f"Could not clean up temporary files: {e}")
 
-def main():
+def main(highlight_text: str = None):
     """Main function to process ZIP files and add highlights to PDFs."""
     print("=" * 70)
     print("PDF Highlighter - Automatic PDF Highlighting")
     print("=" * 70)
+    
+    if highlight_text:
+        print(f"Custom highlight text: '{highlight_text}'")
     
     # Check for required libraries
     if not check_pdf_libraries():
@@ -351,7 +402,7 @@ def main():
         
         # Process PDF files
         print(f"\nProcessing PDF files and adding highlights...")
-        highlighted_files = process_pdf_files(pdf_files, output_dir)
+        highlighted_files = process_pdf_files(pdf_files, output_dir, highlight_text)
         
         if not highlighted_files:
             print("❌ No PDFs were successfully highlighted")
@@ -381,4 +432,12 @@ def main():
         print(f"❌ Error: {e}")
 
 if __name__ == "__main__":
-    main() 
+    import sys
+    
+    # Get highlight text from command line argument
+    highlight_text = None
+    if len(sys.argv) > 1:
+        highlight_text = sys.argv[1]
+    
+    # Run the main function with the highlight text
+    main(highlight_text) 
