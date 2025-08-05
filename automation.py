@@ -171,16 +171,23 @@ class SeleniumAutomation:
         chrome_options.add_argument("--disable-blink-features=AutomationControlled")
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option('useAutomationExtension', False)
-        # Open Chrome in incognito mode
-        chrome_options.add_argument("--incognito")
+        
+        # EXPLICITLY ENSURE NO INCOGNITO MODE
+        chrome_options.add_argument("--disable-incognito")
+        chrome_options.add_argument("--disable-private-browsing")
+        
         # Set window size for better visibility
         chrome_options.add_argument("--window-size=1200,800")
         
         # Initialize the driver
+        logger.info("Chrome options being used:")
+        for arg in chrome_options.arguments:
+            logger.info(f"  Chrome arg: {arg}")
+        
         self.driver = webdriver.Chrome(options=chrome_options)
         self.driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
         
-        logger.info("Chrome browser initialized successfully - BROWSER IS VISIBLE")
+        logger.info("Chrome browser initialized successfully - BROWSER IS VISIBLE (NOT INCOGNITO)")
         
     def navigate_to_website(self):
         """
@@ -193,16 +200,12 @@ class SeleniumAutomation:
         
     def perform_login(self):
         """
-        Perform login process to Monday.com (if needed).
-        You can modify this method or remove it if login is not required.
+        Perform login process with optimized username input.
+        This method waits for the username field to become available and inputs immediately.
         """
-        logger.info("=== STARTING MONDAY.COM LOGIN PROCESS ===")
+        logger.info("=== STARTING OPTIMIZED LOGIN PROCESS ===")
         
-        # Wait for page to load completely
-        logger.info("Waiting for login page to load...")
-        time.sleep(3)
-        
-        # Try multiple selectors for username field
+        # Try multiple selectors for username field with immediate input
         username_selectors = [
             "//*[@id='user_email']",  # Exact XPath provided by user
             "#user_email",  # CSS selector for the same ID
@@ -216,20 +219,29 @@ class SeleniumAutomation:
             "//input[@type='email']"
         ]
         
+        logger.info("Waiting for username field to become available...")
         username_field = None
+        
+        # Wait up to 10 seconds for username field to appear
+        wait = WebDriverWait(self.driver, 10)
+        
         for selector in username_selectors:
             try:
                 if selector.startswith("//"):
-                    username_field = self.driver.find_element(By.XPATH, selector)
+                    username_field = wait.until(
+                        EC.presence_of_element_located((By.XPATH, selector))
+                    )
                 else:
-                    username_field = self.driver.find_element(By.CSS_SELECTOR, selector)
+                    username_field = wait.until(
+                        EC.presence_of_element_located((By.CSS_SELECTOR, selector))
+                    )
                 logger.info(f"Found username field with selector: {selector}")
                 break
-            except NoSuchElementException:
+            except TimeoutException:
                 continue
         
         if not username_field:
-            logger.error("ERROR: Username field not found with any selector")
+            logger.error("ERROR: Username field not found with any selector within 10 seconds")
             # Log all input fields on the page for debugging
             try:
                 all_inputs = self.driver.find_elements(By.TAG_NAME, "input")
@@ -240,12 +252,13 @@ class SeleniumAutomation:
                 logger.error(f"Error getting input fields: {e}")
             raise Exception("Username field not found")
         
-        # Clear and enter username
+        # Immediately clear and enter username as soon as field is found
+        logger.info("Username field found - immediately entering username...")
         username_field.clear()
         username_field.send_keys(self.username)
         logger.info(f"Username '{self.username}' entered successfully")
         
-        # Try multiple selectors for password field
+        # Try multiple selectors for password field with immediate input
         password_selectors = [
             "//*[@id='user_password']",  # Exact XPath provided by user
             "#user_password",  # CSS selector for the same ID
@@ -259,28 +272,35 @@ class SeleniumAutomation:
             "//input[@type='password']"
         ]
         
+        logger.info("Waiting for password field to become available...")
         password_field = None
+        
         for selector in password_selectors:
             try:
                 if selector.startswith("//"):
-                    password_field = self.driver.find_element(By.XPATH, selector)
+                    password_field = wait.until(
+                        EC.presence_of_element_located((By.XPATH, selector))
+                    )
                 else:
-                    password_field = self.driver.find_element(By.CSS_SELECTOR, selector)
+                    password_field = wait.until(
+                        EC.presence_of_element_located((By.CSS_SELECTOR, selector))
+                    )
                 logger.info(f"Found password field with selector: {selector}")
                 break
-            except NoSuchElementException:
+            except TimeoutException:
                 continue
         
         if not password_field:
             logger.error("ERROR: Password field not found with any selector")
             raise Exception("Password field not found")
         
-        # Clear and enter password
+        # Immediately clear and enter password as soon as field is found
+        logger.info("Password field found - immediately entering password...")
         password_field.clear()
         password_field.send_keys(self.password)
         logger.info("Password entered successfully")
         
-        # Try multiple selectors for login button
+        # Try multiple selectors for login button with immediate click
         login_button_selectors = [
             "//*[@id='login-monday-container']/div/div[2]/div/div[1]/div/div[4]/div/button",  # Exact XPath provided by user
             "button[type='submit']",
@@ -293,16 +313,22 @@ class SeleniumAutomation:
             "//input[@type='submit']"
         ]
         
+        logger.info("Waiting for login button to become available...")
         login_button = None
+        
         for selector in login_button_selectors:
             try:
                 if selector.startswith("//"):
-                    login_button = self.driver.find_element(By.XPATH, selector)
+                    login_button = wait.until(
+                        EC.element_to_be_clickable((By.XPATH, selector))
+                    )
                 else:
-                    login_button = self.driver.find_element(By.CSS_SELECTOR, selector)
+                    login_button = wait.until(
+                        EC.element_to_be_clickable((By.CSS_SELECTOR, selector))
+                    )
                 logger.info(f"Found login button with selector: {selector}")
                 break
-            except NoSuchElementException:
+            except TimeoutException:
                 continue
         
         if not login_button:
@@ -317,14 +343,15 @@ class SeleniumAutomation:
                 logger.error(f"Error getting buttons: {e}")
             raise Exception("Login button not found")
         
-        logger.info("Clicking login button...")
+        # Immediately click login button as soon as it's found and clickable
+        logger.info("Login button found and clickable - immediately clicking...")
         login_button.click()
         logger.info("Login button clicked successfully")
         
-        # Wait for login to complete
+        # Wait for login to complete with shorter wait time
         logger.info("Waiting for login to complete...")
-        time.sleep(5)
-        logger.info("Monday.com login completed successfully!")
+        time.sleep(3)  # Reduced from 5 to 3 seconds
+        logger.info("Login completed successfully!")
         
     def navigate_to_search_properties(self):
         """
@@ -1502,23 +1529,23 @@ class SeleniumAutomation:
             
     def run(self, search_text, company_name=None, start_point="none", start_page=None):
         """
-        Main method to run the complete automation process with continuous processing.
+        Main method to run the complete automation process.
         This method orchestrates the entire automation process:
         1. Browser setup (visible Chrome)
         2. Navigate to the URL provided in search_text
         3. Login to the website (if required)
-        4. Navigate to target page
-        5. Continuous processing of Payee Names from the table
+        4. Wait 5 seconds
+        5. Click the download button
+        6. Wait for download to complete
         Args:
-            search_text (str): The URL to navigate to (e.g., Monday.com board URL)
-            company_name (str): Optional company name to begin processing from
-            start_point (str): Starting point - "none" or "company"
-            start_page (int or None): Page number to start from (1-based)
+            search_text (str): The URL to navigate to
+            company_name (str): Optional company name (not used in this RPA)
+            start_point (str): Starting point (not used in this RPA)
+            start_page (int or None): Page number (not used in this RPA)
         """
         try:
-            logger.info("=== STARTING DYNAMIC NAVIGATION AUTOMATION ===")
+            logger.info("=== STARTING RPA AUTOMATION ===")
             logger.info(f"URL to navigate to: '{search_text}'")
-            logger.info(f"Maximum companies to process: {self.max_companies}")
             logger.info("Browser will remain VISIBLE throughout the process")
             
             # Step 1: Set up browser (VISIBLE - not headless)
@@ -1531,24 +1558,281 @@ class SeleniumAutomation:
             logger.info("Successfully navigated to provided URL")
             
             # Step 3: Check if login is required and perform if needed
-            # This will be determined by the page content
             if self._is_login_required():
                 logger.info("Login required, performing login process...")
                 self.perform_login()
             else:
                 logger.info("No login required, proceeding with automation...")
             
-            # Step 4: Wait for the page to load completely
-            logger.info("Waiting for page to load completely...")
-            time.sleep(5)
+            # Step 4: Wait 10 seconds before looking for the download button
+            logger.info("Waiting 10 seconds before looking for download button...")
+            time.sleep(10)
             
-            # Step 5: Check if we're on a Monday.com board page
-            if "monday.com" in search_text.lower():
-                logger.info("Detected Monday.com board, processing board items...")
-                self._process_monday_board_items(company_name, start_point, start_page)
-            else:
-                logger.info("Processing as generic page...")
-                self._process_generic_page(company_name, start_point, start_page)
+            # Step 5: Click the download button at the specified XPath
+            download_button_xpath = "//*[@id=\"overview-section-content_294433706\"]/div/div/div/div/div[1]/div[1]/div[2]/div[2]/span/button"
+            logger.info(f"Attempting to click download button at XPath: {download_button_xpath}")
+            
+            try:
+                # First attempt: Wait for the element to be present and clickable
+                wait = WebDriverWait(self.driver, 10)
+                download_button = wait.until(
+                    EC.element_to_be_clickable((By.XPATH, download_button_xpath))
+                )
+                
+                # Click the download button
+                download_button.click()
+                logger.info("Successfully clicked download button")
+                
+                # Step 6: Wait 15 seconds after clicking download button
+                logger.info("Waiting 15 seconds after clicking download button...")
+                time.sleep(15)
+                logger.info("15-second wait completed after download button click")
+                
+                # Step 7: Wait for download to complete
+                logger.info("Waiting for download to complete...")
+                self._wait_for_download_completion()
+                logger.info("Download completed successfully!")
+                
+                # Step 8: Wait additional 5 seconds after download completion
+                logger.info("Waiting additional 5 seconds after download completion...")
+                time.sleep(5)
+                logger.info("5-second wait completed after download")
+                
+                # Step 9: Navigate to ChatGPT to open the downloaded file
+                logger.info("Navigating to ChatGPT to open downloaded file...")
+                self.driver.get("https://chatgpt.com")
+                logger.info("Successfully navigated to ChatGPT")
+                
+                # Step 10: Upload the downloaded file to OpenAI API (while browser stays open)
+                logger.info("Uploading downloaded file to OpenAI API...")
+                logger.info("Browser will remain open during upload process...")
+                
+                try:
+                    import subprocess
+                    import sys
+                    
+                    # Run the upload script with visible output
+                    logger.info("Starting file upload process...")
+                    result = subprocess.run([
+                        "venv\\Scripts\\python.exe", "upload_to_openai.py"
+                    ], capture_output=True, text=True, timeout=120)
+                    
+                    if result.returncode == 0:
+                        logger.info("✅ File uploaded to OpenAI API successfully!")
+                        logger.info(f"Upload details: {result.stdout}")
+                        
+                        # Display upload success in browser
+                        try:
+                            self.driver.execute_script("""
+                                // Create a notification in the browser
+                                const notification = document.createElement('div');
+                                notification.style.cssText = `
+                                    position: fixed;
+                                    top: 20px;
+                                    right: 20px;
+                                    background: #4CAF50;
+                                    color: white;
+                                    padding: 15px;
+                                    border-radius: 5px;
+                                    z-index: 10000;
+                                    font-family: Arial, sans-serif;
+                                    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+                                `;
+                                notification.innerHTML = '✅ File uploaded to OpenAI API successfully!';
+                                document.body.appendChild(notification);
+                                
+                                // Remove notification after 5 seconds
+                                setTimeout(() => {
+                                    if (notification.parentNode) {
+                                        notification.parentNode.removeChild(notification);
+                                    }
+                                }, 5000);
+                            """)
+                        except Exception as e:
+                            logger.warning(f"Could not display browser notification: {e}")
+                            
+                    else:
+                        logger.warning(f"❌ Upload script failed: {result.stderr}")
+                        
+                        # Display upload failure in browser
+                        try:
+                            self.driver.execute_script("""
+                                // Create a notification in the browser
+                                const notification = document.createElement('div');
+                                notification.style.cssText = `
+                                    position: fixed;
+                                    top: 20px;
+                                    right: 20px;
+                                    background: #f44336;
+                                    color: white;
+                                    padding: 15px;
+                                    border-radius: 5px;
+                                    z-index: 10000;
+                                    font-family: Arial, sans-serif;
+                                    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+                                `;
+                                notification.innerHTML = '❌ File upload failed. Check logs for details.';
+                                document.body.appendChild(notification);
+                                
+                                // Remove notification after 5 seconds
+                                setTimeout(() => {
+                                    if (notification.parentNode) {
+                                        notification.parentNode.removeChild(notification);
+                                    }
+                                }, 5000);
+                            """)
+                        except Exception as e:
+                            logger.warning(f"Could not display browser notification: {e}")
+                        
+                except Exception as e:
+                    logger.warning(f"Error running upload script: {e}")
+                    
+                # Keep browser open for user to see the process
+                logger.info("Upload process completed. Browser will remain open for inspection.")
+                logger.info("You can see the upload results in the browser and logs.")
+                
+                # Add a longer pause so user can see the results
+                logger.info("Waiting 30 seconds so you can see the upload results...")
+                time.sleep(30)
+                logger.info("30-second wait completed. Browser will remain open.")
+                
+            except TimeoutException:
+                logger.info("Download button not found after initial 10 seconds, waiting additional 5 seconds...")
+                time.sleep(5)
+                
+                try:
+                    # Second attempt: Wait for the element to be present and clickable
+                    wait = WebDriverWait(self.driver, 10)
+                    download_button = wait.until(
+                        EC.element_to_be_clickable((By.XPATH, download_button_xpath))
+                    )
+                    
+                    # Click the download button
+                    download_button.click()
+                    logger.info("Successfully clicked download button on second attempt")
+                    
+                    # Step 6: Wait 15 seconds after clicking download button (second attempt)
+                    logger.info("Waiting 15 seconds after clicking download button (second attempt)...")
+                    time.sleep(15)
+                    logger.info("15-second wait completed after download button click (second attempt)")
+                    
+                    # Step 7: Wait for download to complete
+                    logger.info("Waiting for download to complete...")
+                    self._wait_for_download_completion()
+                    logger.info("Download completed successfully!")
+                    
+                    # Step 8: Wait additional 5 seconds after download completion (second attempt)
+                    logger.info("Waiting additional 5 seconds after download completion (second attempt)...")
+                    time.sleep(5)
+                    logger.info("5-second wait completed after download (second attempt)")
+                    
+                    # Step 9: Navigate to ChatGPT to open the downloaded file (second attempt)
+                    logger.info("Navigating to ChatGPT to open downloaded file (second attempt)...")
+                    self.driver.get("https://chatgpt.com")
+                    logger.info("Successfully navigated to ChatGPT (second attempt)")
+                    
+                    # Step 10: Upload the downloaded file to OpenAI API (second attempt, while browser stays open)
+                    logger.info("Uploading downloaded file to OpenAI API (second attempt)...")
+                    logger.info("Browser will remain open during upload process...")
+                    
+                    try:
+                        import subprocess
+                        import sys
+                        
+                        # Run the upload script with visible output
+                        logger.info("Starting file upload process (second attempt)...")
+                        result = subprocess.run([
+                            "venv\\Scripts\\python.exe", "upload_to_openai.py"
+                        ], capture_output=True, text=True, timeout=120)
+                        
+                        if result.returncode == 0:
+                            logger.info("✅ File uploaded to OpenAI API successfully (second attempt)!")
+                            logger.info(f"Upload details: {result.stdout}")
+                            
+                            # Display upload success in browser
+                            try:
+                                self.driver.execute_script("""
+                                    // Create a notification in the browser
+                                    const notification = document.createElement('div');
+                                    notification.style.cssText = `
+                                        position: fixed;
+                                        top: 20px;
+                                        right: 20px;
+                                        background: #4CAF50;
+                                        color: white;
+                                        padding: 15px;
+                                        border-radius: 5px;
+                                        z-index: 10000;
+                                        font-family: Arial, sans-serif;
+                                        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+                                    `;
+                                    notification.innerHTML = '✅ File uploaded to OpenAI API successfully!';
+                                    document.body.appendChild(notification);
+                                    
+                                    // Remove notification after 5 seconds
+                                    setTimeout(() => {
+                                        if (notification.parentNode) {
+                                            notification.parentNode.removeChild(notification);
+                                        }
+                                    }, 5000);
+                                """)
+                            except Exception as e:
+                                logger.warning(f"Could not display browser notification: {e}")
+                                
+                        else:
+                            logger.warning(f"❌ Upload script failed (second attempt): {result.stderr}")
+                            
+                            # Display upload failure in browser
+                            try:
+                                self.driver.execute_script("""
+                                    // Create a notification in the browser
+                                    const notification = document.createElement('div');
+                                    notification.style.cssText = `
+                                        position: fixed;
+                                        top: 20px;
+                                        right: 20px;
+                                        background: #f44336;
+                                        color: white;
+                                        padding: 15px;
+                                        border-radius: 5px;
+                                        z-index: 10000;
+                                        font-family: Arial, sans-serif;
+                                        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+                                    `;
+                                    notification.innerHTML = '❌ File upload failed. Check logs for details.';
+                                    document.body.appendChild(notification);
+                                    
+                                    // Remove notification after 5 seconds
+                                    setTimeout(() => {
+                                        if (notification.parentNode) {
+                                            notification.parentNode.removeChild(notification);
+                                        }
+                                    }, 5000);
+                                """)
+                            except Exception as e:
+                                logger.warning(f"Could not display browser notification: {e}")
+                            
+                    except Exception as e:
+                        logger.warning(f"Error running upload script (second attempt): {e}")
+                        
+                    # Keep browser open for user to see the process
+                    logger.info("Upload process completed. Browser will remain open for inspection.")
+                    logger.info("You can see the upload results in the browser and logs.")
+                    
+                    # Add a longer pause so user can see the results
+                    logger.info("Waiting 30 seconds so you can see the upload results...")
+                    time.sleep(30)
+                    logger.info("30-second wait completed. Browser will remain open.")
+                    
+                except TimeoutException:
+                    logger.error("Download button not found or not clickable after waiting additional 5 seconds")
+                    raise
+                except Exception as e:
+                    logger.error(f"Error clicking download button on second attempt: {e}")
+                    raise
+            except Exception as e:
+                logger.error(f"Error clicking download button: {e}")
+                raise
                 
         except Exception as e:
             logger.error(f"Automation failed: {e}")
@@ -1587,10 +1871,104 @@ class SeleniumAutomation:
                     
             logger.info("No login elements found, proceeding without login")
             return False
-            
         except Exception as e:
-            logger.warning(f"Error checking login requirement: {e}")
+            logger.warning(f"Error checking for login elements: {e}")
             return False
+            
+    def _wait_for_download_completion(self):
+        """
+        Wait for download to complete by monitoring browser state and download indicators.
+        This method waits until the download is finished before proceeding.
+        """
+        logger.info("Starting download completion monitoring...")
+        
+        # Method 1: Wait for any download progress indicators to disappear
+        # Look for common download progress elements that disappear when download is complete
+        download_progress_selectors = [
+            ".download-progress",
+            ".progress-bar",
+            "[data-testid='download-progress']",
+            ".loading",
+            ".spinner",
+            "[class*='progress']",
+            "[class*='loading']"
+        ]
+        
+        # Method 2: Wait for download button to become clickable again (if it was disabled during download)
+        download_button_xpath = "//*[@id=\"overview-section-content_294433706\"]/div/div/div/div/div[1]/div[1]/div[2]/div[2]/span/button"
+        
+        # Method 3: Wait for any success messages or completion indicators
+        success_indicators = [
+            ".download-complete",
+            ".success-message",
+            "[data-testid='download-success']",
+            ".notification-success"
+        ]
+        
+        max_wait_time = 60  # Maximum wait time in seconds
+        start_time = time.time()
+        
+        while time.time() - start_time < max_wait_time:
+            try:
+                # Check if any progress indicators are still visible
+                progress_visible = False
+                for selector in download_progress_selectors:
+                    try:
+                        elements = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                        for element in elements:
+                            if element.is_displayed():
+                                progress_visible = True
+                        break
+                        if progress_visible:
+                            break
+                    except:
+                        continue
+                
+                # Check if download button is clickable again
+                button_clickable = False
+                try:
+                    download_button = self.driver.find_element(By.XPATH, download_button_xpath)
+                    button_clickable = download_button.is_enabled()
+                except:
+                    button_clickable = False
+                
+                # Check if success indicators are visible
+                success_visible = False
+                for selector in success_indicators:
+                    try:
+                        elements = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                        for element in elements:
+                            if element.is_displayed():
+                                success_visible = True
+                            break
+                        if success_visible:
+                            break
+                    except:
+                        continue
+                
+                # If no progress indicators are visible and button is clickable, download might be complete
+                if not progress_visible and button_clickable:
+                    logger.info("Download appears to be complete (no progress indicators, button clickable)")
+                    break
+                
+                # If success indicators are visible, download is complete
+                if success_visible:
+                    logger.info("Download completion indicators found")
+                    break
+                
+                # Wait a bit before checking again
+                time.sleep(2)
+                logger.info("Download still in progress, waiting...")
+                
+            except Exception as e:
+                logger.warning(f"Error checking download status: {e}")
+                time.sleep(2)
+        
+        # Additional wait to ensure download is fully processed
+        logger.info("Download monitoring completed, waiting additional 3 seconds for final processing...")
+        time.sleep(3)
+        
+        logger.info("Download completion wait finished")
 
     def _process_monday_board_items(self, company_name=None, start_point="none", start_page=None):
         """
@@ -1605,7 +1983,7 @@ class SeleniumAutomation:
             # Find all board items/rows
             board_item_selectors = [
                 "//div[contains(@class, 'row')]",
-                "//div[contains(@class, 'item')]", 
+                "//div[contains(@class, 'item')]",
                 "//div[contains(@class, 'board-item')]",
                 "//div[contains(@data-testid, 'row')]",
                 "//div[contains(@class, 'board-row')]",
@@ -1664,7 +2042,7 @@ class SeleniumAutomation:
                     if self.consecutive_failures >= 3:
                         logger.error("Too many consecutive failures, stopping automation")
                         break
-                        
+                
         except Exception as e:
             logger.error(f"Error processing Monday.com board: {e}")
 
