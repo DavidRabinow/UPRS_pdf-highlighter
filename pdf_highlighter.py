@@ -281,7 +281,171 @@ def fill_name_fields(doc, name_text: str):
     except Exception as e:
         logger.error(f"Error filling name fields: {e}")
 
-def highlight_pdf_pymupdf(pdf_path: Path, output_path: Path, highlight_text: str = None, name_text: str = None) -> bool:
+def analyze_pdf_structure(pdf_path: Path) -> dict:
+    """
+    Analyze the text structure of a PDF to understand how text is organized.
+    This helps debug why highlighting works differently across PDF formats.
+    
+    Args:
+        pdf_path (Path): Path to the PDF file
+    
+    Returns:
+        dict: Analysis results including text spans, fonts, and positioning
+    """
+    try:
+        doc = fitz.open(str(pdf_path))
+        analysis = {
+            'total_pages': len(doc),
+            'text_spans': [],
+            'fonts_used': set(),
+            'text_positions': [],
+            'sample_texts': []
+        }
+        
+        for page_num in range(min(len(doc), 3)):  # Analyze first 3 pages
+            page = doc[page_num]
+            text_blocks = page.get_text("dict")["blocks"]
+            
+            for block in text_blocks:
+                if "lines" in block:
+                    for line in block["lines"]:
+                        for span in line["spans"]:
+                            text = span["text"].strip()
+                            if text:  # Only analyze non-empty text
+                                analysis['text_spans'].append({
+                                    'text': text,
+                                    'font': span.get('font', 'unknown'),
+                                    'size': span.get('size', 0),
+                                    'bbox': span.get('bbox', []),
+                                    'page': page_num
+                                })
+                                analysis['fonts_used'].add(span.get('font', 'unknown'))
+                                analysis['text_positions'].append(span.get('bbox', []))
+                                
+                                # Collect sample texts for analysis
+                                if len(analysis['sample_texts']) < 20:  # Limit samples
+                                    analysis['sample_texts'].append(text)
+        
+        doc.close()
+        return analysis
+        
+    except Exception as e:
+        logger.error(f"Error analyzing PDF structure: {e}")
+        return {}
+
+def get_highlighting_profile(profile_name: str = None) -> dict:
+    """
+    Get highlighting profiles for different form types.
+    These profiles define what should be highlighted for each form type.
+    
+    Args:
+        profile_name (str): Name of the profile to use
+    
+    Returns:
+        dict: Profile with keywords and settings
+    """
+    profiles = {
+        "notary": {
+            "keywords": [
+                "notary",
+                "notary public",
+                "notary signature", 
+                "sworn and subscribed",
+                "before me",
+                "personally appeared"
+            ],
+            "exclude_patterns": [
+                "commission expires",  # This is just a label, not a field to highlight
+                "my commission expires",
+                "commission expires on",
+                "expires on",
+                "expires:",
+                "expires :"
+            ],
+            "description": "Highlights notary-related fields and language"
+        },
+        "signature": {
+            "keywords": [
+                "signature",
+                "signature of claimant",
+                "signature of co-claimant",
+                "printed name",
+                "date"
+            ],
+            "exclude_patterns": [
+                "signature line",
+                "signature block",
+                "signature area"
+            ],
+            "description": "Highlights signature fields and dates"
+        },
+        "claimant": {
+            "keywords": [
+                "claimant",
+                "claimant name",
+                "printed name",
+                "title",
+                "state of",
+                "county of"
+            ],
+            "exclude_patterns": [
+                "claimant information",
+                "claimant section"
+            ],
+            "description": "Highlights claimant information fields"
+        },
+        "affidavit": {
+            "keywords": [
+                "affidavit",
+                "sworn",
+                "perjury",
+                "true",
+                "correct",
+                "full",
+                "certify"
+            ],
+            "exclude_patterns": [
+                "affidavit section",
+                "affidavit block"
+            ],
+            "description": "Highlights affidavit language and certifications"
+        },
+        "comprehensive": {
+            "keywords": [
+                "notary",
+                "notary public",
+                "notary signature",
+                "signature",
+                "signature of claimant",
+                "signature of co-claimant",
+                "printed name",
+                "date",
+                "claimant",
+                "affidavit",
+                "sworn",
+                "perjury"
+            ],
+            "exclude_patterns": [
+                "commission expires",
+                "my commission expires",
+                "signature line",
+                "signature block"
+            ],
+            "description": "Comprehensive highlighting for all important fields"
+        }
+    }
+    
+    if profile_name and profile_name in profiles:
+        return profiles[profile_name]
+    else:
+        # Return default profile
+        return {
+            "keywords": ["signature", "notary", "claimant", "date"],
+            "exclude_patterns": ["commission expires", "signature line"],
+            "description": "Default highlighting profile"
+        }
+
+def highlight_pdf_pymupdf(pdf_path: Path, output_path: Path, highlight_text: str = None, name_text: str = None, profile: str = None) -> bool:
     """
     Add highlights to a PDF using PyMuPDF.
     
@@ -290,6 +454,7 @@ def highlight_pdf_pymupdf(pdf_path: Path, output_path: Path, highlight_text: str
         output_path (Path): Path to output highlighted PDF
         highlight_text (str): Custom text to highlight (e.g., "signatures", "dates", "names")
         name_text (str): Name to fill in PDF form fields
+        profile (str): Profile name for predefined highlighting rules
     
     Returns:
         bool: True if successful, False otherwise
@@ -297,6 +462,33 @@ def highlight_pdf_pymupdf(pdf_path: Path, output_path: Path, highlight_text: str
     try:
         # Open the PDF
         doc = fitz.open(str(pdf_path))
+        
+        # Get highlighting profile if specified
+        if profile:
+            profile_data = get_highlighting_profile(profile)
+            if highlight_text:
+                # Combine custom text with profile keywords
+                custom_keywords = [kw.strip().lower() for kw in highlight_text.split(',')]
+                profile_keywords = profile_data.get('keywords', [])
+                keywords = list(set(custom_keywords + profile_keywords))
+                exclude_patterns = profile_data.get('exclude_patterns', [])
+                logger.info(f"Using profile '{profile}' + custom keywords: {keywords}")
+                logger.info(f"Exclude patterns: {exclude_patterns}")
+            else:
+                keywords = profile_data.get('keywords', [])
+                exclude_patterns = profile_data.get('exclude_patterns', [])
+                logger.info(f"Using profile '{profile}': {keywords}")
+                logger.info(f"Exclude patterns: {exclude_patterns}")
+        elif highlight_text:
+            # Use custom highlight text
+            keywords = [kw.strip().lower() for kw in highlight_text.split(',')]
+            exclude_patterns = []
+            logger.info(f"Using custom keywords: {keywords}")
+        else:
+            # Use default keywords
+            keywords = ["signature of claimant", "notary signature"]
+            exclude_patterns = ["commission expires", "signature line"]
+            logger.info(f"Using default keywords: {keywords}")
         
         # Process each page
         for page_num in range(len(doc)):
@@ -311,53 +503,68 @@ def highlight_pdf_pymupdf(pdf_path: Path, output_path: Path, highlight_text: str
                         for span in line["spans"]:
                             text = span["text"].lower()
                             
-                            # Use custom highlight text if provided, otherwise use default
-                            if highlight_text:
-                                # Split highlight text into keywords and check for similar matches
-                                keywords = [kw.strip().lower() for kw in highlight_text.split(',')]
+                            # Check for keyword matches
+                            should_highlight = False
+                            matched_keyword = None
+                            
+                            # First check if this text should be excluded
+                            should_exclude = False
+                            for exclude_pattern in exclude_patterns:
+                                if exclude_pattern in text:
+                                    should_exclude = True
+                                    logger.debug(f"Excluding text '{text}' due to pattern '{exclude_pattern}'")
+                                    break
+                            
+                            if should_exclude:
+                                continue  # Skip this text
+                            
+                            # Debug logging for troubleshooting
+                            if any(keyword in text for keyword in keywords):
+                                logger.debug(f"Potential match found - Text: '{text}', Keywords: {keywords}")
+                            
+                            for keyword in keywords:
+                                # Check for exact word match
+                                text_words = text.split()
+                                if keyword in text_words:
+                                    should_highlight = True
+                                    matched_keyword = keyword
+                                    logger.debug(f"Exact word match: '{keyword}' in '{text}'")
+                                    break
                                 
-                                # Check for similar word matches (including variations and word order)
-                                text_lower = text.lower()
-                                should_highlight = False
+                                # Check for partial word match (e.g., "notary" in "notary public")
+                                if keyword in text:
+                                    should_highlight = True
+                                    matched_keyword = keyword
+                                    logger.debug(f"Partial word match: '{keyword}' in '{text}'")
+                                    break
                                 
-                                for keyword in keywords:
-                                    # Check for exact word match only
-                                    text_words = text_lower.split()
-                                    if keyword in text_words:
+                                # For multi-word terms, check if all parts are present as separate words
+                                keyword_parts = keyword.split()
+                                if len(keyword_parts) > 1:
+                                    # Check if all keyword parts exist as separate words in the text
+                                    if all(part in text_words for part in keyword_parts):
                                         should_highlight = True
+                                        matched_keyword = keyword
+                                        logger.debug(f"Multi-word match: all parts of '{keyword}' found in '{text}'")
                                         break
                                     
-                                    # For multi-word terms, check if all parts are present as separate words
-                                    keyword_parts = keyword.split()
-                                    if len(keyword_parts) > 1:
-                                        # Check if all keyword parts exist as separate words in the text
-                                        if all(part in text_words for part in keyword_parts):
-                                            should_highlight = True
-                                            break
+                                    # Also check if the full phrase appears anywhere in the text
+                                    if keyword in text:
+                                        should_highlight = True
+                                        matched_keyword = keyword
+                                        logger.debug(f"Full phrase match: '{keyword}' in '{text}'")
+                                        break
+                            
+                            if should_highlight:
+                                # Create highlight rectangle
+                                rect = fitz.Rect(span["bbox"])
                                 
-                                if should_highlight:
-                                    # Create highlight rectangle
-                                    rect = fitz.Rect(span["bbox"])
-                                    
-                                    # Add yellow highlight
-                                    highlight = page.add_highlight_annot(rect)
-                                    highlight.set_colors(stroke=[1, 1, 0])  # Yellow
-                                    highlight.set_opacity(0.3)  # 30% opacity
-                                    highlight.update()
-                            else:
-                                # Default highlighting logic (signatures)
-                                if any(keyword in text for keyword in [
-                                    "signature of claimant",
-                                    "signature of the notary public"
-                                ]):
-                                    # Create highlight rectangle
-                                    rect = fitz.Rect(span["bbox"])
-                                    
-                                    # Add yellow highlight
-                                    highlight = page.add_highlight_annot(rect)
-                                    highlight.set_colors(stroke=[1, 1, 0])  # Yellow
-                                    highlight.set_opacity(0.3)  # 30% opacity
-                                    highlight.update()
+                                # Add yellow highlight
+                                highlight = page.add_highlight_annot(rect)
+                                highlight.set_colors(stroke=[1, 1, 0])  # Yellow
+                                highlight.set_opacity(0.3)  # 30% opacity
+                                highlight.update()
+                                logger.debug(f"Highlighted: '{text}' (matched: '{matched_keyword}')")
         
         # Fill in name fields if name_text is provided
         if name_text:
@@ -371,6 +578,8 @@ def highlight_pdf_pymupdf(pdf_path: Path, output_path: Path, highlight_text: str
         logger.info(f"Highlighted PDF saved: {output_path.name}")
         if highlight_text:
             logger.info(f"Used custom highlight text: '{highlight_text}'")
+        if profile:
+            logger.info(f"Used profile: '{profile}'")
         if name_text:
             logger.info(f"Filled in name fields with: '{name_text}'")
         return True
@@ -411,7 +620,7 @@ def highlight_pdf_pypdf2(pdf_path: Path, output_path: Path, name_text: str = Non
         logger.error(f"Error processing PDF with PyPDF2: {e}")
         return False
 
-def highlight_pdf_file(pdf_path: Path, output_dir: Path, highlight_text: str = None, name_text: str = None) -> Optional[Path]:
+def highlight_pdf_file(pdf_path: Path, output_dir: Path, highlight_text: str = None, name_text: str = None, profile: str = None) -> Optional[Path]:
     """
     Highlight a PDF file using available libraries.
     
@@ -420,6 +629,7 @@ def highlight_pdf_file(pdf_path: Path, output_dir: Path, highlight_text: str = N
         output_dir (Path): Directory to save highlighted PDF
         highlight_text (str): Custom text to highlight (e.g., "signatures", "dates", "names")
         name_text (str): Name to fill in PDF form fields
+        profile (str): Profile name for predefined highlighting rules
     
     Returns:
         Optional[Path]: Path to highlighted PDF if successful, None otherwise
@@ -428,7 +638,7 @@ def highlight_pdf_file(pdf_path: Path, output_dir: Path, highlight_text: str = N
     
     # Try PyMuPDF first (better highlighting capabilities)
     if PYMUPDF_AVAILABLE:
-        if highlight_pdf_pymupdf(pdf_path, output_path, highlight_text, name_text):
+        if highlight_pdf_pymupdf(pdf_path, output_path, highlight_text, name_text, profile):
             return output_path
     
     # Fallback to PyPDF2
@@ -439,7 +649,7 @@ def highlight_pdf_file(pdf_path: Path, output_dir: Path, highlight_text: str = N
     logger.error(f"Could not highlight PDF: {pdf_path.name}")
     return None
 
-def process_pdf_files(pdf_files: List[Path], output_dir: Path, highlight_text: str = None, name_text: str = None) -> List[Path]:
+def process_pdf_files(pdf_files: List[Path], output_dir: Path, highlight_text: str = None, name_text: str = None, profile: str = None) -> List[Path]:
     """
     Process multiple PDF files and add highlights.
     
@@ -448,6 +658,7 @@ def process_pdf_files(pdf_files: List[Path], output_dir: Path, highlight_text: s
         output_dir (Path): Directory to save highlighted PDFs
         highlight_text (str): Custom text to highlight (e.g., "signatures", "dates", "names")
         name_text (str): Name to fill in PDF form fields
+        profile (str): Profile name for predefined highlighting rules
     
     Returns:
         List[Path]: List of highlighted PDF paths
@@ -457,11 +668,15 @@ def process_pdf_files(pdf_files: List[Path], output_dir: Path, highlight_text: s
     logger.info(f"Processing {len(pdf_files)} PDF files...")
     if highlight_text:
         logger.info(f"Using custom highlight text: '{highlight_text}'")
+    if profile:
+        profile_data = get_highlighting_profile(profile)
+        logger.info(f"Using profile: '{profile}' - {profile_data['description']}")
+        logger.info(f"Profile keywords: {profile_data['keywords']}")
     
     for i, pdf_path in enumerate(pdf_files, 1):
         logger.info(f"Processing {i}/{len(pdf_files)}: {pdf_path.name}")
         
-        highlighted_path = highlight_pdf_file(pdf_path, output_dir, highlight_text, name_text)
+        highlighted_path = highlight_pdf_file(pdf_path, output_dir, highlight_text, name_text, profile)
         if highlighted_path:
             highlighted_files.append(highlighted_path)
     
@@ -507,7 +722,7 @@ def cleanup_temp_files(extract_dir: Path, output_dir: Path):
     except Exception as e:
         logger.warning(f"Could not clean up temporary files: {e}")
 
-def main(highlight_text: str = None, name_text: str = None):
+def main(highlight_text: str = None, name_text: str = None, debug_mode: bool = False, profile: str = None):
     """Main function to process ZIP files and add highlights to PDFs."""
     print("=" * 70)
     print("PDF Highlighter - Automatic PDF Highlighting")
@@ -518,6 +733,15 @@ def main(highlight_text: str = None, name_text: str = None):
     
     if name_text:
         print(f"Name text for form filling: '{name_text}'")
+    
+    if profile:
+        profile_data = get_highlighting_profile(profile)
+        print(f"Using profile: '{profile}' - {profile_data['description']}")
+        print(f"Profile keywords: {profile_data['keywords']}")
+    
+    if debug_mode:
+        print("🔍 Debug mode enabled - will analyze PDF structure and show detailed logs")
+        logging.getLogger().setLevel(logging.DEBUG)
     
     # Check for required libraries
     if not check_pdf_libraries():
@@ -561,13 +785,49 @@ def main(highlight_text: str = None, name_text: str = None):
         
         print(f"Found {len(pdf_files)} PDF files to process")
         
+        # Debug mode: Analyze first PDF structure
+        if debug_mode and pdf_files:
+            print("\n🔍 Analyzing PDF structure for debugging...")
+            first_pdf = pdf_files[0]
+            analysis = analyze_pdf_structure(first_pdf)
+            if analysis:
+                print(f"PDF Analysis Results:")
+                print(f"  - Total pages: {analysis.get('total_pages', 0)}")
+                print(f"  - Text spans found: {len(analysis.get('text_spans', []))}")
+                print(f"  - Fonts used: {len(analysis.get('fonts_used', set()))}")
+                print(f"  - Sample texts: {analysis.get('sample_texts', [])[:5]}")  # Show first 5
+                
+                # Show what keywords we're looking for
+                if profile:
+                    profile_data = get_highlighting_profile(profile)
+                    keywords = profile_data.get('keywords', [])
+                elif highlight_text:
+                    keywords = [kw.strip().lower() for kw in highlight_text.split(',')]
+                else:
+                    keywords = ["signature", "notary", "claimant", "date"]
+                
+                print(f"  - Looking for keywords: {keywords}")
+                
+                # Check if keywords appear in sample texts
+                found_keywords = []
+                for keyword in keywords:
+                    for sample in analysis.get('sample_texts', []):
+                        if keyword in sample.lower():
+                            found_keywords.append(keyword)
+                            break
+                
+                if found_keywords:
+                    print(f"  - ✅ Keywords found in PDF: {found_keywords}")
+                else:
+                    print(f"  - ❌ No keywords found in PDF samples")
+        
         # Create output directory for highlighted PDFs
         output_dir = file_path.parent / f"highlighted_pdfs_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         output_dir.mkdir(exist_ok=True)
         
         # Process PDF files
         print(f"\nProcessing PDF files and adding highlights...")
-        highlighted_files = process_pdf_files(pdf_files, output_dir, highlight_text, name_text)
+        highlighted_files = process_pdf_files(pdf_files, output_dir, highlight_text, name_text, profile)
         
         if not highlighted_files:
             print("❌ No PDFs were successfully highlighted")
@@ -609,5 +869,15 @@ if __name__ == "__main__":
     if len(sys.argv) > 3 and sys.argv[2] == "--name":
         name_text = sys.argv[3]
     
+    # Check for debug mode
+    debug_mode = "--debug" in sys.argv
+    
+    # Check for profile
+    profile = None
+    if "--profile" in sys.argv:
+        profile_index = sys.argv.index("--profile")
+        if profile_index + 1 < len(sys.argv):
+            profile = sys.argv[profile_index + 1]
+    
     # Run the main function with the highlight text and name text
-    main(highlight_text, name_text) 
+    main(highlight_text, name_text, debug_mode, profile) 
