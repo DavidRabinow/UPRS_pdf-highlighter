@@ -37,14 +37,14 @@ def run_automation_in_background(search_text, company_name=None, start_point="no
     This runs in a separate thread so Flask remains responsive.
     
     Args:
-        search_text (str): The text to search for in the automation
+        search_text (str): The URL to navigate to (e.g., Monday.com board URL)
         company_name (str): Optional company name to begin with
         start_point (str): Starting point - "none" or "company"
     """
     global automation_status
     
     try:
-        logger.info(f"Starting Monday.com board import automation in background with text: '{search_text}', company: '{company_name}', start point: '{start_point}'")
+        logger.info(f"Starting dynamic navigation automation in background with URL: '{search_text}', company: '{company_name}', start point: '{start_point}'")
         automation_status['running'] = True
         automation_status['start_time'] = time.strftime('%Y-%m-%d %H:%M:%S')
         automation_status['error'] = None
@@ -54,7 +54,7 @@ def run_automation_in_background(search_text, company_name=None, start_point="no
         automation_status['start_point'] = start_point
         automation_status['start_page'] = start_page
         
-        # Create and run automation with search text and additional parameters
+        # Create and run automation with URL and additional parameters
         automation = SeleniumAutomation()
         automation.run(search_text, company_name, start_point, start_page)
         
@@ -63,7 +63,7 @@ def run_automation_in_background(search_text, company_name=None, start_point="no
         automation_status['completed'] = True
         automation_status['end_time'] = time.strftime('%Y-%m-%d %H:%M:%S')
         automation_status['current_step'] = 'Automation completed successfully'
-        logger.info("Monday.com board import automation completed successfully")
+        logger.info("Dynamic navigation automation completed successfully")
         
     except Exception as e:
         # Update status on error
@@ -71,12 +71,12 @@ def run_automation_in_background(search_text, company_name=None, start_point="no
         automation_status['error'] = str(e)
         automation_status['end_time'] = time.strftime('%Y-%m-%d %H:%M:%S')
         automation_status['current_step'] = f'Error: {str(e)}'
-        logger.error(f"Monday.com board import automation failed: {e}")
+        logger.error(f"Dynamic navigation automation failed: {e}")
 
 @app.route('/')
 def index():
     """
-    Main page with the Start Automation button and text input.
+    Main page with the Start Automation button and URL input.
     """
     return render_template('index.html', status=automation_status)
 
@@ -84,7 +84,7 @@ def index():
 def start_automation():
     """
     API endpoint to start the automation process.
-    Receives search text from frontend and returns immediately while automation runs in background.
+    Receives URL from frontend and returns immediately while automation runs in background.
     """
     global automation_status
     
@@ -118,7 +118,14 @@ def start_automation():
         if not search_text:
             return jsonify({
                 'success': False,
-                'message': 'Search text is required'
+                'message': 'URL is required'
+            })
+        
+        # Validate that search_text looks like a URL
+        if not (search_text.startswith('http://') or search_text.startswith('https://')):
+            return jsonify({
+                'success': False,
+                'message': 'Please enter a valid URL starting with http:// or https://'
             })
         
         # Validate start point
@@ -135,7 +142,7 @@ def start_automation():
                 'message': 'Company name is required when start point is "company"'
             })
             
-        logger.info(f"Received Monday.com board import request with text: '{search_text}', company: '{company_name}', start point: '{start_point}', start page: '{start_page}'")
+        logger.info(f"Received dynamic navigation request with URL: '{search_text}', company: '{company_name}', start point: '{start_point}', start page: '{start_page}'")
         
     except Exception as e:
         logger.error(f"Error parsing request data: {e}")
@@ -163,11 +170,11 @@ def start_automation():
     automation_thread.daemon = True  # Thread will stop when main app stops
     automation_thread.start()
     
-    logger.info(f"Monday.com board import thread started with text: '{search_text}', company: '{company_name}', start point: '{start_point}'")
+    logger.info(f"Dynamic navigation thread started with URL: '{search_text}', company: '{company_name}', start point: '{start_point}'")
     
     return jsonify({
         'success': True,
-        'message': f'Monday.com board import started successfully with text: "{search_text}", company: "{company_name}", start point: "{start_point}"'
+        'message': f'Dynamic navigation started successfully with URL: "{search_text}", company: "{company_name}", start point: "{start_point}"'
     })
 
 @app.route('/status')

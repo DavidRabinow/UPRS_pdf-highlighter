@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Monday.com Board Import Tool</title>
+    <title>Dynamic Navigation Tool</title>
     <style>
       body {
         background: #1a2236;
@@ -216,17 +216,19 @@
             letter-spacing: 2px;
             color: #fff;
           "
-          >Monday.com Board Import Tool</span
+          >Dynamic Navigation Tool</span
         >
       </div>
 
       <div class="input-container">
-        <label for="searchText" class="input-label">Enter text to import:</label>
+        <label for="searchText" class="input-label"
+          >Enter URL to navigate to:</label
+        >
         <input
-          type="text"
+          type="url"
           id="searchText"
           class="text-input"
-          placeholder="Enter the text you want to import to Monday.com board..."
+          placeholder="Enter the URL you want to navigate to (e.g., https://monday.com/boards/123456)..."
           value=""
         />
 
@@ -265,7 +267,7 @@
           class="start-button"
           onclick="startAutomation()"
         >
-          Import to Monday.com Board
+          Navigate to URL
         </button>
       </div>
 
@@ -280,7 +282,7 @@
             <span id="currentStep">No automation running</span>
           </div>
           <div class="status-item status-idle">
-            <strong>Import Text:</strong> <span id="searchTextDisplay">-</span>
+            <strong>Target URL:</strong> <span id="searchTextDisplay">-</span>
           </div>
           <div class="status-item status-idle">
             <strong>Company Name:</strong>
@@ -333,7 +335,16 @@
 
         // Validate input
         if (!searchText) {
-          alert("Please enter some text to import to the Monday.com board.");
+          alert("Please enter a URL to navigate to.");
+          return;
+        }
+
+        // Validate URL format
+        if (
+          !searchText.startsWith("http://") &&
+          !searchText.startsWith("https://")
+        ) {
+          alert("Please enter a valid URL starting with http:// or https://");
           return;
         }
 
@@ -347,9 +358,10 @@
 
         // Disable button and show loading
         button.disabled = true;
-        button.innerHTML = '🔄 Navigating to Monday.com... <div class="loading"></div>';
+        button.innerHTML =
+          '🔄 Navigating to URL... <div class="loading"></div>';
         statusText.innerHTML =
-          'Navigating to Monday.com board... <div class="loading"></div>';
+          'Navigating to URL... <div class="loading"></div>';
 
         // Make API call to start automation with search text and additional parameters
         fetch("/start_automation", {
@@ -367,10 +379,7 @@
           .then((response) => response.json())
           .then((data) => {
             if (data.success) {
-              console.log(
-                "Import started successfully with text:",
-                searchText
-              );
+              console.log("Import started successfully with text:", searchText);
               // Start polling for status updates
               startStatusPolling();
             } else {
@@ -389,7 +398,7 @@
       function resetButton() {
         const button = document.getElementById("startButton");
         button.disabled = false;
-        button.innerHTML = "🚀 Import to Monday.com Board";
+        button.innerHTML = "🚀 Navigate to URL";
       }
 
       // Start polling for status updates

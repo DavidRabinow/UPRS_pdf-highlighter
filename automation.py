@@ -28,21 +28,26 @@ class SeleniumAutomation:
     Selenium automation class that handles browser automation tasks.
     """
     
-    def __init__(self):
+    def __init__(self, page_url=None):
         """
         Initialize the automation with configuration.
+        Args:
+            page_url (str): The URL or page path to navigate to (optional)
         """
         # Configuration - UPDATE THESE VALUES AS NEEDED
         self.website_url = "https://uprs-group-llc.monday.com/boards/9740813045"
         self.username = "drabinow2@gmail.com"
         self.password = "ELEGOOPRINTERS"
         
+        # Dynamic page navigation - user can specify any page
+        self.page_url = page_url
+        
         # Element selectors - UPDATE THESE IF NEEDED
         self.username_selector = "input[type='email'], input[name='email'], #email"
         self.password_selector = "input[type='password'], input[name='password'], #password"
         self.login_button_selector = "button[type='submit'], input[type='submit'], .login-btn"
         
-        # Navigation selectors
+        # Navigation selectors - now dynamic based on page_url
         self.search_properties_selector = "a[href*='search'], .search-link, #search, .board-item"
         self.process_imported_files_selector = "a[href*='process'], .process-link, #process, .board-item"
         
@@ -1500,254 +1505,228 @@ class SeleniumAutomation:
         Main method to run the complete automation process with continuous processing.
         This method orchestrates the entire automation process:
         1. Browser setup (visible Chrome)
-        2. Navigate to Monday.com board (https://uprs-group-llc.monday.com/boards/9740813045)
-        3. Login to Monday.com (if required)
+        2. Navigate to the URL provided in search_text
+        3. Login to the website (if required)
         4. Navigate to target page
         5. Continuous processing of Payee Names from the table
         Args:
-            search_text (str): The text to import to the Monday.com board
+            search_text (str): The URL to navigate to (e.g., Monday.com board URL)
             company_name (str): Optional company name to begin processing from
             start_point (str): Starting point - "none" or "company"
             start_page (int or None): Page number to start from (1-based)
         """
         try:
-            logger.info("=== STARTING MONDAY.COM BOARD IMPORT AUTOMATION ===")
-            logger.info(f"Text to import: '{search_text}'")
+            logger.info("=== STARTING DYNAMIC NAVIGATION AUTOMATION ===")
+            logger.info(f"URL to navigate to: '{search_text}'")
             logger.info(f"Maximum companies to process: {self.max_companies}")
             logger.info("Browser will remain VISIBLE throughout the process")
+            
             # Step 1: Set up browser (VISIBLE - not headless)
             self.setup_browser()
-            # Step 2: Navigate to website
-            self.navigate_to_website()
-            # Step 3: Perform login (modify or remove as needed)
-            self.perform_login()
-            # Step 4: Navigate to Search Properties
-            self.navigate_to_search_properties()
-            # Step 5: Navigate to Process Imported Files
-            self.navigate_to_process_imported_files()
-            # Step 6: Perform initial search to populate the table
-            self.find_and_fill_file_search_field(search_text)
-            logger.info("=== INITIAL SEARCH COMPLETED - TABLE SHOULD BE POPULATED ===")
-            # Step 6.5: If start_page is specified and > 1, advance to that page before processing
-            if start_page is not None and int(start_page) > 1:
-                from selenium.webdriver.common.by import By
-                from selenium.webdriver.support.ui import WebDriverWait
-                from selenium.webdriver.support import expected_conditions as EC
-                import time
-                wait = WebDriverWait(self.driver, 10)
-                next_button_xpath = '//*[@id="propsGrid_pager"]/div/div[4]'
-                table_row_xpath = '//*[@id="propsGrid"]/tbody/tr[1]'
-                logger.info(f"Advancing to page {start_page} before processing...")
-                for page_num in range(1, int(start_page)):
-                    try:
-                        # Get the text of the first row before clicking next
-                        try:
-                            first_row = self.driver.find_element(By.XPATH, table_row_xpath)
-                            first_row_text = first_row.text
-                        except Exception:
-                            first_row_text = None
-                        next_button = wait.until(EC.element_to_be_clickable((By.XPATH, next_button_xpath)))
-                        is_disabled = next_button.get_attribute('class')
-                        if is_disabled and ('disabled' in is_disabled or 'ui-state-disabled' in is_disabled):
-                            logger.warning(f"Cannot advance to page {start_page}: 'Next' button is disabled at page {page_num}.")
-                            break
-                        self.driver.execute_script("arguments[0].scrollIntoView(true);", next_button)
-                        time.sleep(0.5)
-                        next_button.click()
-                        logger.info(f"Clicked 'Next' to advance to page {page_num + 1}")
-                        # Wait for the first row to change (table update)
-                        WebDriverWait(self.driver, 10).until(
-                            lambda d: d.find_element(By.XPATH, table_row_xpath).text != first_row_text
-                        )
-                    except Exception as e:
-                        logger.error(f"Error advancing to page {page_num + 1}: {e}")
-                        break
-            # Step 7: Continuous processing loop (index-based)
-            logger.info("=== STARTING CONTINUOUS PROCESSING LOOP (INDEX-BASED) ===")
-            from selenium.webdriver.common.by import By
-            from selenium.webdriver.common.action_chains import ActionChains
-            from selenium.webdriver.support.ui import WebDriverWait
-            from selenium.webdriver.support import expected_conditions as EC
-            import time
-            wait = WebDriverWait(self.driver, 20)
-            current_row_index = 0
             
-            # Handle starting from a specific company if specified
-            if start_point == "company" and company_name:
-                logger.info(f"Looking for company '{company_name}' to start processing from...")
-                rows = wait.until(EC.presence_of_all_elements_located((By.XPATH, '//*[@id="propsGrid"]/tbody/tr')))
-                found_company = False
-                for i, row in enumerate(rows):
-                    try:
-                        payee_name_cell = row.find_element(By.XPATH, ".//td[2]")
-                        payee_name = payee_name_cell.text.strip()
-                        if self._normalize_text(payee_name) == self._normalize_text(company_name):
-                            current_row_index = i
-                            found_company = True
-                            logger.info(f"✅ Found company '{company_name}' at row {current_row_index+1}")
-                            break
-                    except Exception as e:
-                        logger.warning(f"Could not extract Payee Name at row {i+1}: {e}")
-                        continue
-                
-                if not found_company:
-                    logger.warning(f"⚠️ Company '{company_name}' not found in table. Starting from the beginning.")
-                    current_row_index = 0
+            # Step 2: Navigate to the URL provided in search_text
+            logger.info(f"Navigating to provided URL: {search_text}")
+            self.driver.get(search_text)
+            time.sleep(3)
+            logger.info("Successfully navigated to provided URL")
             
-            # Process Monday.com board items - extract company names from the "Lead" column
-            # and process them through BizFileOnline (same as REARS process)
-            logger.info("=== EXTRACTING COMPANY NAMES FROM MONDAY.COM BOARD ===")
-            
-            # Wait for the board to load and find all lead rows
-            wait = WebDriverWait(self.driver, 20)
-            
-            # Find all lead rows in the Monday.com board
-            # Monday.com uses a different structure than REARS table
-            try:
-                # Try multiple selectors for Monday.com board rows
-                lead_row_selectors = [
-                    "//div[contains(@class, 'row')]",
-                    "//div[contains(@class, 'item')]",
-                    "//div[contains(@class, 'board-item')]",
-                    "//div[contains(@data-testid, 'row')]",
-                    "//div[contains(@class, 'board-row')]"
-                ]
-                
-                lead_rows = []
-                for selector in lead_row_selectors:
-                    try:
-                        lead_rows = self.driver.find_elements(By.XPATH, selector)
-                        if lead_rows:
-                            logger.info(f"Found {len(lead_rows)} lead rows using selector: {selector}")
-                            break
-                    except Exception:
-                        continue
-                
-                if not lead_rows:
-                    logger.warning("No lead rows found with any selector. Trying alternative approach...")
-                    # Try to find any clickable elements that might be rows
-                    lead_rows = self.driver.find_elements(By.XPATH, "//div[contains(@class, 'clickable') or contains(@class, 'item')]")
-                    logger.info(f"Found {len(lead_rows)} potential lead rows with alternative approach")
-                
-                logger.info(f"Processing {len(lead_rows)} lead rows from Monday.com board")
-                
-                for row_index, row in enumerate(lead_rows):
-                    if self.companies_processed >= self.max_companies:
-                        logger.info("Reached maximum companies limit")
-                        break
-                    
-                    try:
-                        # Extract company name from the "Lead" column
-                        # Try multiple selectors for the company name
-                        company_name_selectors = [
-                            ".//div[contains(@class, 'cell')]//span[contains(text(), '')]",
-                            ".//div[contains(@class, 'column')]//span[contains(text(), '')]",
-                            ".//span[contains(@class, 'text')]",
-                            ".//div[contains(@class, 'text')]",
-                            ".//span[not(contains(@class, 'icon'))]",
-                            ".//div[contains(@class, 'lead')]//span",
-                            ".//div[contains(@class, 'name')]//span"
-                        ]
-                        
-                        company_name = None
-                        for selector in company_name_selectors:
-                            try:
-                                company_name_element = row.find_element(By.XPATH, selector)
-                                company_name = company_name_element.text.strip()
-                                if company_name and len(company_name) > 2:  # Ensure it's not just whitespace or very short
-                                    logger.info(f"Found company name with selector: {selector}")
-                                    break
-                            except Exception:
-                                continue
-                        
-                        if not company_name:
-                            logger.warning(f"Could not extract company name at row {row_index + 1}, skipping...")
-                            continue
-                        
-                        logger.info(f"=== PROCESSING ROW {row_index + 1}: '{company_name}' ===")
-                        
-                        # Check the checkbox for this row (same as REARS process)
-                        try:
-                            checkbox_selectors = [
-                                ".//input[@type='checkbox']",
-                                ".//div[contains(@class, 'checkbox')]",
-                                ".//div[contains(@class, 'check')]",
-                                ".//input[contains(@class, 'checkbox')]"
-                            ]
-                            
-                            checkbox = None
-                            for selector in checkbox_selectors:
-                                try:
-                                    checkbox = row.find_element(By.XPATH, selector)
-                                    break
-                                except Exception:
-                                    continue
-                            
-                            if checkbox and not checkbox.is_selected():
-                                checkbox.click()
-                                logger.info(f"✅ Checked checkbox for row {row_index + 1}")
-                        except Exception as e:
-                            logger.warning(f"Could not check checkbox for row {row_index + 1}: {e}")
-                        
-                        # Process the company name through BizFileOnline (same as REARS process)
-                        success = self.process_single_payee(company_name)
-                        if success:
-                            logger.info(f"✅ Successfully processed company: '{company_name}'")
-                            logger.info(f"Total companies processed: {self.companies_processed}")
-                        else:
-                            logger.error(f"❌ Failed to process company: '{company_name}'")
-                            logger.warning(f"Consecutive failures: {self.consecutive_failures}")
-                        
-                        self.companies_processed += 1
-                        
-                        # Close any extra tabs and return to Monday.com board
-                        main_handle = self.driver.current_window_handle
-                        handles = self.driver.window_handles[:]
-                        for handle in handles:
-                            if handle != main_handle:
-                                self.driver.switch_to.window(handle)
-                                self.driver.close()
-                        self.driver.switch_to.window(main_handle)
-                        
-                        # Brief pause between iterations
-                        time.sleep(2)
-                        
-                    except Exception as e:
-                        logger.error(f"Error processing row {row_index + 1}: {e}")
-                        self.consecutive_failures += 1
-                        
-                        if self.consecutive_failures >= 3:
-                            logger.error("Too many consecutive failures, stopping automation")
-                            break
-                
-            except Exception as e:
-                logger.error(f"Error finding lead rows: {e}")
-                raise
-            
-            logger.info("=== MONDAY.COM BOARD PROCESSING COMPLETED ===")
-            
-            # Step 8: Cleanup and completion
-            logger.info("=== AUTOMATION COMPLETED SUCCESSFULLY ===")
-            logger.info(f"Total companies processed: {self.companies_processed}")
-            logger.info("Browser will remain open for manual inspection")
-            # Step 8: Completion
-            logger.info("=== CONTINUOUS AUTOMATION COMPLETED ===")
-            logger.info(f"✅ Total companies processed: {self.companies_processed}")
-            logger.info(f"✅ Final consecutive failures: {self.consecutive_failures}")
-            if self.consecutive_failures >= 3:
-                logger.warning("⚠️ Automation stopped due to 3 consecutive failures")
+            # Step 3: Check if login is required and perform if needed
+            # This will be determined by the page content
+            if self._is_login_required():
+                logger.info("Login required, performing login process...")
+                self.perform_login()
             else:
-                logger.info("✅ Automation completed - processed all available companies")
-            # Keep browser open for a while so user can see the result
-            logger.info("Keeping browser open for 30 seconds for manual verification...")
-            time.sleep(30)
+                logger.info("No login required, proceeding with automation...")
+            
+            # Step 4: Wait for the page to load completely
+            logger.info("Waiting for page to load completely...")
+            time.sleep(5)
+            
+            # Step 5: Check if we're on a Monday.com board page
+            if "monday.com" in search_text.lower():
+                logger.info("Detected Monday.com board, processing board items...")
+                self._process_monday_board_items(company_name, start_point, start_page)
+            else:
+                logger.info("Processing as generic page...")
+                self._process_generic_page(company_name, start_point, start_page)
+                
         except Exception as e:
-            logger.error(f"❌ CONTINUOUS AUTOMATION FAILED: {e}")
-            logger.error("Please check the console logs above for detailed error information")
+            logger.error(f"Automation failed: {e}")
             raise
         finally:
-            # Always clean up
-            self.cleanup()
+            # Keep browser open for user inspection
+            logger.info("Automation completed. Browser will remain open for inspection.")
+            logger.info("Close the browser manually when done.")
+
+    def _is_login_required(self):
+        """
+        Check if login is required based on page content.
+        Returns True if login elements are found, False otherwise.
+        """
+        try:
+            # Look for common login indicators
+            login_indicators = [
+                "input[type='email']",
+                "input[type='password']", 
+                "input[name='email']",
+                "input[name='password']",
+                "#user_email",
+                "#user_password",
+                ".login-btn",
+                "button[type='submit']"
+            ]
+            
+            for selector in login_indicators:
+                try:
+                    element = self.driver.find_element(By.CSS_SELECTOR, selector)
+                    if element.is_displayed():
+                        logger.info(f"Login required - found element: {selector}")
+                        return True
+                except NoSuchElementException:
+                    continue
+                    
+            logger.info("No login elements found, proceeding without login")
+            return False
+            
+        except Exception as e:
+            logger.warning(f"Error checking login requirement: {e}")
+            return False
+
+    def _process_monday_board_items(self, company_name=None, start_point="none", start_page=None):
+        """
+        Process Monday.com board items specifically.
+        """
+        logger.info("=== PROCESSING MONDAY.COM BOARD ITEMS ===")
+        
+        # Wait for the board to load
+        wait = WebDriverWait(self.driver, 20)
+        
+        try:
+            # Find all board items/rows
+            board_item_selectors = [
+                "//div[contains(@class, 'row')]",
+                "//div[contains(@class, 'item')]", 
+                "//div[contains(@class, 'board-item')]",
+                "//div[contains(@data-testid, 'row')]",
+                "//div[contains(@class, 'board-row')]",
+                "//div[contains(@class, 'clickable')]"
+            ]
+            
+            board_items = []
+            for selector in board_item_selectors:
+                try:
+                    board_items = self.driver.find_elements(By.XPATH, selector)
+                    if board_items:
+                        logger.info(f"Found {len(board_items)} board items using selector: {selector}")
+                        break
+                except Exception:
+                    continue
+            
+            if not board_items:
+                logger.warning("No board items found. The page may not be a Monday.com board or may be loading.")
+                return
+            
+            logger.info(f"Processing {len(board_items)} board items")
+            
+            # Process each board item
+            for item_index, item in enumerate(board_items):
+                if self.companies_processed >= self.max_companies:
+                    logger.info("Reached maximum companies limit")
+                    break
+                
+                try:
+                    # Extract company/lead information from the board item
+                    company_info = self._extract_company_info_from_board_item(item)
+                    
+                    if not company_info:
+                        logger.warning(f"Could not extract company info from item {item_index + 1}")
+                        continue
+                    
+                    logger.info(f"=== PROCESSING BOARD ITEM {item_index + 1}: '{company_info}' ===")
+                    
+                    # Process the company through BizFileOnline
+                    success = self.process_single_payee(company_info)
+                    
+                    if success:
+                        logger.info(f"✅ Successfully processed company: '{company_info}'")
+                        self.companies_processed += 1
+                    else:
+                        logger.error(f"❌ Failed to process company: '{company_info}'")
+                        self.consecutive_failures += 1
+                    
+                    # Brief pause between items
+                    time.sleep(2)
+                    
+                except Exception as e:
+                    logger.error(f"Error processing board item {item_index + 1}: {e}")
+                    self.consecutive_failures += 1
+                    
+                    if self.consecutive_failures >= 3:
+                        logger.error("Too many consecutive failures, stopping automation")
+                        break
+                        
+        except Exception as e:
+            logger.error(f"Error processing Monday.com board: {e}")
+
+    def _extract_company_info_from_board_item(self, item):
+        """
+        Extract company/lead information from a Monday.com board item.
+        """
+        try:
+            # Try multiple selectors to find company/lead name
+            company_selectors = [
+                ".//div[contains(@class, 'cell')]//span[contains(text(), '')]",
+                ".//div[contains(@class, 'column')]//span[contains(text(), '')]",
+                ".//span[contains(@class, 'text')]",
+                ".//div[contains(@class, 'text')]",
+                ".//span[not(contains(@class, 'icon'))]",
+                ".//div[contains(@class, 'lead')]//span",
+                ".//div[contains(@class, 'name')]//span",
+                ".//div[contains(@class, 'title')]//span"
+            ]
+            
+            for selector in company_selectors:
+                try:
+                    element = item.find_element(By.XPATH, selector)
+                    text = element.text.strip()
+                    if text and len(text) > 2:  # Ensure it's not just whitespace or very short
+                        logger.info(f"Found company info with selector: {selector}")
+                        return text
+                except Exception:
+                    continue
+            
+            return None
+            
+        except Exception as e:
+            logger.warning(f"Error extracting company info: {e}")
+            return None
+
+    def _process_generic_page(self, company_name=None, start_point="none", start_page=None):
+        """
+        Process a generic page (not specifically Monday.com).
+        """
+        logger.info("=== PROCESSING GENERIC PAGE ===")
+        logger.info("This is a generic page. You may need to add specific processing logic.")
+        logger.info("Current URL: " + self.driver.current_url)
+        
+        # For now, just log the page information
+        try:
+            page_title = self.driver.title
+            logger.info(f"Page title: {page_title}")
+            
+            # Take a screenshot for reference
+            self.driver.save_screenshot("generic_page_screenshot.png")
+            logger.info("Screenshot saved as 'generic_page_screenshot.png'")
+            
+        except Exception as e:
+            logger.error(f"Error processing generic page: {e}")
+
+    def navigate_to_website(self):
+        """
+        Navigate to the website. This method is now overridden by the dynamic navigation in run().
+        """
+        logger.info("This method is deprecated. Use run() with search_text parameter instead.")
+        pass
 
     def search_payee_on_bizfile(self, payee_name):
         """
