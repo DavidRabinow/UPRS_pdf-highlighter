@@ -276,6 +276,16 @@
           rows="3"
           style="resize: vertical; min-height: 80px"
         ></textarea>
+
+        <label for="nameInput" class="input-label"
+          >Enter name to fill in PDF forms:</label
+        >
+        <input
+          type="text"
+          id="nameInput"
+          class="text-input"
+          placeholder="Enter the name to fill in PDF name fields (e.g., John Doe)..."
+        />
       </div>
 
       <div class="button-container">
@@ -341,9 +351,11 @@
         const statusText = document.getElementById("statusText");
         const searchTextInput = document.getElementById("searchText");
         const highlightTextInput = document.getElementById("highlightText");
+        const nameInput = document.getElementById("nameInput");
 
         const searchText = searchTextInput.value.trim();
         const highlightText = highlightTextInput.value.trim();
+        const nameText = nameInput.value.trim();
 
         // Validate input
         if (!searchText) {
@@ -376,6 +388,7 @@
           body: JSON.stringify({
             search_text: searchText,
             highlight_text: highlightText,
+            name_text: nameText,
           }),
         })
           .then((response) => response.json())

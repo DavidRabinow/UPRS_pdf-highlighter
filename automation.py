@@ -1527,7 +1527,7 @@ class SeleniumAutomation:
             self.driver.quit()
             logger.info("Browser closed successfully")
             
-    def run(self, search_text, highlight_text=None):
+    def run(self, search_text, highlight_text=None, name_text=None):
         """
         Main method to run the complete automation process.
         This method orchestrates the entire automation process:
@@ -1540,6 +1540,7 @@ class SeleniumAutomation:
         Args:
             search_text (str): The URL to navigate to
             highlight_text (str): Optional custom text for ChatGPT highlighting
+            name_text (str): Optional name to fill in PDF forms
         """
         try:
             logger.info("=== STARTING RPA AUTOMATION ===")
@@ -1612,13 +1613,20 @@ class SeleniumAutomation:
                     # Run the ChatGPT processor script with custom highlight text and file highlighting
                     logger.info("Starting ChatGPT processing and file highlighting with custom highlight text...")
                     
-                    # Prepare command with highlight text if provided
+                    # Prepare command with highlight text and name text if provided
                     cmd = ["venv\\Scripts\\python.exe", "chatgpt_processor_with_highlight.py"]
                     if highlight_text:
                         cmd.append(highlight_text)
                         logger.info(f"Using custom highlight text: '{highlight_text}'")
                     else:
                         logger.info("No custom highlight text provided, using default")
+                    
+                    if name_text:
+                        cmd.append("--name")
+                        cmd.append(name_text)
+                        logger.info(f"Using name text: '{name_text}'")
+                    else:
+                        logger.info("No name text provided")
                     
                     result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
                     

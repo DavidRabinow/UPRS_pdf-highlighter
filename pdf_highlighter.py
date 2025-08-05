@@ -124,7 +124,164 @@ def find_pdf_files(directory: Path) -> List[Path]:
     logger.info(f"Found {len(pdf_files)} PDF files")
     return pdf_files
 
-def highlight_pdf_pymupdf(pdf_path: Path, output_path: Path, highlight_text: str = None) -> bool:
+def fill_name_fields(doc, name_text: str):
+    """
+    Fill in name fields in a PDF document.
+    
+    Args:
+        doc: PyMuPDF document object
+        name_text (str): Name to fill in the fields
+    """
+    try:
+        # Track filled fields to avoid duplicates
+        filled_fields = set()
+        
+        # Process each page
+        for page_num in range(len(doc)):
+            page = doc[page_num]
+            
+            # Get text blocks to find name fields
+            text_blocks = page.get_text("dict")["blocks"]
+            
+            for block in text_blocks:
+                if "lines" in block:
+                    for line in block["lines"]:
+                        for span in line["spans"]:
+                            text = span["text"].lower().strip()
+                            
+                            # Look for name field indicators (both simple and complex patterns)
+                            name_indicators = [
+                                # Simple patterns with colons
+                                "name:", "name :", "name(s):", "name(s) :", "full name:", "full name :",
+                                "applicant name:", "applicant name :", "signer name:", "signer name :",
+                                "printed name:", "printed name :", "legal name:", "legal name :",
+                                "business name:", "business name :", "company name:", "company name :",
+                                "entity name:", "entity name :", "organization name:", "organization name :",
+                                
+                                # Complex patterns without colons (like form fields)
+                                "name (last)", "name (first)", "name (middle)", "name (maiden)",
+                                "(last)", "(first)", "(middle)", "(maiden)",
+                                "last name", "first name", "middle name", "maiden name",
+                                "claimant name", "owner name", "additional owner"
+                            ]
+                            
+                            # Check if this text matches a name indicator (exact match or contains the pattern)
+                            should_fill = False
+                            matched_indicator = None
+                            
+                            for indicator in name_indicators:
+                                # For simple patterns with colons, use exact match or ends with
+                                if ":" in indicator:
+                                    if text == indicator or text.endswith(indicator):
+                                        should_fill = True
+                                        matched_indicator = indicator
+                                        break
+                                # For complex patterns without colons, check if text contains the pattern
+                                else:
+                                    if indicator in text or text == indicator:
+                                        should_fill = True
+                                        matched_indicator = indicator
+                                        break
+                            
+                            if should_fill:
+                                # Found a name field, check if already filled
+                                field_key = f"{page_num}_{matched_indicator}"
+                                if field_key in filled_fields:
+                                    logger.info(f"Skipping already filled field '{matched_indicator}'")
+                                    continue
+                                
+                                # Check if there's already text after the name field
+                                rect = fitz.Rect(span["bbox"])
+                                check_area = fitz.Rect(
+                                    rect.x1 + 2,  # Right after the name field
+                                    rect.y0,      # Same vertical position
+                                    rect.x1 + 200, # Extend horizontally
+                                    rect.y1       # Same height
+                                )
+                                
+                                # Get text in the area where we would fill the name
+                                existing_text = page.get_text("text", clip=check_area).strip()
+                                
+                                # If there's already text there, skip this field
+                                if existing_text:
+                                    logger.info(f"Skipping field '{matched_indicator}' - already has text: '{existing_text}'")
+                                    continue
+                                
+                                # Found a name field, try to fill it
+                                try:
+                                    # Calculate position for the name text
+                                    # Position it slightly to the right of the name field
+                                    x_pos = rect.x1 + 5  # Slightly to the right
+                                    y_pos = rect.y0 + (rect.y1 - rect.y0) / 2  # Center vertically
+                                    
+                                    # Insert plain text (not an annotation)
+                                    page.insert_text(
+                                        point=(x_pos, y_pos),
+                                        text=name_text,
+                                        fontsize=span.get("size", 12),  # Match font size
+                                        color=(0, 0, 0)  # Black text
+                                    )
+                                    
+                                    # Mark this field as filled
+                                    filled_fields.add(field_key)
+                                    logger.info(f"Filled name field '{matched_indicator}' with '{name_text}'")
+                                    break  # Found and filled this field, move to next
+                                    
+                                except Exception as e:
+                                    logger.warning(f"Could not fill name field '{matched_indicator}': {e}")
+                                    continue
+                            
+                            # Also look for very short text that might be just "name:" or similar
+                            if len(text) <= 15 and text in name_indicators:
+                                field_key = f"{page_num}_{text}"
+                                if field_key in filled_fields:
+                                    logger.info(f"Skipping already filled short field '{text}'")
+                                    continue
+                                
+                                try:
+                                    # Check if there's empty space after this text
+                                    rect = fitz.Rect(span["bbox"])
+                                    
+                                    # Check if there's already text after the name field
+                                    check_area = fitz.Rect(
+                                        rect.x1 + 2,  # Right after the text
+                                        rect.y0,      # Same vertical position
+                                        rect.x1 + 200, # Extend horizontally
+                                        rect.y1       # Same height
+                                    )
+                                    
+                                    # Get text in the area where we would fill the name
+                                    existing_text = page.get_text("text", clip=check_area).strip()
+                                    
+                                    # If there's already text there, skip this field
+                                    if existing_text:
+                                        logger.info(f"Skipping short field '{text}' - already has text: '{existing_text}'")
+                                        continue
+                                    
+                                    # Calculate position for the name text
+                                    x_pos = rect.x1 + 2  # Right after the text
+                                    y_pos = rect.y0 + (rect.y1 - rect.y0) / 2  # Center vertically
+                                    
+                                    # Insert plain text (not an annotation)
+                                    page.insert_text(
+                                        point=(x_pos, y_pos),
+                                        text=name_text,
+                                        fontsize=span.get("size", 12),  # Match font size
+                                        color=(0, 0, 0)  # Black text
+                                    )
+                                    
+                                    # Mark this field as filled
+                                    filled_fields.add(field_key)
+                                    logger.info(f"Filled short name field with '{name_text}'")
+                                    
+                                except Exception as e:
+                                    logger.warning(f"Could not fill short name field: {e}")
+                                    continue
+                                    
+    except Exception as e:
+        logger.error(f"Error filling name fields: {e}")
+
+def highlight_pdf_pymupdf(pdf_path: Path, output_path: Path, highlight_text: str = None, name_text: str = None) -> bool:
     """
     Add highlights to a PDF using PyMuPDF.
     
@@ -132,6 +289,7 @@ def highlight_pdf_pymupdf(pdf_path: Path, output_path: Path, highlight_text: str
         pdf_path (Path): Path to input PDF
         output_path (Path): Path to output highlighted PDF
         highlight_text (str): Custom text to highlight (e.g., "signatures", "dates", "names")
+        name_text (str): Name to fill in PDF form fields
     
     Returns:
         bool: True if successful, False otherwise
@@ -163,23 +321,17 @@ def highlight_pdf_pymupdf(pdf_path: Path, output_path: Path, highlight_text: str
                                 should_highlight = False
                                 
                                 for keyword in keywords:
-                                    # Check for exact word match
-                                    if keyword in text_lower.split():
+                                    # Check for exact word match only
+                                    text_words = text_lower.split()
+                                    if keyword in text_words:
                                         should_highlight = True
                                         break
                                     
-                                    # Check for similar variations (word order, partial matches)
+                                    # For multi-word terms, check if all parts are present as separate words
                                     keyword_parts = keyword.split()
                                     if len(keyword_parts) > 1:
-                                        # For multi-word terms, check if all parts are present
-                                        if all(part in text_lower for part in keyword_parts):
-                                            should_highlight = True
-                                            break
-                                    else:
-                                        # For single words, check for partial matches and variations
-                                        if (keyword in text_lower or 
-                                            any(word.startswith(keyword) or keyword.startswith(word) 
-                                                for word in text_lower.split() if len(word) > 2)):
+                                        # Check if all keyword parts exist as separate words in the text
+                                        if all(part in text_words for part in keyword_parts):
                                             should_highlight = True
                                             break
                                 
@@ -207,6 +359,11 @@ def highlight_pdf_pymupdf(pdf_path: Path, output_path: Path, highlight_text: str
                                     highlight.set_opacity(0.3)  # 30% opacity
                                     highlight.update()
         
+        # Fill in name fields if name_text is provided
+        if name_text:
+            logger.info(f"Filling in name fields with: '{name_text}'")
+            fill_name_fields(doc, name_text)
+        
         # Save the highlighted PDF
         doc.save(str(output_path))
         doc.close()
@@ -214,19 +371,22 @@ def highlight_pdf_pymupdf(pdf_path: Path, output_path: Path, highlight_text: str
         logger.info(f"Highlighted PDF saved: {output_path.name}")
         if highlight_text:
             logger.info(f"Used custom highlight text: '{highlight_text}'")
+        if name_text:
+            logger.info(f"Filled in name fields with: '{name_text}'")
         return True
         
     except Exception as e:
         logger.error(f"Error highlighting PDF with PyMuPDF: {e}")
         return False
 
-def highlight_pdf_pypdf2(pdf_path: Path, output_path: Path) -> bool:
+def highlight_pdf_pypdf2(pdf_path: Path, output_path: Path, name_text: str = None) -> bool:
     """
     Add highlights to a PDF using PyPDF2.
     
     Args:
         pdf_path (Path): Path to input PDF
         output_path (Path): Path to output highlighted PDF
+        name_text (str): Name to fill in PDF form fields
     
     Returns:
         bool: True if successful, False otherwise
@@ -251,7 +411,7 @@ def highlight_pdf_pypdf2(pdf_path: Path, output_path: Path) -> bool:
         logger.error(f"Error processing PDF with PyPDF2: {e}")
         return False
 
-def highlight_pdf_file(pdf_path: Path, output_dir: Path, highlight_text: str = None) -> Optional[Path]:
+def highlight_pdf_file(pdf_path: Path, output_dir: Path, highlight_text: str = None, name_text: str = None) -> Optional[Path]:
     """
     Highlight a PDF file using available libraries.
     
@@ -259,6 +419,7 @@ def highlight_pdf_file(pdf_path: Path, output_dir: Path, highlight_text: str = N
         pdf_path (Path): Path to input PDF
         output_dir (Path): Directory to save highlighted PDF
         highlight_text (str): Custom text to highlight (e.g., "signatures", "dates", "names")
+        name_text (str): Name to fill in PDF form fields
     
     Returns:
         Optional[Path]: Path to highlighted PDF if successful, None otherwise
@@ -267,18 +428,18 @@ def highlight_pdf_file(pdf_path: Path, output_dir: Path, highlight_text: str = N
     
     # Try PyMuPDF first (better highlighting capabilities)
     if PYMUPDF_AVAILABLE:
-        if highlight_pdf_pymupdf(pdf_path, output_path, highlight_text):
+        if highlight_pdf_pymupdf(pdf_path, output_path, highlight_text, name_text):
             return output_path
     
     # Fallback to PyPDF2
     if PYPDF2_AVAILABLE:
-        if highlight_pdf_pypdf2(pdf_path, output_path):
+        if highlight_pdf_pypdf2(pdf_path, output_path, name_text):
             return output_path
     
     logger.error(f"Could not highlight PDF: {pdf_path.name}")
     return None
 
-def process_pdf_files(pdf_files: List[Path], output_dir: Path, highlight_text: str = None) -> List[Path]:
+def process_pdf_files(pdf_files: List[Path], output_dir: Path, highlight_text: str = None, name_text: str = None) -> List[Path]:
     """
     Process multiple PDF files and add highlights.
     
@@ -286,6 +447,7 @@ def process_pdf_files(pdf_files: List[Path], output_dir: Path, highlight_text: s
         pdf_files (List[Path]): List of PDF files to process
         output_dir (Path): Directory to save highlighted PDFs
         highlight_text (str): Custom text to highlight (e.g., "signatures", "dates", "names")
+        name_text (str): Name to fill in PDF form fields
     
     Returns:
         List[Path]: List of highlighted PDF paths
@@ -299,7 +461,7 @@ def process_pdf_files(pdf_files: List[Path], output_dir: Path, highlight_text: s
     for i, pdf_path in enumerate(pdf_files, 1):
         logger.info(f"Processing {i}/{len(pdf_files)}: {pdf_path.name}")
         
-        highlighted_path = highlight_pdf_file(pdf_path, output_dir, highlight_text)
+        highlighted_path = highlight_pdf_file(pdf_path, output_dir, highlight_text, name_text)
         if highlighted_path:
             highlighted_files.append(highlighted_path)
     
@@ -345,7 +507,7 @@ def cleanup_temp_files(extract_dir: Path, output_dir: Path):
     except Exception as e:
         logger.warning(f"Could not clean up temporary files: {e}")
 
-def main(highlight_text: str = None):
+def main(highlight_text: str = None, name_text: str = None):
     """Main function to process ZIP files and add highlights to PDFs."""
     print("=" * 70)
     print("PDF Highlighter - Automatic PDF Highlighting")
@@ -353,6 +515,9 @@ def main(highlight_text: str = None):
     
     if highlight_text:
         print(f"Custom highlight text: '{highlight_text}'")
+    
+    if name_text:
+        print(f"Name text for form filling: '{name_text}'")
     
     # Check for required libraries
     if not check_pdf_libraries():
@@ -402,7 +567,7 @@ def main(highlight_text: str = None):
         
         # Process PDF files
         print(f"\nProcessing PDF files and adding highlights...")
-        highlighted_files = process_pdf_files(pdf_files, output_dir, highlight_text)
+        highlighted_files = process_pdf_files(pdf_files, output_dir, highlight_text, name_text)
         
         if not highlighted_files:
             print("❌ No PDFs were successfully highlighted")
@@ -439,5 +604,10 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         highlight_text = sys.argv[1]
     
-    # Run the main function with the highlight text
-    main(highlight_text) 
+    # Get name text from command line arguments
+    name_text = None
+    if len(sys.argv) > 3 and sys.argv[2] == "--name":
+        name_text = sys.argv[3]
+    
+    # Run the main function with the highlight text and name text
+    main(highlight_text, name_text) 

@@ -11,18 +11,23 @@ import os
 import subprocess
 from chatgpt_file_processor import main
 
-def run_pdf_highlighter(highlight_text=None):
+def run_pdf_highlighter(highlight_text=None, name_text=None):
     """Run the PDF highlighter to create highlighted files."""
     try:
         print("\n" + "=" * 70)
         print("CREATING HIGHLIGHTED FILES...")
         print("=" * 70)
         
-        # Prepare command with highlight text if provided
+        # Prepare command with highlight text and name text if provided
         cmd = ["python", "pdf_highlighter.py"]
         if highlight_text:
             cmd.append(highlight_text)
             print(f"Using custom highlight text: '{highlight_text}'")
+        
+        if name_text:
+            cmd.append("--name")
+            cmd.append(name_text)
+            print(f"Using name text: '{name_text}'")
         
         # Run the PDF highlighter script
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
@@ -45,6 +50,11 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         highlight_text = sys.argv[1]
     
+    # Get name text from command line arguments
+    name_text = None
+    if len(sys.argv) > 3 and sys.argv[2] == "--name":
+        name_text = sys.argv[3]
+    
     # Run the ChatGPT processing
     print("=" * 70)
     print("STEP 1: CHATGPT PROCESSING")
@@ -55,7 +65,7 @@ if __name__ == "__main__":
     print("\n" + "=" * 70)
     print("STEP 2: CREATING HIGHLIGHTED FILES")
     print("=" * 70)
-    success = run_pdf_highlighter(highlight_text)
+    success = run_pdf_highlighter(highlight_text, name_text)
     
     if success:
         print("\n" + "=" * 70)
