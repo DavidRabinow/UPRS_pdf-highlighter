@@ -1603,25 +1603,25 @@ class SeleniumAutomation:
                 self.driver.get("https://chatgpt.com")
                 logger.info("Successfully navigated to ChatGPT")
                 
-                # Step 10: Upload the downloaded file to OpenAI API (while browser stays open)
-                logger.info("Uploading downloaded file to OpenAI API...")
-                logger.info("Browser will remain open during upload process...")
+                # Step 10: Process the downloaded file with PDF highlighting (while browser stays open)
+                logger.info("Processing downloaded file with PDF highlighting...")
+                logger.info("Browser will remain open during highlighting process...")
                 
                 try:
                     import subprocess
                     import sys
                     
-                    # Run the upload script with visible output
-                    logger.info("Starting file upload process...")
+                    # Run the PDF highlighter script with visible output
+                    logger.info("Starting PDF highlighting process...")
                     result = subprocess.run([
-                        "venv\\Scripts\\python.exe", "upload_to_openai.py"
-                    ], capture_output=True, text=True, timeout=120)
+                        "venv\\Scripts\\python.exe", "pdf_highlighter.py"
+                    ], capture_output=True, text=True, timeout=300)
                     
                     if result.returncode == 0:
-                        logger.info("✅ File uploaded to OpenAI API successfully!")
-                        logger.info(f"Upload details: {result.stdout}")
+                        logger.info("✅ PDF highlighting completed successfully!")
+                        logger.info(f"Processing details: {result.stdout}")
                         
-                        # Display upload success in browser
+                        # Display PDF highlighting success in browser
                         try:
                             self.driver.execute_script("""
                                 // Create a notification in the browser
@@ -1638,7 +1638,7 @@ class SeleniumAutomation:
                                     font-family: Arial, sans-serif;
                                     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
                                 `;
-                                notification.innerHTML = '✅ File uploaded to OpenAI API successfully!';
+                                notification.innerHTML = '✅ PDF highlighting completed! Check Downloads for highlighted ZIP file.';
                                 document.body.appendChild(notification);
                                 
                                 // Remove notification after 5 seconds
@@ -1652,9 +1652,9 @@ class SeleniumAutomation:
                             logger.warning(f"Could not display browser notification: {e}")
                             
                     else:
-                        logger.warning(f"❌ Upload script failed: {result.stderr}")
+                        logger.warning(f"❌ PDF highlighting failed: {result.stderr}")
                         
-                        # Display upload failure in browser
+                        # Display PDF highlighting failure in browser
                         try:
                             self.driver.execute_script("""
                                 // Create a notification in the browser
@@ -1671,7 +1671,7 @@ class SeleniumAutomation:
                                     font-family: Arial, sans-serif;
                                     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
                                 `;
-                                notification.innerHTML = '❌ File upload failed. Check logs for details.';
+                                notification.innerHTML = '❌ PDF highlighting failed. Check logs for details.';
                                 document.body.appendChild(notification);
                                 
                                 // Remove notification after 5 seconds
@@ -1685,11 +1685,11 @@ class SeleniumAutomation:
                             logger.warning(f"Could not display browser notification: {e}")
                         
                 except Exception as e:
-                    logger.warning(f"Error running upload script: {e}")
+                    logger.warning(f"Error running PDF highlighting script: {e}")
                     
                 # Keep browser open for user to see the process
-                logger.info("Upload process completed. Browser will remain open for inspection.")
-                logger.info("You can see the upload results in the browser and logs.")
+                logger.info("PDF highlighting completed. Browser will remain open for inspection.")
+                logger.info("You can see the processing results in the browser and logs.")
                 
                 # Add a longer pause so user can see the results
                 logger.info("Waiting 30 seconds so you can see the upload results...")
@@ -1731,25 +1731,25 @@ class SeleniumAutomation:
                     self.driver.get("https://chatgpt.com")
                     logger.info("Successfully navigated to ChatGPT (second attempt)")
                     
-                    # Step 10: Upload the downloaded file to OpenAI API (second attempt, while browser stays open)
-                    logger.info("Uploading downloaded file to OpenAI API (second attempt)...")
-                    logger.info("Browser will remain open during upload process...")
+                                        # Step 10: Process the downloaded file with ChatGPT (second attempt, while browser stays open)
+                    logger.info("Processing downloaded file with ChatGPT (second attempt)...")
+                    logger.info("Browser will remain open during processing...")
                     
                     try:
                         import subprocess
                         import sys
                         
-                        # Run the upload script with visible output
-                        logger.info("Starting file upload process (second attempt)...")
+                        # Run the ChatGPT file processor script with visible output
+                        logger.info("Starting ChatGPT file processing (second attempt)...")
                         result = subprocess.run([
-                            "venv\\Scripts\\python.exe", "upload_to_openai.py"
-                        ], capture_output=True, text=True, timeout=120)
+                            "venv\\Scripts\\python.exe", "chatgpt_file_processor.py"
+                        ], capture_output=True, text=True, timeout=300)
                         
                         if result.returncode == 0:
-                            logger.info("✅ File uploaded to OpenAI API successfully (second attempt)!")
-                            logger.info(f"Upload details: {result.stdout}")
+                            logger.info("✅ File processed by ChatGPT successfully (second attempt)!")
+                            logger.info(f"Processing details: {result.stdout}")
                             
-                            # Display upload success in browser
+                            # Display ChatGPT processing success in browser
                             try:
                                 self.driver.execute_script("""
                                     // Create a notification in the browser
@@ -1766,7 +1766,7 @@ class SeleniumAutomation:
                                         font-family: Arial, sans-serif;
                                         box-shadow: 0 4px 8px rgba(0,0,0,0.3);
                                     `;
-                                    notification.innerHTML = '✅ File uploaded to OpenAI API successfully!';
+                                    notification.innerHTML = '✅ File processed by ChatGPT successfully! Check chatgpt_response.txt for results.';
                                     document.body.appendChild(notification);
                                     
                                     // Remove notification after 5 seconds
@@ -1780,9 +1780,9 @@ class SeleniumAutomation:
                                 logger.warning(f"Could not display browser notification: {e}")
                                 
                         else:
-                            logger.warning(f"❌ Upload script failed (second attempt): {result.stderr}")
+                            logger.warning(f"❌ ChatGPT processing failed (second attempt): {result.stderr}")
                             
-                            # Display upload failure in browser
+                            # Display ChatGPT processing failure in browser
                             try:
                                 self.driver.execute_script("""
                                     // Create a notification in the browser
@@ -1799,7 +1799,7 @@ class SeleniumAutomation:
                                         font-family: Arial, sans-serif;
                                         box-shadow: 0 4px 8px rgba(0,0,0,0.3);
                                     `;
-                                    notification.innerHTML = '❌ File upload failed. Check logs for details.';
+                                    notification.innerHTML = '❌ ChatGPT processing failed. Check logs for details.';
                                     document.body.appendChild(notification);
                                     
                                     // Remove notification after 5 seconds
@@ -1811,13 +1811,13 @@ class SeleniumAutomation:
                                 """)
                             except Exception as e:
                                 logger.warning(f"Could not display browser notification: {e}")
-                            
+                                
                     except Exception as e:
-                        logger.warning(f"Error running upload script (second attempt): {e}")
+                        logger.warning(f"Error running ChatGPT processing script (second attempt): {e}")
                         
                     # Keep browser open for user to see the process
-                    logger.info("Upload process completed. Browser will remain open for inspection.")
-                    logger.info("You can see the upload results in the browser and logs.")
+                    logger.info("ChatGPT processing completed. Browser will remain open for inspection.")
+                    logger.info("You can see the processing results in the browser and logs.")
                     
                     # Add a longer pause so user can see the results
                     logger.info("Waiting 30 seconds so you can see the upload results...")

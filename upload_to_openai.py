@@ -140,33 +140,33 @@ def main():
     logger.info(f"Downloads folder: {downloads_path}")
     
     # Find most recent file
-    print("\n🔍 Searching for most recent download...")
+    print("\nSearching for most recent download...")
     most_recent_file = find_most_recent_file(downloads_path, max_age_minutes=10)
     
     if not most_recent_file:
-        print("❌ No recent files found in Downloads folder")
+        print("No recent files found in Downloads folder")
         print("   Make sure you have downloaded a file in the last 10 minutes")
         return
     
     # Display file information
-    print(f"\n📁 Found file: {most_recent_file.name}")
-    print(f"📂 Path: {most_recent_file}")
-    print(f"📏 Size: {most_recent_file.stat().st_size:,} bytes")
-    print(f"🕒 Modified: {datetime.fromtimestamp(most_recent_file.stat().st_mtime)}")
+    print(f"\nFound file: {most_recent_file.name}")
+    print(f"Path: {most_recent_file}")
+    print(f"Size: {most_recent_file.stat().st_size:,} bytes")
+    print(f"Modified: {datetime.fromtimestamp(most_recent_file.stat().st_mtime)}")
     
     # Confirm upload
-    print(f"\n🚀 Uploading to OpenAI API...")
+    print(f"\nUploading to OpenAI API...")
     
     # Upload to OpenAI
     file_id = upload_to_openai(most_recent_file, api_key)
     
     if file_id:
-        print(f"\n✅ Upload successful!")
-        print(f"📋 OpenAI File ID: {file_id}")
-        print(f"📄 File name: {most_recent_file.name}")
-        print(f"\n💡 You can now use this file ID with OpenAI's API")
+        print(f"\nUpload successful!")
+        print(f"OpenAI File ID: {file_id}")
+        print(f"File name: {most_recent_file.name}")
+        print(f"\nYou can now use this file ID with OpenAI's API")
     else:
-        print(f"\n❌ Upload failed!")
+        print(f"\nUpload failed!")
         print("   Check your API key and internet connection")
 
 if __name__ == "__main__":
