@@ -185,6 +185,40 @@
       .container {
         margin-top: 70px; /* Add space for fixed navbar */
       }
+
+      /* Loading animation */
+      .loading {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #1a2236;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-left: 8px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Status styling */
+      .status-running {
+        color: #1a2236;
+      }
+
+      .status-completed {
+        color: #28a745;
+      }
+
+      .status-error {
+        color: #dc3545;
+      }
     </style>
   </head>
   <body>
@@ -232,44 +266,16 @@
           value=""
         />
 
-        <label for="companyName" class="input-label"
-          >Company Name (Optional):</label
-        >
-        <input
-          type="text"
-          id="companyName"
-          class="text-input"
-          placeholder="Enter company name to begin with..."
-          value=""
-        />
-
-        <label for="startPoint" class="input-label">Starting Point:</label>
-        <select id="startPoint" class="text-input">
-          <option value="none">None (Start from top)</option>
-          <option value="company">Company Name</option>
-        </select>
-        <label for="startPage" class="input-label"
-          >Start Page (Optional):</label
-        >
-        <input
-          type="number"
-          id="startPage"
-          class="text-input"
-          placeholder="Enter page number to start from (e.g. 3)"
-          min="1"
-          value=""
-        />
-
         <label for="highlightText" class="input-label"
-          >Highlight Text (Optional):</label
+          >Highlight Text (Multiple items separated by commas):</label
         >
-        <input
-          type="text"
+        <textarea
           id="highlightText"
           class="text-input"
-          placeholder="Enter what you want ChatGPT to highlight (e.g., signatures, dates, names)..."
-          value=""
-        />
+          placeholder="Enter what you want ChatGPT to highlight (e.g., signatures, dates, names, contract terms, amounts, addresses)..."
+          rows="3"
+          style="resize: vertical; min-height: 80px"
+        ></textarea>
       </div>
 
       <div class="button-container">
@@ -294,13 +300,6 @@
           </div>
           <div class="status-item status-idle">
             <strong>Target URL:</strong> <span id="searchTextDisplay">-</span>
-          </div>
-          <div class="status-item status-idle">
-            <strong>Company Name:</strong>
-            <span id="companyNameDisplay">-</span>
-          </div>
-          <div class="status-item status-idle">
-            <strong>Start Point:</strong> <span id="startPointDisplay">-</span>
           </div>
           <div class="status-item status-idle">
             <strong>Highlight Text:</strong>
@@ -341,13 +340,9 @@
         const button = document.getElementById("startButton");
         const statusText = document.getElementById("statusText");
         const searchTextInput = document.getElementById("searchText");
-        const companyNameInput = document.getElementById("companyName");
-        const startPointSelect = document.getElementById("startPoint");
         const highlightTextInput = document.getElementById("highlightText");
 
         const searchText = searchTextInput.value.trim();
-        const companyName = companyNameInput.value.trim();
-        const startPoint = startPointSelect.value;
         const highlightText = highlightTextInput.value.trim();
 
         // Validate input
@@ -362,14 +357,6 @@
           !searchText.startsWith("https://")
         ) {
           alert("Please enter a valid URL starting with http:// or https://");
-          return;
-        }
-
-        // Validate company name if starting point is set to company
-        if (startPoint === "company" && !companyName) {
-          alert(
-            "Please enter a company name when selecting 'Company Name' as starting point."
-          );
           return;
         }
 
@@ -388,9 +375,6 @@
           },
           body: JSON.stringify({
             search_text: searchText,
-            company_name: companyName,
-            start_point: startPoint,
-            start_page: document.getElementById("startPage").value || null,
             highlight_text: highlightText,
           }),
         })
@@ -448,9 +432,6 @@
         const statusText = document.getElementById("statusText");
         const currentStep = document.getElementById("currentStep");
         const searchTextDisplay = document.getElementById("searchTextDisplay");
-        const companyNameDisplay =
-          document.getElementById("companyNameDisplay");
-        const startPointDisplay = document.getElementById("startPointDisplay");
         const highlightTextDisplay = document.getElementById(
           "highlightTextDisplay"
         );
@@ -477,8 +458,6 @@
         // Update other fields
         currentStep.textContent = data.current_step || "No automation running";
         searchTextDisplay.textContent = data.search_text || "-";
-        companyNameDisplay.textContent = data.company_name || "-";
-        startPointDisplay.textContent = data.start_point || "-";
         highlightTextDisplay.textContent = data.highlight_text || "-";
         startTime.textContent = data.start_time || "-";
         endTime.textContent = data.end_time || "-";
@@ -507,8 +486,6 @@
                 end_time: null,
                 current_step: null,
                 search_text: null,
-                company_name: null,
-                start_point: null,
                 highlight_text: null,
               });
               console.log("Status reset successfully");

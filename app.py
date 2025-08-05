@@ -31,34 +31,29 @@ automation_status = {
     'search_text': None
 }
 
-def run_automation_in_background(search_text, company_name=None, start_point="none", start_page=None, highlight_text=None):
+def run_automation_in_background(search_text, highlight_text=None):
     """
     Background function to run Selenium automation.
     This runs in a separate thread so Flask remains responsive.
     
     Args:
         search_text (str): The URL to navigate to (e.g., Monday.com board URL)
-        company_name (str): Optional company name to begin with
-        start_point (str): Starting point - "none" or "company"
         highlight_text (str): Optional custom text for ChatGPT highlighting
     """
     global automation_status
     
     try:
-        logger.info(f"Starting dynamic navigation automation in background with URL: '{search_text}', company: '{company_name}', start point: '{start_point}'")
+        logger.info(f"Starting automation in background with URL: '{search_text}', highlight text: '{highlight_text}'")
         automation_status['running'] = True
         automation_status['start_time'] = time.strftime('%Y-%m-%d %H:%M:%S')
         automation_status['error'] = None
         automation_status['current_step'] = 'Initializing...'
         automation_status['search_text'] = search_text
-        automation_status['company_name'] = company_name
-        automation_status['start_point'] = start_point
-        automation_status['start_page'] = start_page
         automation_status['highlight_text'] = highlight_text
         
-        # Create and run automation with URL and additional parameters
+        # Create and run automation
         automation = SeleniumAutomation()
-        automation.run(search_text, company_name, start_point, start_page, highlight_text)
+        automation.run(search_text, highlight_text)
         
         # Update status on completion
         automation_status['running'] = False
@@ -101,22 +96,7 @@ def start_automation():
     try:
         data = request.get_json()
         search_text = data.get('search_text', '').strip()
-        company_name = data.get('company_name', '').strip()
-        start_point = data.get('start_point', 'none')
-        start_page = data.get('start_page', None)
         highlight_text = data.get('highlight_text', '').strip()
-        if start_page is not None:
-            try:
-                start_page = int(start_page)
-                if start_page < 1:
-                    raise ValueError
-            except Exception:
-                return jsonify({
-                    'success': False,
-                    'message': 'Start page must be a positive integer.'
-                })
-        else:
-            start_page = None
         
         if not search_text:
             return jsonify({
@@ -130,22 +110,8 @@ def start_automation():
                 'success': False,
                 'message': 'Please enter a valid URL starting with http:// or https://'
             })
-        
-        # Validate start point
-        if start_point not in ['none', 'company']:
-            return jsonify({
-                'success': False,
-                'message': 'Invalid start point. Must be "none" or "company"'
-            })
-        
-        # Validate company name if start point is company
-        if start_point == 'company' and not company_name:
-            return jsonify({
-                'success': False,
-                'message': 'Company name is required when start point is "company"'
-            })
             
-        logger.info(f"Received dynamic navigation request with URL: '{search_text}', company: '{company_name}', start point: '{start_point}', start page: '{start_page}'")
+        logger.info(f"Received automation request with URL: '{search_text}', highlight text: '{highlight_text}'")
         
     except Exception as e:
         logger.error(f"Error parsing request data: {e}")
@@ -163,22 +129,19 @@ def start_automation():
         'end_time': None,
         'current_step': None,
         'search_text': None,
-        'company_name': None,
-        'start_point': None,
-        'start_page': None,
         'highlight_text': None
     }
     
-    # Start automation in background thread with all parameters
-    automation_thread = threading.Thread(target=run_automation_in_background, args=(search_text, company_name, start_point, start_page, highlight_text))
+    # Start automation in background thread
+    automation_thread = threading.Thread(target=run_automation_in_background, args=(search_text, highlight_text))
     automation_thread.daemon = True  # Thread will stop when main app stops
     automation_thread.start()
     
-    logger.info(f"Dynamic navigation thread started with URL: '{search_text}', company: '{company_name}', start point: '{start_point}', highlight text: '{highlight_text}'")
+    logger.info(f"Automation thread started with URL: '{search_text}', highlight text: '{highlight_text}'")
     
     return jsonify({
         'success': True,
-        'message': f'Dynamic navigation started successfully with URL: "{search_text}", company: "{company_name}", start point: "{start_point}"'
+        'message': f'Automation started successfully with URL: "{search_text}"'
     })
 
 @app.route('/status')
@@ -204,8 +167,7 @@ def reset_status():
         'end_time': None,
         'current_step': None,
         'search_text': None,
-        'company_name': None,
-        'start_point': None
+        'highlight_text': None
     }
     return jsonify({'success': True, 'message': 'Status reset'})
 

@@ -1527,7 +1527,7 @@ class SeleniumAutomation:
             self.driver.quit()
             logger.info("Browser closed successfully")
             
-    def run(self, search_text, company_name=None, start_point="none", start_page=None, highlight_text=None):
+    def run(self, search_text, highlight_text=None):
         """
         Main method to run the complete automation process.
         This method orchestrates the entire automation process:
@@ -1539,9 +1539,6 @@ class SeleniumAutomation:
         6. Wait for download to complete
         Args:
             search_text (str): The URL to navigate to
-            company_name (str): Optional company name (not used in this RPA)
-            start_point (str): Starting point (not used in this RPA)
-            start_page (int or None): Page number (not used in this RPA)
             highlight_text (str): Optional custom text for ChatGPT highlighting
         """
         try:
