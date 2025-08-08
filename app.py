@@ -31,7 +31,7 @@ automation_status = {
     'search_text': None
 }
 
-def run_automation_in_background(search_text, highlight_text=None, name_text=None, signature_options=None):
+def run_automation_in_background(search_text, highlight_text=None, name_text=None, signature_options=None, username=None, password=None):
     """
     Background function to run Selenium automation.
     This runs in a separate thread so Flask remains responsive.
@@ -41,11 +41,13 @@ def run_automation_in_background(search_text, highlight_text=None, name_text=Non
         highlight_text (str): Optional custom text for ChatGPT highlighting
         name_text (str): Optional name to fill in PDF forms
         signature_options (dict): Optional signature options from checkboxes
+        username (str): Username for login
+        password (str): Password for login
     """
     global automation_status
     
     try:
-        logger.info(f"Starting automation in background with URL: '{search_text}', highlight text: '{highlight_text}', name text: '{name_text}', signature options: '{signature_options}'")
+        logger.info(f"Starting automation in background with URL: '{search_text}', highlight text: '{highlight_text}', name text: '{name_text}', signature options: '{signature_options}', username: '{username}'")
         automation_status['running'] = True
         automation_status['start_time'] = time.strftime('%Y-%m-%d %H:%M:%S')
         automation_status['error'] = None
@@ -56,7 +58,7 @@ def run_automation_in_background(search_text, highlight_text=None, name_text=Non
         automation_status['signature_options'] = signature_options
         
         # Create and run automation
-        automation = SeleniumAutomation()
+        automation = SeleniumAutomation(username=username, password=password)
         automation.run(search_text, highlight_text, name_text, signature_options)
         
         # Update status on completion
@@ -100,6 +102,8 @@ def start_automation():
     try:
         data = request.get_json()
         search_text = data.get('search_text', '').strip()
+        username = data.get('username', '').strip()
+        password = data.get('password', '').strip()
         highlight_text = data.get('highlight_text', '').strip()
         name_text = data.get('name_text', '').strip()
         signature_options = data.get('signature_options', {})
@@ -117,7 +121,7 @@ def start_automation():
                 'message': 'Please enter a valid URL starting with http:// or https://'
             })
             
-        logger.info(f"Received automation request with URL: '{search_text}', highlight text: '{highlight_text}', name text: '{name_text}', signature options: '{signature_options}'")
+        logger.info(f"Received automation request with URL: '{search_text}', username: '{username}', highlight text: '{highlight_text}', name text: '{name_text}', signature options: '{signature_options}'")
         
     except Exception as e:
         logger.error(f"Error parsing request data: {e}")
@@ -140,11 +144,11 @@ def start_automation():
     }
     
     # Start automation in background thread
-    automation_thread = threading.Thread(target=run_automation_in_background, args=(search_text, highlight_text, name_text, signature_options))
+    automation_thread = threading.Thread(target=run_automation_in_background, args=(search_text, highlight_text, name_text, signature_options, username, password))
     automation_thread.daemon = True  # Thread will stop when main app stops
     automation_thread.start()
     
-    logger.info(f"Automation thread started with URL: '{search_text}', highlight text: '{highlight_text}', name text: '{name_text}'")
+    logger.info(f"Automation thread started with URL: '{search_text}', username: '{username}', highlight text: '{highlight_text}', name text: '{name_text}'")
     
     return jsonify({
         'success': True,

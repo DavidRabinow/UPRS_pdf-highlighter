@@ -28,16 +28,28 @@ class SeleniumAutomation:
     Selenium automation class that handles browser automation tasks.
     """
     
-    def __init__(self, page_url=None):
+    def __init__(self, page_url=None, username=None, password=None):
         """
         Initialize the automation with configuration.
         Args:
             page_url (str): The URL or page path to navigate to (optional)
+            username (str): Username for login (optional, will prompt if not provided)
+            password (str): Password for login (optional, will prompt if not provided)
         """
         # Configuration - UPDATE THESE VALUES AS NEEDED
         self.website_url = "https://uprs-group-llc.monday.com/boards/9740813045"
-        self.username = "drabinow2@gmail.com"
-        self.password = "ELEGOOPRINTERS"
+        
+        # Get credentials from parameters or prompt user
+        if username is None:
+            self.username = input("Please enter your username: ")
+        else:
+            self.username = username
+            
+        if password is None:
+            import getpass
+            self.password = getpass.getpass("Please enter your password: ")
+        else:
+            self.password = password
         
         # Dynamic page navigation - user can specify any page
         self.page_url = page_url

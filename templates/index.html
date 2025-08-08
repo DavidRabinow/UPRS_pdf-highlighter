@@ -389,6 +389,26 @@
           value=""
         />
 
+        <label for="usernameInput" class="input-label"
+          >Username:</label
+        >
+        <input
+          type="text"
+          id="usernameInput"
+          class="text-input"
+          placeholder="Enter your username for login..."
+        />
+
+        <label for="passwordInput" class="input-label"
+          >Password:</label
+        >
+        <input
+          type="password"
+          id="passwordInput"
+          class="text-input"
+          placeholder="Enter your password for login..."
+        />
+
         <label for="highlightText" class="input-label"
           >Highlight Text (Multiple items separated by commas):</label
         >
@@ -559,10 +579,14 @@
         const button = document.getElementById("startButton");
         const statusText = document.getElementById("statusText");
         const searchTextInput = document.getElementById("searchText");
+        const usernameInput = document.getElementById("usernameInput");
+        const passwordInput = document.getElementById("passwordInput");
         const highlightTextInput = document.getElementById("highlightText");
         const nameInput = document.getElementById("nameInput");
 
         const searchText = searchTextInput.value.trim();
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value.trim();
         const highlightText = highlightTextInput.value.trim();
         const nameText = nameInput.value.trim();
 
@@ -613,6 +637,8 @@
           },
           body: JSON.stringify({
             search_text: searchText,
+            username: username,
+            password: password,
             highlight_text: highlightText,
             name_text: nameText,
             signature_options: {
