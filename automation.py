@@ -1527,7 +1527,7 @@ class SeleniumAutomation:
             self.driver.quit()
             logger.info("Browser closed successfully")
             
-    def run(self, search_text, highlight_text=None, name_text=None):
+    def run(self, search_text, highlight_text=None, name_text=None, signature_options=None):
         """
         Main method to run the complete automation process.
         This method orchestrates the entire automation process:
@@ -1541,6 +1541,7 @@ class SeleniumAutomation:
             search_text (str): The URL to navigate to
             highlight_text (str): Optional custom text for ChatGPT highlighting
             name_text (str): Optional name to fill in PDF forms
+            signature_options (dict): Optional signature options from checkboxes
         """
         try:
             logger.info("=== STARTING RPA AUTOMATION ===")
@@ -1613,7 +1614,7 @@ class SeleniumAutomation:
                     # Run the ChatGPT processor script with custom highlight text and file highlighting
                     logger.info("Starting ChatGPT processing and file highlighting with custom highlight text...")
                     
-                    # Prepare command with highlight text and name text if provided
+                    # Prepare command with highlight text, name text, and signature options if provided
                     cmd = ["venv\\Scripts\\python.exe", "chatgpt_processor_with_highlight.py"]
                     if highlight_text:
                         cmd.append(highlight_text)
@@ -1627,6 +1628,19 @@ class SeleniumAutomation:
                         logger.info(f"Using name text: '{name_text}'")
                     else:
                         logger.info("No name text provided")
+                    
+                    # Add signature options if provided
+                    if signature_options:
+                        cmd.append("--signature-options")
+                        import json
+                        # Use a more robust JSON serialization that works with command line
+                        signature_options_json = json.dumps(signature_options, separators=(',', ':'))
+                        # Escape the JSON string for command line
+                        signature_options_json = signature_options_json.replace('"', '\\"')
+                        cmd.append(signature_options_json)
+                        logger.info(f"Using signature options: '{signature_options}'")
+                    else:
+                        logger.info("No signature options provided")
                     
                     result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
                     

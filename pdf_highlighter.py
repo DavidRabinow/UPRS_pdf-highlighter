@@ -445,7 +445,7 @@ def get_highlighting_profile(profile_name: str = None) -> dict:
             "description": "Default highlighting profile"
         }
 
-def highlight_pdf_pymupdf(pdf_path: Path, output_path: Path, highlight_text: str = None, name_text: str = None, profile: str = None) -> bool:
+def highlight_pdf_pymupdf(pdf_path: Path, output_path: Path, highlight_text: str = None, name_text: str = None, profile: str = None, signature_options: str = None) -> bool:
     """
     Add highlights to a PDF using PyMuPDF.
     
@@ -455,6 +455,7 @@ def highlight_pdf_pymupdf(pdf_path: Path, output_path: Path, highlight_text: str
         highlight_text (str): Custom text to highlight (e.g., "signatures", "dates", "names")
         name_text (str): Name to fill in PDF form fields
         profile (str): Profile name for predefined highlighting rules
+        signature_options (str): JSON string of signature options from checkboxes
     
     Returns:
         bool: True if successful, False otherwise
@@ -490,12 +491,113 @@ def highlight_pdf_pymupdf(pdf_path: Path, output_path: Path, highlight_text: str
             exclude_patterns = ["commission expires", "signature line"]
             logger.info(f"Using default keywords: {keywords}")
         
+        # Handle signature options from checkboxes
+        if signature_options:
+            try:
+                import json
+                # Try to parse as JSON first
+                try:
+                    sig_options = json.loads(signature_options)
+                except json.JSONDecodeError:
+                    # If that fails, try to reconstruct the JSON from the malformed string
+                    # The string looks like: {notary: true, claimant: true, notaryPublic: true}
+                    # We need to add quotes around the property names
+                    reconstructed = signature_options.replace('{', '{"').replace(': ', '": "').replace(', ', '", "').replace('}', '"}')
+                    reconstructed = reconstructed.replace('": "true', '": true').replace('": "false', '": false')
+                    try:
+                        sig_options = json.loads(reconstructed)
+                    except json.JSONDecodeError:
+                        # If that still fails, try a simpler approach
+                        # Manually parse the string: {notary: true, claimant: true, notaryPublic: true}
+                        sig_options = {}
+                        if 'notary: true' in signature_options:
+                            sig_options['notary'] = True
+                        if 'claimant: true' in signature_options:
+                            sig_options['claimant'] = True
+                        if 'notaryPublic: true' in signature_options:
+                            sig_options['notaryPublic'] = True
+                
+                logger.info(f"Processing signature options: {sig_options}")
+                
+                # Add signature-specific keywords based on selected options
+                signature_keywords = []
+                if sig_options.get('notary', False):
+                    signature_keywords.extend([
+                        "signature of notary", "notary signature", "notary public signature",
+                        "notary's signature", "notary signature:", "notary public signature:",
+                        "notary signature line", "notary public signature line"
+                    ])
+                    logger.info("Added notary signature keywords")
+                if sig_options.get('claimant', False):
+                    signature_keywords.extend([
+                        "signature of claimant", "claimant signature", "signature of applicant",
+                        "claimant's signature", "claimant signature:", "signature of claimant:",
+                        "claimant signature line", "signature of claimant line"
+                    ])
+                    logger.info("Added claimant signature keywords")
+                if sig_options.get('notaryPublic', False):
+                    signature_keywords.extend([
+                        "notary public", "public notary", "commissioned notary",
+                        "notary public:", "public notary:", "commissioned notary:",
+                        "notary public in", "notary public and", "notary public may",
+                        "notary public services", "notary public notice"
+                    ])
+                    logger.info("Added notary public keywords")
+                if sig_options.get('representative', False):
+                    signature_keywords.extend([
+                        "representative's signature", "representative signature",
+                        "representative signature:", "representative's signature:",
+                        "claimant's representative's signature", "representative signature line"
+                    ])
+                    logger.info("Added representative signature keywords")
+                if sig_options.get('authorized', False):
+                    signature_keywords.extend([
+                        "authorized signer", "authorized signer signature",
+                        "authorized signer:", "authorized signer signature:",
+                        "authorized signer line", "signature of authorized signer"
+                    ])
+                    logger.info("Added authorized signer keywords")
+                if sig_options.get('applicant', False):
+                    signature_keywords.extend([
+                        "signature of applicant", "applicant signature",
+                        "applicant signature:", "signature of applicant:",
+                        "applicant signature line", "applicant's signature"
+                    ])
+                    logger.info("Added applicant signature keywords")
+                
+                # Add signature keywords to the main keywords list
+                if signature_keywords:
+                    keywords.extend(signature_keywords)
+                    logger.info(f"Added signature keywords: {signature_keywords}")
+                    logger.info(f"Final keywords list: {keywords}")
+                else:
+                    logger.info("No signature keywords to add")
+                    
+            except Exception as e:
+                logger.warning(f"Error parsing signature options: {e}")
+        else:
+            logger.info("No signature options provided")
+        
         # Process each page
         for page_num in range(len(doc)):
             page = doc[page_num]
+            logger.info(f"Processing page {page_num + 1}/{len(doc)}")
             
             # Get text blocks (potential highlighting targets)
             text_blocks = page.get_text("dict")["blocks"]
+            
+            # Debug: Show some sample text from this page
+            sample_texts = []
+            for block in text_blocks:
+                if "lines" in block:
+                    for line in block["lines"]:
+                        for span in line["spans"]:
+                            text = span["text"].strip()
+                            if text and len(sample_texts) < 10:  # Show first 10 text samples
+                                sample_texts.append(text)
+            
+            if sample_texts:
+                logger.info(f"Sample texts from page {page_num + 1}: {sample_texts}")
             
             for block in text_blocks:
                 if "lines" in block:
@@ -562,9 +664,14 @@ def highlight_pdf_pymupdf(pdf_path: Path, output_path: Path, highlight_text: str
                                 # Add yellow highlight
                                 highlight = page.add_highlight_annot(rect)
                                 highlight.set_colors(stroke=[1, 1, 0])  # Yellow
-                                highlight.set_opacity(0.3)  # 30% opacity
+                                highlight.set_opacity(0.7)  # 70% opacity for better visibility
                                 highlight.update()
-                                logger.debug(f"Highlighted: '{text}' (matched: '{matched_keyword}')")
+                                logger.info(f"✅ Highlighted: '{text}' (matched: '{matched_keyword}')")
+                            else:
+                                # Debug: Show when we find text that contains keywords but doesn't match exactly
+                                for keyword in keywords:
+                                    if keyword in text:
+                                        logger.debug(f"Found keyword '{keyword}' in text '{text}' but didn't highlight (exact match failed)")
         
         # Fill in name fields if name_text is provided
         if name_text:
@@ -582,6 +689,10 @@ def highlight_pdf_pymupdf(pdf_path: Path, output_path: Path, highlight_text: str
             logger.info(f"Used profile: '{profile}'")
         if name_text:
             logger.info(f"Filled in name fields with: '{name_text}'")
+        if signature_options:
+            logger.info(f"Used signature options: '{signature_options}'")
+        logger.info(f"Total keywords searched for: {len(keywords)}")
+        logger.info(f"Keywords list: {keywords}")
         return True
         
     except Exception as e:
@@ -620,7 +731,7 @@ def highlight_pdf_pypdf2(pdf_path: Path, output_path: Path, name_text: str = Non
         logger.error(f"Error processing PDF with PyPDF2: {e}")
         return False
 
-def highlight_pdf_file(pdf_path: Path, output_dir: Path, highlight_text: str = None, name_text: str = None, profile: str = None) -> Optional[Path]:
+def highlight_pdf_file(pdf_path: Path, output_dir: Path, highlight_text: str = None, name_text: str = None, profile: str = None, signature_options: str = None) -> Optional[Path]:
     """
     Highlight a PDF file using available libraries.
     
@@ -630,6 +741,7 @@ def highlight_pdf_file(pdf_path: Path, output_dir: Path, highlight_text: str = N
         highlight_text (str): Custom text to highlight (e.g., "signatures", "dates", "names")
         name_text (str): Name to fill in PDF form fields
         profile (str): Profile name for predefined highlighting rules
+        signature_options (str): JSON string of signature options from checkboxes
     
     Returns:
         Optional[Path]: Path to highlighted PDF if successful, None otherwise
@@ -638,7 +750,7 @@ def highlight_pdf_file(pdf_path: Path, output_dir: Path, highlight_text: str = N
     
     # Try PyMuPDF first (better highlighting capabilities)
     if PYMUPDF_AVAILABLE:
-        if highlight_pdf_pymupdf(pdf_path, output_path, highlight_text, name_text, profile):
+        if highlight_pdf_pymupdf(pdf_path, output_path, highlight_text, name_text, profile, signature_options):
             return output_path
     
     # Fallback to PyPDF2
@@ -649,7 +761,7 @@ def highlight_pdf_file(pdf_path: Path, output_dir: Path, highlight_text: str = N
     logger.error(f"Could not highlight PDF: {pdf_path.name}")
     return None
 
-def process_pdf_files(pdf_files: List[Path], output_dir: Path, highlight_text: str = None, name_text: str = None, profile: str = None) -> List[Path]:
+def process_pdf_files(pdf_files: List[Path], output_dir: Path, highlight_text: str = None, name_text: str = None, profile: str = None, signature_options: str = None) -> List[Path]:
     """
     Process multiple PDF files and add highlights.
     
@@ -659,6 +771,7 @@ def process_pdf_files(pdf_files: List[Path], output_dir: Path, highlight_text: s
         highlight_text (str): Custom text to highlight (e.g., "signatures", "dates", "names")
         name_text (str): Name to fill in PDF form fields
         profile (str): Profile name for predefined highlighting rules
+        signature_options (str): JSON string of signature options from checkboxes
     
     Returns:
         List[Path]: List of highlighted PDF paths
@@ -676,7 +789,7 @@ def process_pdf_files(pdf_files: List[Path], output_dir: Path, highlight_text: s
     for i, pdf_path in enumerate(pdf_files, 1):
         logger.info(f"Processing {i}/{len(pdf_files)}: {pdf_path.name}")
         
-        highlighted_path = highlight_pdf_file(pdf_path, output_dir, highlight_text, name_text, profile)
+        highlighted_path = highlight_pdf_file(pdf_path, output_dir, highlight_text, name_text, profile, signature_options)
         if highlighted_path:
             highlighted_files.append(highlighted_path)
     
@@ -722,7 +835,7 @@ def cleanup_temp_files(extract_dir: Path, output_dir: Path):
     except Exception as e:
         logger.warning(f"Could not clean up temporary files: {e}")
 
-def main(highlight_text: str = None, name_text: str = None, debug_mode: bool = False, profile: str = None):
+def main(highlight_text: str = None, name_text: str = None, debug_mode: bool = False, profile: str = None, signature_options: str = None):
     """Main function to process ZIP files and add highlights to PDFs."""
     print("=" * 70)
     print("PDF Highlighter - Automatic PDF Highlighting")
@@ -738,6 +851,16 @@ def main(highlight_text: str = None, name_text: str = None, debug_mode: bool = F
         profile_data = get_highlighting_profile(profile)
         print(f"Using profile: '{profile}' - {profile_data['description']}")
         print(f"Profile keywords: {profile_data['keywords']}")
+    
+    if signature_options:
+        print(f"Using signature options: '{signature_options}'")
+        # Try to parse and display the signature options
+        try:
+            import json
+            sig_options = json.loads(signature_options)
+            print(f"Parsed signature options: {sig_options}")
+        except Exception as e:
+            print(f"Error parsing signature options: {e}")
     
     if debug_mode:
         print("🔍 Debug mode enabled - will analyze PDF structure and show detailed logs")
@@ -806,7 +929,24 @@ def main(highlight_text: str = None, name_text: str = None, debug_mode: bool = F
                 else:
                     keywords = ["signature", "notary", "claimant", "date"]
                 
-                print(f"  - Looking for keywords: {keywords}")
+                # Add signature options keywords if provided
+                if signature_options:
+                    try:
+                        import json
+                        sig_options = json.loads(signature_options)
+                        signature_keywords = []
+                        if sig_options.get('notary', False):
+                            signature_keywords.extend(["signature of notary", "notary signature", "notary public signature"])
+                        if sig_options.get('claimant', False):
+                            signature_keywords.extend(["signature of claimant", "claimant signature", "signature of applicant"])
+                        if sig_options.get('notaryPublic', False):
+                            signature_keywords.extend(["notary public", "public notary", "commissioned notary"])
+                        keywords.extend(signature_keywords)
+                        print(f"  - Added signature keywords: {signature_keywords}")
+                    except Exception as e:
+                        print(f"  - Error parsing signature options: {e}")
+                
+                print(f"  - Final keywords list: {keywords}")
                 
                 # Check if keywords appear in sample texts
                 found_keywords = []
@@ -827,7 +967,7 @@ def main(highlight_text: str = None, name_text: str = None, debug_mode: bool = F
         
         # Process PDF files
         print(f"\nProcessing PDF files and adding highlights...")
-        highlighted_files = process_pdf_files(pdf_files, output_dir, highlight_text, name_text, profile)
+        highlighted_files = process_pdf_files(pdf_files, output_dir, highlight_text, name_text, profile, signature_options)
         
         if not highlighted_files:
             print("❌ No PDFs were successfully highlighted")
@@ -859,25 +999,37 @@ def main(highlight_text: str = None, name_text: str = None, debug_mode: bool = F
 if __name__ == "__main__":
     import sys
     
-    # Get highlight text from command line argument
+    # Initialize variables
     highlight_text = None
-    if len(sys.argv) > 1:
-        highlight_text = sys.argv[1]
-    
-    # Get name text from command line arguments
     name_text = None
-    if len(sys.argv) > 3 and sys.argv[2] == "--name":
-        name_text = sys.argv[3]
-    
-    # Check for debug mode
-    debug_mode = "--debug" in sys.argv
-    
-    # Check for profile
+    signature_options = None
+    debug_mode = False
     profile = None
-    if "--profile" in sys.argv:
-        profile_index = sys.argv.index("--profile")
-        if profile_index + 1 < len(sys.argv):
-            profile = sys.argv[profile_index + 1]
     
-    # Run the main function with the highlight text and name text
-    main(highlight_text, name_text, debug_mode, profile) 
+    # Parse command line arguments
+    i = 1
+    while i < len(sys.argv):
+        arg = sys.argv[i]
+        
+        if arg == "--debug":
+            debug_mode = True
+        elif arg == "--profile":
+            if i + 1 < len(sys.argv):
+                profile = sys.argv[i + 1]
+                i += 1
+        elif arg == "--name":
+            if i + 1 < len(sys.argv):
+                name_text = sys.argv[i + 1]
+                i += 1
+        elif arg == "--signature-options":
+            if i + 1 < len(sys.argv):
+                signature_options = sys.argv[i + 1]
+                i += 1
+        elif not arg.startswith("--"):
+            # This is the highlight text (first non-flag argument)
+            highlight_text = arg
+        
+        i += 1
+    
+    # Run the main function with the highlight text, name text, and signature options
+    main(highlight_text, name_text, debug_mode, profile, signature_options) 

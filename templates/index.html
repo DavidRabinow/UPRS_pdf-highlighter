@@ -219,6 +219,129 @@
       .status-error {
         color: #dc3545;
       }
+
+      /* Checkbox styling */
+      .checkbox-container {
+        margin: 20px 0;
+        padding: 16px;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(26, 34, 54, 0.1);
+      }
+
+      .checkbox-label {
+        color: #1a2236;
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 12px;
+        display: block;
+      }
+
+      .checkbox-controls {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      .checkbox-control-btn {
+        background: #f3f4f6;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        padding: 4px 12px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .checkbox-control-btn:hover {
+        background: #e5e7eb;
+        border-color: #9ca3af;
+      }
+
+      .checkbox-group {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .checkbox-item {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        font-size: 0.95rem;
+        color: #1a2236;
+        position: relative;
+        padding-left: 35px;
+        user-select: none;
+      }
+
+      .checkbox-item input[type="checkbox"] {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        height: 0;
+        width: 0;
+      }
+
+      .checkmark {
+        position: absolute;
+        left: 0;
+        height: 20px;
+        width: 20px;
+        background-color: #fff;
+        border: 2px solid #1a2236;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+      }
+
+      .checkbox-item:hover input ~ .checkmark {
+        background-color: #f8f9fa;
+        border-color: #232b43;
+      }
+
+      .checkbox-item input:checked ~ .checkmark {
+        background-color: #1a2236;
+        border-color: #1a2236;
+      }
+
+      .checkmark:after {
+        content: "";
+        position: absolute;
+        display: none;
+        left: 6px;
+        top: 2px;
+        width: 6px;
+        height: 10px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+      }
+
+      .checkbox-item input:checked ~ .checkmark:after {
+        display: block;
+      }
+
+      @media (max-width: 600px) {
+        .checkbox-group {
+          gap: 10px;
+        }
+
+        .checkbox-item {
+          font-size: 0.9rem;
+          padding-left: 30px;
+        }
+
+        .checkmark {
+          height: 18px;
+          width: 18px;
+        }
+
+        .checkmark:after {
+          left: 5px;
+          top: 1px;
+          width: 5px;
+          height: 9px;
+        }
+      }
     </style>
   </head>
   <body>
@@ -277,6 +400,88 @@
           style="resize: vertical; min-height: 80px"
         ></textarea>
 
+        <div class="checkbox-container">
+          <label class="checkbox-label">Signature Options:</label>
+          <div class="checkbox-controls">
+            <button
+              type="button"
+              onclick="selectAllSignatures()"
+              class="checkbox-control-btn"
+            >
+              Select All
+            </button>
+            <button
+              type="button"
+              onclick="clearAllSignatures()"
+              class="checkbox-control-btn"
+            >
+              Clear All
+            </button>
+          </div>
+          <div class="checkbox-group">
+            <label class="checkbox-item">
+              <input
+                type="checkbox"
+                id="signatureNotary"
+                name="signatureOptions"
+                value="notary"
+              />
+              <span class="checkmark"></span>
+              Signature of Notary
+            </label>
+            <label class="checkbox-item">
+              <input
+                type="checkbox"
+                id="signatureClaimant"
+                name="signatureOptions"
+                value="claimant"
+              />
+              <span class="checkmark"></span>
+              Signature of Claimant
+            </label>
+            <label class="checkbox-item">
+              <input
+                type="checkbox"
+                id="signatureNotaryPublic"
+                name="signatureOptions"
+                value="notaryPublic"
+              />
+              <span class="checkmark"></span>
+              Notary Public
+            </label>
+            <label class="checkbox-item">
+              <input
+                type="checkbox"
+                id="signatureRepresentative"
+                name="signatureOptions"
+                value="representative"
+              />
+              <span class="checkmark"></span>
+              Representative Signature
+            </label>
+            <label class="checkbox-item">
+              <input
+                type="checkbox"
+                id="signatureAuthorized"
+                name="signatureOptions"
+                value="authorized"
+              />
+              <span class="checkmark"></span>
+              Authorized Signer
+            </label>
+            <label class="checkbox-item">
+              <input
+                type="checkbox"
+                id="signatureApplicant"
+                name="signatureOptions"
+                value="applicant"
+              />
+              <span class="checkmark"></span>
+              Signature of Applicant
+            </label>
+          </div>
+        </div>
+
         <label for="nameInput" class="input-label"
           >Enter name to fill in PDF forms:</label
         >
@@ -314,6 +519,10 @@
           <div class="status-item status-idle">
             <strong>Highlight Text:</strong>
             <span id="highlightTextDisplay">-</span>
+          </div>
+          <div class="status-item status-idle">
+            <strong>Signature Options:</strong>
+            <span id="signatureOptionsDisplay">-</span>
           </div>
           <div class="status-item status-idle">
             <strong>Start Time:</strong> <span id="startTime">-</span>
@@ -357,6 +566,23 @@
         const highlightText = highlightTextInput.value.trim();
         const nameText = nameInput.value.trim();
 
+        // Get checkbox values
+        const signatureNotary =
+          document.getElementById("signatureNotary").checked;
+        const signatureClaimant =
+          document.getElementById("signatureClaimant").checked;
+        const signatureNotaryPublic = document.getElementById(
+          "signatureNotaryPublic"
+        ).checked;
+        const signatureRepresentative = document.getElementById(
+          "signatureRepresentative"
+        ).checked;
+        const signatureAuthorized = document.getElementById(
+          "signatureAuthorized"
+        ).checked;
+        const signatureApplicant =
+          document.getElementById("signatureApplicant").checked;
+
         // Validate input
         if (!searchText) {
           alert("Please enter a URL to navigate to.");
@@ -389,6 +615,14 @@
             search_text: searchText,
             highlight_text: highlightText,
             name_text: nameText,
+            signature_options: {
+              notary: signatureNotary,
+              claimant: signatureClaimant,
+              notaryPublic: signatureNotaryPublic,
+              representative: signatureRepresentative,
+              authorized: signatureAuthorized,
+              applicant: signatureApplicant,
+            },
           }),
         })
           .then((response) => response.json())
@@ -448,6 +682,9 @@
         const highlightTextDisplay = document.getElementById(
           "highlightTextDisplay"
         );
+        const signatureOptionsDisplay = document.getElementById(
+          "signatureOptionsDisplay"
+        );
         const startTime = document.getElementById("startTime");
         const endTime = document.getElementById("endTime");
         const errorContainer = document.getElementById("errorContainer");
@@ -472,6 +709,25 @@
         currentStep.textContent = data.current_step || "No automation running";
         searchTextDisplay.textContent = data.search_text || "-";
         highlightTextDisplay.textContent = data.highlight_text || "-";
+
+        // Format signature options for display
+        let signatureOptionsText = "-";
+        if (data.signature_options) {
+          const options = data.signature_options;
+          const selectedOptions = [];
+          if (options.notary) selectedOptions.push("Notary");
+          if (options.claimant) selectedOptions.push("Claimant");
+          if (options.notaryPublic) selectedOptions.push("Notary Public");
+          if (options.representative) selectedOptions.push("Representative");
+          if (options.authorized) selectedOptions.push("Authorized Signer");
+          if (options.applicant) selectedOptions.push("Applicant");
+          signatureOptionsText =
+            selectedOptions.length > 0
+              ? selectedOptions.join(", ")
+              : "None selected";
+        }
+        signatureOptionsDisplay.textContent = signatureOptionsText;
+
         startTime.textContent = data.start_time || "-";
         endTime.textContent = data.end_time || "-";
 
@@ -500,6 +756,7 @@
                 current_step: null,
                 search_text: null,
                 highlight_text: null,
+                signature_options: null,
               });
               console.log("Status reset successfully");
             }
@@ -507,6 +764,36 @@
           .catch((error) => {
             console.error("Error resetting status:", error);
           });
+      }
+
+      // Select all signature checkboxes
+      function selectAllSignatures() {
+        const checkboxes = [
+          "signatureNotary",
+          "signatureClaimant",
+          "signatureNotaryPublic",
+          "signatureRepresentative",
+          "signatureAuthorized",
+          "signatureApplicant",
+        ];
+        checkboxes.forEach((id) => {
+          document.getElementById(id).checked = true;
+        });
+      }
+
+      // Clear all signature checkboxes
+      function clearAllSignatures() {
+        const checkboxes = [
+          "signatureNotary",
+          "signatureClaimant",
+          "signatureNotaryPublic",
+          "signatureRepresentative",
+          "signatureAuthorized",
+          "signatureApplicant",
+        ];
+        checkboxes.forEach((id) => {
+          document.getElementById(id).checked = false;
+        });
       }
 
       // Load initial status on page load
