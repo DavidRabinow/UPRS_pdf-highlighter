@@ -48,6 +48,28 @@ def find_most_recent_file():
     
     return most_recent
 
+def find_most_recent_pdf():
+    """Find the most recently downloaded PDF file in the Downloads folder."""
+    downloads_path = get_downloads_folder()
+    logger.info(f"Downloads folder: {downloads_path}")
+    
+    if not downloads_path.exists():
+        logger.error(f"Downloads folder not found: {downloads_path}")
+        return None
+    
+    # Get all PDF files in Downloads folder
+    pdf_files = [f for f in downloads_path.iterdir() if f.is_file() and f.suffix.lower() == '.pdf']
+    
+    if not pdf_files:
+        logger.error("No PDF files found in Downloads folder")
+        return None
+    
+    # Find the most recent PDF file
+    most_recent = max(pdf_files, key=lambda f: f.stat().st_mtime)
+    logger.info(f"Found most recent PDF: {most_recent.name}")
+    
+    return most_recent
+
 def upload_file_to_chatgpt(file_path, api_key, highlight_text=None, name_text=None, ein_text=None, address_text=None, email_text=None, phone_text=None):
     """
     Upload a file to ChatGPT and send a specific prompt about PDF highlighting and field filling.
@@ -210,12 +232,12 @@ def main(highlight_text=None, name_text=None, ein_text=None, address_text=None, 
     
     logger.info("Using provided API key")
     
-    # Find the most recent file
-    print("\nSearching for most recent download...")
-    file_path = find_most_recent_file()
+    # Find the most recent PDF file
+    print("\nSearching for most recent PDF download...")
+    file_path = find_most_recent_pdf()
     
     if not file_path:
-        print("❌ No recent files found in Downloads folder")
+        print("❌ No recent PDF files found in Downloads folder")
         return
     
     # Display file info

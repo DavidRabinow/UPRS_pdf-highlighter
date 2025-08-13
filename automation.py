@@ -1913,35 +1913,40 @@ class SeleniumAutomation:
             
             # Navigate to ChatGPT to open the downloaded files
             logger.info("All operations completed. Navigating to ChatGPT to open downloaded files...")
-                self.driver.get("https://chatgpt.com")
-                logger.info("Successfully navigated to ChatGPT")
-                
+            self.driver.get("https://chatgpt.com")
+            logger.info("Successfully navigated to ChatGPT")
+            
+            # Wait 45 seconds for ChatGPT page to fully load and stabilize
+            logger.info("Waiting 45 seconds for ChatGPT page to fully load and stabilize...")
+            time.sleep(45)
+            logger.info("45-second wait completed. Now starting PDF processing...")
+            
             # Process the downloaded file with PDF highlighting
-                logger.info("Processing downloaded file with PDF highlighting...")
-                logger.info("Browser will remain open during highlighting process...")
+            logger.info("Processing downloaded file with PDF highlighting...")
+            logger.info("Browser will remain open during highlighting process...")
+            
+            try:
+                import subprocess
+                import sys
                 
-                try:
-                    import subprocess
-                    import sys
-                    
-                    # Run the ChatGPT processor script with custom highlight text and file highlighting
-                    logger.info("Starting ChatGPT processing and file highlighting with custom highlight text...")
-                    
-                    # Prepare command with highlight text, name text, and signature options if provided
-                    cmd = ["venv\\Scripts\\python.exe", "chatgpt_processor_with_highlight.py"]
-                    if highlight_text:
-                        cmd.append(highlight_text)
-                        logger.info(f"Using custom highlight text: '{highlight_text}'")
-                    else:
-                        logger.info("No custom highlight text provided, using default")
-                    
-                    if name_text:
-                        cmd.append("--name")
-                        cmd.append(name_text)
-                        logger.info(f"Using name text: '{name_text}'")
-                    else:
-                        logger.info("No name text provided")
-                    
+                # Run the ChatGPT processor script with custom highlight text and file highlighting
+                logger.info("Starting ChatGPT processing and file highlighting with custom highlight text...")
+                
+                # Prepare command with highlight text, name text, and signature options if provided
+                cmd = ["venv\\Scripts\\python.exe", "chatgpt_processor_with_highlight.py"]
+                if highlight_text:
+                    cmd.append(highlight_text)
+                    logger.info(f"Using custom highlight text: '{highlight_text}'")
+                else:
+                    logger.info("No custom highlight text provided, using default")
+                
+                if name_text:
+                    cmd.append("--name")
+                    cmd.append(name_text)
+                    logger.info(f"Using name text: '{name_text}'")
+                else:
+                    logger.info("No name text provided")
+                
                 if ein_text:
                     cmd.append("--ein")
                     cmd.append(ein_text)
@@ -1974,118 +1979,124 @@ class SeleniumAutomation:
                         logger.info(f"Using signature options: '{signature_options}'")
                     else:
                         logger.info("No signature options provided")
-                    
-                    result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-                    
-                # After ChatGPT analysis, fill the PDF fields
-                if result.returncode == 0:
-                    logger.info("ChatGPT analysis completed. Now filling PDF fields...")
-                    
-                    # Prepare command for PDF field filler (process most recent folder)
-                    pdf_cmd = ["venv\\Scripts\\python.exe", "pdf_field_filler.py"]
-                    
-                    if name_text:
-                        pdf_cmd.extend(["--name", name_text])
-                    if ein_text:
-                        pdf_cmd.extend(["--ein", ein_text])
-                    if address_text:
-                        pdf_cmd.extend(["--address", address_text])
-                    if email_text:
-                        pdf_cmd.extend(["--email", email_text])
-                    if phone_text:
-                        pdf_cmd.extend(["--phone", phone_text])
-                    
-                    # Run PDF field filler (will process most recent folder by default)
-                    pdf_result = subprocess.run(pdf_cmd, capture_output=True, text=True, timeout=300)
-                    
-                    if pdf_result.returncode == 0:
-                        logger.info("✅ PDF fields filled successfully!")
-                        logger.info(f"PDF filling details: {pdf_result.stdout}")
-                    else:
-                        logger.warning(f"⚠️ PDF field filling failed: {pdf_result.stderr}")
+                
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+                
+                # After ChatGPT analysis (regardless of success/failure), wait 10 seconds then fill the PDF fields
+                logger.info("ChatGPT processing completed. Waiting 10 seconds before starting PDF filling...")
+                time.sleep(10)
+                logger.info("10-second wait completed. Now filling PDF fields...")
+                
+                # Find the most recent folder and process it
+                logger.info("Finding most recent folder to process...")
+                folder_cmd = ["venv\\Scripts\\python.exe", "pdf_field_filler.py", "--process-folder"]
+                
+                if name_text:
+                    folder_cmd.extend(["--name", name_text])
+                if ein_text:
+                    folder_cmd.extend(["--ein", ein_text])
+                if address_text:
+                    folder_cmd.extend(["--address", address_text])
+                if email_text:
+                    folder_cmd.extend(["--email", email_text])
+                if phone_text:
+                    folder_cmd.extend(["--phone", phone_text])
+                
+                # Run PDF field filler to process most recent folder
+                pdf_result = subprocess.run(folder_cmd, capture_output=True, text=True, timeout=300)
+                
+                if pdf_result.returncode == 0:
+                    logger.info("✅ PDF fields filled successfully!")
+                    logger.info(f"PDF filling details: {pdf_result.stdout}")
                 else:
-                    logger.warning(f"❌ ChatGPT analysis failed: {result.stderr}")
+                    logger.warning(f"⚠️ PDF field filling failed: {pdf_result.stderr}")
+                
+                # Check ChatGPT result separately for logging
+                if result.returncode == 0:
+                    logger.info("✅ ChatGPT processing completed successfully!")
+                else:
+                    logger.warning(f"⚠️ ChatGPT processing failed: {result.stderr}")
+                
+                if result.returncode == 0:
+                    logger.info("✅ ChatGPT processing and file highlighting completed successfully!")
+                    logger.info(f"Processing details: {result.stdout}")
                     
-                    if result.returncode == 0:
-                        logger.info("✅ ChatGPT processing and file highlighting completed successfully!")
-                        logger.info(f"Processing details: {result.stdout}")
-                        
-                        # Display success in browser
-                        try:
-                            self.driver.execute_script("""
-                                // Create a notification in the browser
-                                const notification = document.createElement('div');
-                                notification.style.cssText = `
-                                    position: fixed;
-                                    top: 20px;
-                                    right: 20px;
-                                    background: #4CAF50;
-                                    color: white;
-                                    padding: 15px;
-                                    border-radius: 5px;
-                                    z-index: 10000;
-                                    font-family: Arial, sans-serif;
-                                    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-                                `;
-                                notification.innerHTML = '✅ Processing completed! Check Downloads for highlighted ZIP file and chatgpt_response.txt for analysis.';
-                                document.body.appendChild(notification);
-                                
-                                // Remove notification after 5 seconds
-                                setTimeout(() => {
-                                    if (notification.parentNode) {
-                                        notification.parentNode.removeChild(notification);
-                                    }
-                                }, 5000);
-                            """)
-                        except Exception as e:
-                            logger.warning(f"Could not display browser notification: {e}")
+                    # Display success in browser
+                    try:
+                        self.driver.execute_script("""
+                            // Create a notification in the browser
+                            const notification = document.createElement('div');
+                            notification.style.cssText = `
+                                position: fixed;
+                                top: 20px;
+                                right: 20px;
+                                background: #4CAF50;
+                                color: white;
+                                padding: 15px;
+                                border-radius: 5px;
+                                z-index: 10000;
+                                font-family: Arial, sans-serif;
+                                box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+                            `;
+                            notification.innerHTML = '✅ Processing completed! Check Downloads for highlighted ZIP file and chatgpt_response.txt for analysis.';
+                            document.body.appendChild(notification);
                             
-                    else:
-                        logger.warning(f"❌ Processing failed: {result.stderr}")
+                            // Remove notification after 5 seconds
+                            setTimeout(() => {
+                                if (notification.parentNode) {
+                                    notification.parentNode.removeChild(notification);
+                                }
+                            }, 5000);
+                        """)
+                    except Exception as e:
+                        logger.warning(f"Could not display browser notification: {e}")
                         
-                        # Display failure in browser
-                        try:
-                            self.driver.execute_script("""
-                                // Create a notification in the browser
-                                const notification = document.createElement('div');
-                                notification.style.cssText = `
-                                    position: fixed;
-                                    top: 20px;
-                                    right: 20px;
-                                    background: #f44336;
-                                    color: white;
-                                    padding: 15px;
-                                    border-radius: 5px;
-                                    z-index: 10000;
-                                    font-family: Arial, sans-serif;
-                                    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-                                `;
-                                notification.innerHTML = '❌ Processing failed. Check logs for details.';
-                                document.body.appendChild(notification);
-                                
-                                // Remove notification after 5 seconds
-                                setTimeout(() => {
-                                    if (notification.parentNode) {
-                                        notification.parentNode.removeChild(notification);
-                                    }
-                                }, 5000);
-                            """)
-                        except Exception as e:
-                            logger.warning(f"Could not display browser notification: {e}")
-                        
-                except Exception as e:
-                    logger.warning(f"Error running processing script: {e}")
+                else:
+                    logger.warning(f"❌ Processing failed: {result.stderr}")
                     
-                # Keep browser open for user to see the process
-                logger.info("Processing completed. Browser will remain open for inspection.")
-                logger.info("You can see the processing results in the browser and logs.")
+                    # Display failure in browser
+                    try:
+                        self.driver.execute_script("""
+                            // Create a notification in the browser
+                            const notification = document.createElement('div');
+                            notification.style.cssText = `
+                                position: fixed;
+                                top: 20px;
+                                right: 20px;
+                                background: #f44336;
+                                color: white;
+                                padding: 15px;
+                                border-radius: 5px;
+                                z-index: 10000;
+                                font-family: Arial, sans-serif;
+                                box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+                            `;
+                            notification.innerHTML = '❌ Processing failed. Check logs for details.';
+                            document.body.appendChild(notification);
+                            
+                            // Remove notification after 5 seconds
+                            setTimeout(() => {
+                                if (notification.parentNode) {
+                                    notification.parentNode.removeChild(notification);
+                                }
+                            }, 5000);
+                        """)
+                    except Exception as e:
+                        logger.warning(f"Could not display browser notification: {e}")
+                    
+            except Exception as e:
+                logger.warning(f"Error running processing script: {e}")
                 
-                # Add a longer pause so user can see the results
-                logger.info("Waiting 30 seconds so you can see the upload results...")
-                time.sleep(30)
-                logger.info("30-second wait completed. Browser will remain open.")
-                
-                            except Exception as e:
+            # Keep browser open for user to see the process
+            logger.info("Processing completed. Browser will remain open for inspection.")
+            logger.info("You can see the processing results in the browser and logs.")
+            
+            # Add a longer pause so user can see the results
+            logger.info("Waiting 30 seconds so you can see the upload results...")
+            time.sleep(30)
+            logger.info("30-second wait completed. Browser will remain open.")
+            
+        except Exception as e:
             logger.error(f"❌ ERROR: Automation failed: {e}")
             raise Exception(f"Automation failed: {e}")
             

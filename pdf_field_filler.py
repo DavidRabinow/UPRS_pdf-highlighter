@@ -10,6 +10,7 @@ import sys
 import json
 import logging
 from pathlib import Path
+from datetime import datetime
 import PyPDF2
 from PyPDF2 import PdfReader, PdfWriter
 import fitz  # PyMuPDF
@@ -26,8 +27,8 @@ def get_downloads_folder():
     else:  # macOS and Linux
         return Path.home() / "Downloads"
 
-def find_most_recent_folder():
-    """Find the most recently created folder in the Downloads folder."""
+def find_most_recent_file():
+    """Find the most recently downloaded file in the Downloads folder."""
     downloads_path = get_downloads_folder()
     logger.info(f"Downloads folder: {downloads_path}")
     
@@ -35,16 +36,17 @@ def find_most_recent_folder():
         logger.error(f"Downloads folder not found: {downloads_path}")
         return None
     
-    # Get all folders in Downloads folder
-    folders = [f for f in downloads_path.iterdir() if f.is_dir()]
+    # Get all files in Downloads folder
+    files = [f for f in downloads_path.iterdir() if f.is_file()]
     
-    if not folders:
-        logger.error("No folders found in Downloads folder")
+    if not files:
+        logger.error("No files found in Downloads folder")
         return None
     
-    # Find the most recent folder
-    most_recent = max(folders, key=lambda f: f.stat().st_mtime)
-    logger.info(f"Found most recent folder: {most_recent.name}")
+    # Find the most recent file
+    most_recent = max(files, key=lambda f: f.stat().st_mtime)
+    logger.info(f"Found most recent file: {most_recent.name}")
+    logger.info(f"File modified: {datetime.fromtimestamp(most_recent.stat().st_mtime)}")
     
     return most_recent
 
@@ -70,6 +72,28 @@ def find_most_recent_pdf():
     
     return most_recent
 
+def find_most_recent_folder():
+    """Find the most recently created folder in the Downloads folder."""
+    downloads_path = get_downloads_folder()
+    logger.info(f"Downloads folder: {downloads_path}")
+    
+    if not downloads_path.exists():
+        logger.error(f"Downloads folder not found: {downloads_path}")
+        return None
+    
+    # Get all folders in Downloads folder
+    folders = [f for f in downloads_path.iterdir() if f.is_dir()]
+    
+    if not folders:
+        logger.error("No folders found in Downloads folder")
+        return None
+    
+    # Find the most recent folder
+    most_recent = max(folders, key=lambda f: f.stat().st_mtime)
+    logger.info(f"Found most recent folder: {most_recent.name}")
+    
+    return most_recent
+
 def get_pdfs_from_folder(folder_path):
     """Get all PDF files from a specific folder."""
     if not folder_path.exists():
@@ -91,6 +115,35 @@ def get_pdfs_from_folder(folder_path):
         logger.info(f"  - {pdf_file.name}")
     
     return pdf_files
+
+def rename_folder_to_completion(folder_path):
+    """Rename the folder to 'completion' followed by a number."""
+    if not folder_path.exists():
+        logger.error(f"Folder not found: {folder_path}")
+        return False
+    
+    downloads_path = get_downloads_folder()
+    
+    # Find the next available completion number
+    completion_number = 1
+    while True:
+        new_name = f"completion{completion_number}"
+        new_path = downloads_path / new_name
+        
+        if not new_path.exists():
+            break
+        completion_number += 1
+    
+    try:
+        # Rename the folder
+        new_path = folder_path.rename(new_path)
+        logger.info(f"✅ Successfully renamed folder to: {new_name}")
+        print(f"✅ Folder renamed to: {new_name}")
+        return True
+    except Exception as e:
+        logger.error(f"❌ Failed to rename folder: {e}")
+        print(f"❌ Failed to rename folder: {e}")
+        return False
 
 def list_all_pdfs():
     """List all PDF files in the Downloads folder."""
@@ -180,13 +233,13 @@ def fill_form_fields(doc, field_values):
         
         logger.info(f"Found {len(fields)} form fields")
         
-        # Map our field names to potential form field names
+        # Enhanced field mapping based on the form images provided
         field_mapping = {
-            'name': ['name', 'full_name', 'claimant_name', 'name_s'],
-            'ein': ['ein', 'tax_id', 'employer_id', 'federal_employer_identification_number'],
-            'address': ['address', 'mailing_address', 'current_mailing_address', 'street_address'],
-            'email': ['email', 'email_address', 'emailaddress'],
-            'phone': ['phone', 'telephone', 'phone_number', 'daytime_telephone_number']
+            'name': ['name', 'full_name', 'claimant_name', 'name_s', 'name_of_claimant', 'name_of_co_claimant'],
+            'ein': ['ein', 'tax_id', 'employer_id', 'federal_employer_identification_number', 'social_security_fein', 'ssn_fein'],
+            'address': ['address', 'mailing_address', 'current_mailing_address', 'street_address', 'present_mailing_address', 'current_address'],
+            'email': ['email', 'email_address', 'emailaddress', 'claimant_email', 'co_claimant_email'],
+            'phone': ['phone', 'telephone', 'phone_number', 'daytime_telephone_number', 'daytime_phone', 'home_phone', 'telephone_number']
         }
         
         filled_count = 0
@@ -217,13 +270,52 @@ def fill_form_fields(doc, field_values):
 def insert_text_fields(doc, field_values):
     """Insert text at specific locations in the PDF."""
     try:
-        # Define field patterns to search for (order matters - more specific patterns first)
+        # Enhanced field patterns based on the form images provided
         field_patterns = {
-            'email': [r'email\s+address', r'email\s*[:\-]'],  # More specific first
-            'phone': [r'phone\s+number', r'daytime\s+phone', r'cell\s+phone', r'phone\s*[:\-]', r'telephone\s*[:\-]'],
-            'name': [r'name\s+and\s+address', r'your\s+name', r'name[s]?\s*[:\-]', r'claimant\s+name', r'full\s+name'],
-            'ein': [r'ein\s*[:\-]', r'tax\s+id', r'employer\s+identification', r'ssn/fein', r'social\s+security.*tax\s+identifier'],
-            'address': [r'current\s+mailing\s+address', r'mailing\s+address', r'address\s*[:\-]', r'street\s+address', r'current\s+address']
+            'email': [
+                r'email\s+address', 
+                r'email\s*[:\-]', 
+                r'claimant\s+email',
+                r'co-claimant\s+email'
+            ],
+            'phone': [
+                r'daytime\s+phone', 
+                r'phone\s+number', 
+                r'telephone\s+number',
+                r'home\s+phone',
+                r'phone\s*[:\-]', 
+                r'telephone\s*[:\-]',
+                r'cell\s+phone'
+            ],
+            'name': [
+                r'name\s+of\s+claimant', 
+                r'name\s+of\s+co-claimant',
+                r'name[s]?\s+if\s+different\s+than\s+above',
+                r'name\s+and\s+address', 
+                r'your\s+name', 
+                r'name[s]?\s*[:\-]', 
+                r'claimant\s+name', 
+                r'full\s+name'
+            ],
+            'ein': [
+                r'social\s+security\s*/\s*fein', 
+                r'ein\s*[:\-]', 
+                r'tax\s+id', 
+                r'employer\s+identification', 
+                r'ssn/fein', 
+                r'social\s+security.*tax\s+identifier',
+                r'claimant\'s\s+ssn',
+                r'joint\s+claimant\'s\s+ssn'
+            ],
+            'address': [
+                r'present\s+mailing\s+address', 
+                r'current\s+mailing\s+address', 
+                r'mailing\s+address', 
+                r'address\s*[:\-]', 
+                r'street\s+address', 
+                r'current\s+address',
+                r'city,\s+state,\s+zip'
+            ]
         }
         
         # Track which fields we've already filled to avoid duplicates
@@ -309,7 +401,7 @@ def insert_text_near_field(page, span, value, field_name):
         width = bbox[2] - bbox[0]
         height = bbox[3] - bbox[1]
         
-        # Try multiple positions for text insertion - prioritize right side positioning
+        # Enhanced positioning based on form layout analysis
         positions_to_try = [
             # To the right of the label (most common for forms) - slightly above the line
             (x + width + 20, y + height/2 - 2),
@@ -323,6 +415,10 @@ def insert_text_near_field(page, span, value, field_name):
             (x, y + height + 5),
             # Slightly to the right and below - but above line
             (x + width + 10, y + height + 5),
+            # For phone fields with format indicators, try to the right
+            (x + width + 30, y + height/2 - 2),
+            # For email fields, try further right
+            (x + width + 50, y + height/2 - 2),
         ]
         
         for pos_x, pos_y in positions_to_try:
@@ -417,6 +513,7 @@ def main():
     field_values = {}
     pdf_path = None
     folder_path = None
+    process_folder = False
     
     if len(sys.argv) > 1:
         # Parse field values from command line
@@ -428,6 +525,10 @@ def main():
                 # List all PDFs
                 list_all_pdfs()
                 return
+            elif arg == "--process-folder":
+                # Process most recent folder
+                process_folder = True
+                i += 1
             elif arg == "--folder" and i + 1 < len(sys.argv):
                 # Specific folder path
                 folder_path = Path(sys.argv[i + 1])
@@ -446,7 +547,30 @@ def main():
                 i += 1
     
     # Determine what to process
-    if folder_path is not None:
+    if process_folder:
+        # Process most recent folder
+        folder_path = find_most_recent_folder()
+        if not folder_path:
+            print("❌ No folder found in Downloads")
+            return
+        
+        print(f"\nProcessing most recent folder: {folder_path.name}")
+        print(f"Field values to fill: {field_values}")
+        
+        results = fill_all_pdfs_in_folder(folder_path, field_values)
+        
+        if results:
+            successful = sum(1 for result in results.values() if result['success'])
+            total = len(results)
+            print(f"\n✅ Processed {successful}/{total} PDFs successfully!")
+            
+            # Rename the folder to completion
+            print("\nRenaming folder to completion...")
+            rename_folder_to_completion(folder_path)
+        else:
+            print("\n❌ No PDFs found in folder")
+            
+    elif folder_path is not None:
         # Process specific folder
         print(f"\nProcessing folder: {folder_path.name}")
         print(f"Field values to fill: {field_values}")
@@ -477,23 +601,26 @@ def main():
             print("❌ Failed to fill PDF fields")
             print("=" * 70)
     else:
-        # Find the most recent folder and process all PDFs in it
-        folder_path = find_most_recent_folder()
-        if not folder_path:
-            print("❌ No folder found in Downloads")
+        # Find the most recent PDF file and process it
+        pdf_path = find_most_recent_pdf()
+        if not pdf_path:
+            print("❌ No PDF file found in Downloads")
             return
         
-        print(f"\nProcessing most recent folder: {folder_path.name}")
+        print(f"\nProcessing most recent PDF: {pdf_path.name}")
         print(f"Field values to fill: {field_values}")
         
-        results = fill_all_pdfs_in_folder(folder_path, field_values)
+        success = fill_pdf_fields(pdf_path, field_values)
         
-        if results:
-            successful = sum(1 for result in results.values() if result['success'])
-            total = len(results)
-            print(f"\n✅ Processed {successful}/{total} PDFs successfully!")
+        if success:
+            print("\n" + "=" * 70)
+            print("✅ PDF fields filled successfully!")
+            print("=" * 70)
+            print(f"Check your Downloads folder for the filled PDF.")
         else:
-            print("\n❌ No PDFs found in folder")
+            print("\n" + "=" * 70)
+            print("❌ Failed to fill PDF fields")
+            print("=" * 70)
 
 if __name__ == "__main__":
     main()
