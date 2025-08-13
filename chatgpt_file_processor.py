@@ -48,14 +48,19 @@ def find_most_recent_file():
     
     return most_recent
 
-def upload_file_to_chatgpt(file_path, api_key, highlight_text=None):
+def upload_file_to_chatgpt(file_path, api_key, highlight_text=None, name_text=None, ein_text=None, address_text=None, email_text=None, phone_text=None):
     """
-    Upload a file to ChatGPT and send a specific prompt about PDF highlighting.
+    Upload a file to ChatGPT and send a specific prompt about PDF highlighting and field filling.
     
     Args:
         file_path (Path): Path to the file to upload
         api_key (str): OpenAI API key
         highlight_text (str): Optional custom text for highlighting (e.g., "signatures", "dates", "names")
+        name_text (str): Optional name to fill in form fields
+        ein_text (str): Optional EIN number to fill in form fields
+        address_text (str): Optional address to fill in form fields
+        email_text (str): Optional email to fill in form fields
+        phone_text (str): Optional phone number to fill in form fields
     
     Returns:
         str or None: ChatGPT response if successful, None if failed
@@ -83,32 +88,52 @@ def upload_file_to_chatgpt(file_path, api_key, highlight_text=None):
         # Check if we can use the chat API (quota check)
         try:
             # Use the newer Chat API with file attachment and longer timeout
-            if highlight_text:
-                # Use custom highlight text in the prompt
-                prompt = f"""I want to highlight specific text in a PDF, but I need to make sure the text remains fully visible. The highlight should:
+            prompt = f"""You are a senior PDF-automation engineer. Analyze this PDF and help me with two tasks:
 
-Be placed behind the text, never on top of it.
-Use a light or semi-transparent color (e.g. pale yellow) that doesn't interfere with readability.
-Only cover the dimensions of the text itself, not the full line or paragraph.
-Work for scanned or text-based PDFs where the text is extractable.
+TASK 1: HIGHLIGHTING
+I want to highlight specific text in the PDF with these requirements:
+- Be placed behind the text, never on top of it
+- Use a light or semi-transparent color (pale yellow) that doesn't interfere with readability
+- Only cover the dimensions of the text itself, not the full line or paragraph
+- Work for scanned or text-based PDFs where the text is extractable
 
-Specifically, I want to highlight: {highlight_text}
+Highlight text to search for: {highlight_text if highlight_text else "No specific highlight text provided"}
 
-Please analyze the uploaded file and provide specific guidance on how to achieve this type of highlighting for the specified text."""
-            else:
-                # Use default prompt
-                prompt = """I want to highlight specific text in a PDF, but I need to make sure the text remains fully visible. The highlight should:
+TASK 2: FIELD DETECTION & FILLING
+I need to detect and fill these specific fields in the PDF. For each field, provide the exact location and method to fill it:
 
-Be placed behind the text, never on top of it.
-Use a light or semi-transparent color (e.g. pale yellow) that doesn't interfere with readability.
-Only cover the dimensions of the text itself, not the full line or paragraph.
-Work for scanned or text-based PDFs where the text is extractable.
+FIELD VALUES TO FILL:
+- Name: {name_text if name_text else "Not provided"}
+- EIN Number: {ein_text if ein_text else "Not provided"}
+- Address: {address_text if address_text else "Not provided"}
+- Email: {email_text if email_text else "Not provided"}
+- Phone: {phone_text if phone_text else "Not provided"}
 
-Please analyze the uploaded file and provide specific guidance on how to achieve this type of highlighting."""
+FIELD DETECTION GUIDELINES:
+- Detect labels like "Name", "EIN", "Tax ID", "Employer ID", "Address", "Email", "Phone", "Telephone", etc.
+- Look for form fields (AcroForm) that can be filled programmatically
+- For flat PDFs (no form fields), identify where text should be inserted near detected labels
+- Prefer blank lines, underscores, or boxes immediately to the right or below the label
+- Place filled text with appropriate font size to avoid overlapping borders
+- Fill every instance of a matching label if it appears multiple times
+- Use case-insensitive matching
+
+IMPORTANT: For each field value provided above, you must:
+1. Find ALL instances of that field type in the PDF
+2. Provide specific coordinates or field names for filling
+3. Give step-by-step instructions for each field
+4. If a field value is "Not provided", skip that field type
+
+Please analyze the uploaded file and provide:
+1. Specific guidance on highlighting the specified text
+2. Detailed field detection analysis for each field type (Name, EIN, Address, Email, Phone)
+3. Step-by-step recommendations for filling each field (form field names or placement locations)
+4. Any OCR requirements if the PDF is scanned
+5. A summary of which fields were found and which need to be filled"""
             
-            # Send the message with file attachment using gpt-3.5-turbo (cheaper and less likely to hit limits)
+            # Send the message with file attachment using gpt-4o (better analysis for complex PDFs)
             chat_response = client.chat.completions.create(
-                model="gpt-3.5-turbo",  # Use cheaper model
+                model="gpt-4o",  # Use GPT-4o for better PDF analysis
                 messages=[
                     {
                         "role": "user",
@@ -121,8 +146,8 @@ Please analyze the uploaded file and provide specific guidance on how to achieve
                         ]
                     }
                 ],
-                max_tokens=1500,  # Reduce tokens to avoid limits
-                timeout=60  # Add timeout
+                max_tokens=2000,  # Increased tokens for more detailed analysis
+                timeout=120  # Increased timeout for GPT-4o processing
             )
             
             logger.info("Received response from ChatGPT")
@@ -168,7 +193,7 @@ The uploaded file has been processed and is ready for highlighting work."""
         logger.error(f"Error processing file with ChatGPT: {e}")
         return None
 
-def main(highlight_text=None):
+def main(highlight_text=None, name_text=None, ein_text=None, address_text=None, email_text=None, phone_text=None):
     """Main function to process the most recent download."""
     print("=" * 70)
     print("ChatGPT File Processor - PDF Highlighting Analysis")
@@ -203,11 +228,23 @@ def main(highlight_text=None):
     if highlight_text:
         print(f"Custom highlight text: {highlight_text}")
     
+    # Display field values if provided
+    if name_text:
+        print(f"Name to fill: {name_text}")
+    if ein_text:
+        print(f"EIN to fill: {ein_text}")
+    if address_text:
+        print(f"Address to fill: {address_text}")
+    if email_text:
+        print(f"Email to fill: {email_text}")
+    if phone_text:
+        print(f"Phone to fill: {phone_text}")
+    
     # Upload and process with ChatGPT
-    print(f"\nUploading to ChatGPT and sending PDF highlighting prompt...")
+    print(f"\nUploading to ChatGPT and sending PDF highlighting and field filling prompt...")
     print("This may take a few minutes...")
     
-    response = upload_file_to_chatgpt(file_path, api_key, highlight_text)
+    response = upload_file_to_chatgpt(file_path, api_key, highlight_text, name_text, ein_text, address_text, email_text, phone_text)
     
     if response:
         print("\n" + "=" * 70)

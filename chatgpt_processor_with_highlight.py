@@ -11,7 +11,7 @@ import os
 import subprocess
 from chatgpt_file_processor import main
 
-def run_pdf_highlighter(highlight_text=None, name_text=None, signature_options=None):
+def run_pdf_highlighter(highlight_text=None, name_text=None, ein_text=None, address_text=None, email_text=None, phone_text=None, signature_options=None):
     """Run the PDF highlighter to create highlighted files."""
     try:
         print("\n" + "=" * 70)
@@ -28,6 +28,26 @@ def run_pdf_highlighter(highlight_text=None, name_text=None, signature_options=N
             cmd.append("--name")
             cmd.append(name_text)
             print(f"Using name text: '{name_text}'")
+        
+        if ein_text:
+            cmd.append("--ein")
+            cmd.append(ein_text)
+            print(f"Using EIN text: '{ein_text}'")
+        
+        if address_text:
+            cmd.append("--address")
+            cmd.append(address_text)
+            print(f"Using address text: '{address_text}'")
+        
+        if email_text:
+            cmd.append("--email")
+            cmd.append(email_text)
+            print(f"Using email text: '{email_text}'")
+        
+        if phone_text:
+            cmd.append("--phone")
+            cmd.append(phone_text)
+            print(f"Using phone text: '{phone_text}'")
         
         if signature_options:
             cmd.append("--signature-options")
@@ -60,22 +80,42 @@ if __name__ == "__main__":
     if len(sys.argv) > 3 and sys.argv[2] == "--name":
         name_text = sys.argv[3]
     
+    # Get EIN text from command line arguments
+    ein_text = None
+    if len(sys.argv) > 5 and sys.argv[4] == "--ein":
+        ein_text = sys.argv[5]
+    
+    # Get address text from command line arguments
+    address_text = None
+    if len(sys.argv) > 7 and sys.argv[6] == "--address":
+        address_text = sys.argv[7]
+    
+    # Get email text from command line arguments
+    email_text = None
+    if len(sys.argv) > 9 and sys.argv[8] == "--email":
+        email_text = sys.argv[9]
+    
+    # Get phone text from command line arguments
+    phone_text = None
+    if len(sys.argv) > 11 and sys.argv[10] == "--phone":
+        phone_text = sys.argv[11]
+    
     # Get signature options from command line arguments
     signature_options = None
-    if len(sys.argv) > 5 and sys.argv[4] == "--signature-options":
-        signature_options = sys.argv[5]
+    if len(sys.argv) > 13 and sys.argv[12] == "--signature-options":
+        signature_options = sys.argv[13]
     
     # Run the ChatGPT processing
     print("=" * 70)
     print("STEP 1: CHATGPT PROCESSING")
     print("=" * 70)
-    main(highlight_text)
+    main(highlight_text, name_text, ein_text, address_text, email_text, phone_text)
     
     # Run the PDF highlighter to create highlighted files
     print("\n" + "=" * 70)
     print("STEP 2: CREATING HIGHLIGHTED FILES")
     print("=" * 70)
-    success = run_pdf_highlighter(highlight_text, name_text, signature_options)
+    success = run_pdf_highlighter(highlight_text, name_text, ein_text, address_text, email_text, phone_text, signature_options)
     
     if success:
         print("\n" + "=" * 70)
