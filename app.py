@@ -201,11 +201,11 @@ def reset_status():
 if __name__ == '__main__':
     # Configuration for public access
     HOST = '0.0.0.0'  # Bind to all interfaces for public access
-    PORT = 5001       # Port to listen on (changed from 5000 to avoid AirPlay conflict)
+    PORT = 5002       # Port to listen on (changed from 5001 to 5002)
     
     logger.info(f"Starting Flask server on {HOST}:{PORT}")
     logger.info("Server will be accessible from any network interface")
-    logger.info("For testing: http://localhost:5001 or http://[your-ip]:5001")
+    logger.info("For testing: http://localhost:5002 or http://[your-ip]:5002")
     
     # Start Flask development server
     app.run(
