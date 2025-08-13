@@ -217,14 +217,17 @@ def fill_form_fields(doc, field_values):
 def insert_text_fields(doc, field_values):
     """Insert text at specific locations in the PDF."""
     try:
-        # Define field patterns to search for
+        # Define field patterns to search for (order matters - more specific patterns first)
         field_patterns = {
-            'name': [r'name[s]?\s*[:\-]', r'claimant\s+name', r'full\s+name'],
-            'ein': [r'ein\s*[:\-]', r'tax\s+id', r'employer\s+identification', r'ssn/fein'],
-            'address': [r'address\s*[:\-]', r'mailing\s+address', r'street\s+address', r'current\s+address'],
-            'email': [r'email\s*[:\-]', r'email\s+address'],
-            'phone': [r'phone\s*[:\-]', r'telephone\s*[:\-]', r'daytime\s+telephone', r'daytime\s+phone']
+            'email': [r'email\s+address', r'email\s*[:\-]'],  # More specific first
+            'phone': [r'phone\s+number', r'daytime\s+phone', r'cell\s+phone', r'phone\s*[:\-]', r'telephone\s*[:\-]'],
+            'name': [r'name\s+and\s+address', r'your\s+name', r'name[s]?\s*[:\-]', r'claimant\s+name', r'full\s+name'],
+            'ein': [r'ein\s*[:\-]', r'tax\s+id', r'employer\s+identification', r'ssn/fein', r'social\s+security.*tax\s+identifier'],
+            'address': [r'current\s+mailing\s+address', r'mailing\s+address', r'address\s*[:\-]', r'street\s+address', r'current\s+address']
         }
+        
+        # Track which fields we've already filled to avoid duplicates
+        filled_fields = set()
         
         filled_count = 0
         
@@ -247,22 +250,46 @@ def insert_text_fields(doc, field_values):
                             
                             # Check if this text matches any field pattern
                             for field_name, patterns in field_patterns.items():
-                                if field_name in field_values and field_values[field_name]:
-                                    for pattern in patterns:
-                                        if re.search(pattern, text):
-                                            logger.info(f"✅ Found field '{field_name}' with pattern '{pattern}' in text: '{text}'")
-                                            # Found a field label, try to insert text nearby
-                                            value = field_values[field_name]
-                                            
-                                            # Calculate position for text insertion
-                                            # Look for blank lines or underscores nearby
-                                            success = insert_text_near_field(page, span, value, field_name)
-                                            if success:
-                                                filled_count += 1
-                                                logger.info(f"✅ Inserted '{value}' for {field_name} field")
-                                                break
-                                        else:
-                                            logger.debug(f"Pattern '{pattern}' not found in text: '{text}'")
+                                 if field_name in field_values and field_values[field_name]:
+                                     # Skip if we've already filled this field type on this page
+                                     field_key = f"{field_name}_{page_num}"
+                                     if field_key in filled_fields:
+                                         continue
+                                         
+                                     for pattern in patterns:
+                                         if re.search(pattern, text):
+                                             # Skip if this is "email address" but we're looking for generic "address"
+                                             if field_name == 'address' and 'email' in text.lower():
+                                                 logger.debug(f"Skipping 'email address' for generic address field")
+                                                 continue
+                                             
+                                             # Skip if this is "phone" but we're looking for "email" or vice versa
+                                             if field_name == 'email' and 'phone' in text.lower():
+                                                 logger.debug(f"Skipping 'phone' field for email")
+                                                 continue
+                                             if field_name == 'phone' and 'email' in text.lower():
+                                                 logger.debug(f"Skipping 'email' field for phone")
+                                                 continue
+                                             
+                                             # Skip sensitive fields that shouldn't be filled automatically
+                                             if 'social\s+security' in text.lower() or 'date\s+of\s+birth' in text.lower():
+                                                 logger.debug(f"Skipping sensitive field: {text}")
+                                                 continue
+                                                 
+                                             logger.info(f"✅ Found field '{field_name}' with pattern '{pattern}' in text: '{text}'")
+                                             # Found a field label, try to insert text nearby
+                                             value = field_values[field_name]
+                                             
+                                             # Calculate position for text insertion
+                                             # Look for blank lines or underscores nearby
+                                             success = insert_text_near_field(page, span, value, field_name)
+                                             if success:
+                                                 filled_count += 1
+                                                 filled_fields.add(field_key)
+                                                 logger.info(f"✅ Inserted '{value}' for {field_name} field")
+                                                 break
+                                         else:
+                                             logger.debug(f"Pattern '{pattern}' not found in text: '{text}'")
         
         logger.info(f"Successfully inserted {filled_count} text fields")
         return filled_count > 0
@@ -282,16 +309,20 @@ def insert_text_near_field(page, span, value, field_name):
         width = bbox[2] - bbox[0]
         height = bbox[3] - bbox[1]
         
-        # Try multiple positions for text insertion
+        # Try multiple positions for text insertion - prioritize right side positioning
         positions_to_try = [
-            # To the right of the label
-            (x + width + 20, y + height/2),
-            # Below the label
-            (x, y + height + 15),
-            # Slightly to the right and below
-            (x + width + 10, y + height + 10),
-            # Far to the right (for forms with long input fields)
-            (x + 200, y + height/2),
+            # To the right of the label (most common for forms) - slightly above the line
+            (x + width + 20, y + height/2 - 2),
+            # Slightly to the right and aligned with the label - slightly above
+            (x + width + 15, y + height/2 - 2),
+            # Far to the right (for forms with long input fields) - slightly above
+            (x + 200, y + height/2 - 2),
+            # For "Name and Address" fields, try the first line position - slightly above
+            (x, y + height/2 - 2),
+            # Below the label (fallback) - but still above any line
+            (x, y + height + 5),
+            # Slightly to the right and below - but above line
+            (x + width + 10, y + height + 5),
         ]
         
         for pos_x, pos_y in positions_to_try:
@@ -299,9 +330,15 @@ def insert_text_near_field(page, span, value, field_name):
             text_rect = fitz.Rect(pos_x - 5, pos_y - 5, pos_x + 150, pos_y + 15)
             existing_text = page.get_text("text", clip=text_rect).strip()
             
-            if not existing_text:
-                # Insert the text
-                page.insert_text((pos_x, pos_y), value, fontsize=10, color=(0, 0, 0))
+            # Check for underscores or blank lines that indicate input fields
+            has_underscores = page.get_text("text", clip=text_rect).count('_') > 0
+            has_blank_line = len(existing_text.strip()) == 0
+            
+            # For blank input fields, we should be more lenient
+            # If there's no existing text or very little text, it's likely a blank input field
+            if not existing_text or has_underscores or has_blank_line or len(existing_text) < 5:
+                # Insert the text with better visibility and positioning
+                page.insert_text((pos_x, pos_y), value, fontsize=11, color=(0, 0, 0))
                 logger.info(f"✅ Inserted '{value}' at position ({pos_x}, {pos_y}) for {field_name}")
                 return True
         
