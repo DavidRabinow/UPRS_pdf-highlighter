@@ -835,7 +835,7 @@ def cleanup_temp_files(extract_dir: Path, output_dir: Path):
     except Exception as e:
         logger.warning(f"Could not clean up temporary files: {e}")
 
-def main(highlight_text: str = None, name_text: str = None, debug_mode: bool = False, profile: str = None, signature_options: str = None):
+def main(highlight_text: str = None, name_text: str = None, debug_mode: bool = False, profile: str = None, signature_options: str = None, file_path: str = None):
     """Main function to process ZIP files and add highlights to PDFs."""
     print("=" * 70)
     print("PDF Highlighter - Automatic PDF Highlighting")
@@ -873,40 +873,56 @@ def main(highlight_text: str = None, name_text: str = None, debug_mode: bool = F
         print("Run: pip install PyMuPDF PyPDF2")
         return
     
-    # Find the most recent file
-    print("\nSearching for most recent download...")
-    file_path = find_most_recent_file()
+    # Use provided file path or find the most recent file
+    if file_path:
+        print(f"\nUsing provided file path: {file_path}")
+        file_path = Path(file_path)
+        if not file_path.exists():
+            print(f"❌ File not found: {file_path}")
+            return
+    else:
+        # Find the most recent file
+        print("\nSearching for most recent download...")
+        file_path = find_most_recent_file()
+        
+        if not file_path:
+            print("❌ No recent files found in Downloads folder")
+            return
     
-    if not file_path:
-        print("❌ No recent files found in Downloads folder")
-        return
-    
-    # Check if it's a ZIP file
-    if file_path.suffix.lower() != '.zip':
-        print(f"❌ File is not a ZIP file: {file_path.name}")
-        print("Please download a ZIP file containing PDFs")
+    # Check if it's a ZIP file or PDF file
+    if file_path.suffix.lower() not in ['.zip', '.pdf']:
+        print(f"❌ File is not a ZIP or PDF file: {file_path.name}")
+        print("Please download a ZIP file containing PDFs or a PDF file directly")
         return
     
     # Display file info
-    print(f"\nFound ZIP file: {file_path.name}")
+    print(f"\nFound file: {file_path.name}")
     print(f"Path: {file_path}")
     print(f"Size: {file_path.stat().st_size:,} bytes")
     print(f"Modified: {datetime.fromtimestamp(file_path.stat().st_mtime)}")
     
     try:
-        # Extract ZIP file
-        print(f"\nExtracting ZIP file...")
-        extract_dir = extract_zip_file(file_path)
+        pdf_files = []
         
-        # Find PDF files
-        print("Finding PDF files...")
-        pdf_files = find_pdf_files(extract_dir)
-        
-        if not pdf_files:
-            print("❌ No PDF files found in ZIP")
-            return
-        
-        print(f"Found {len(pdf_files)} PDF files to process")
+        if file_path.suffix.lower() == '.zip':
+            # Extract ZIP file
+            print(f"\nExtracting ZIP file...")
+            extract_dir = extract_zip_file(file_path)
+            
+            # Find PDF files
+            print("Finding PDF files...")
+            pdf_files = find_pdf_files(extract_dir)
+            
+            if not pdf_files:
+                print("❌ No PDF files found in ZIP")
+                return
+            
+            print(f"Found {len(pdf_files)} PDF files to process")
+        elif file_path.suffix.lower() == '.pdf':
+            # Single PDF file
+            print(f"\nProcessing single PDF file...")
+            pdf_files = [file_path]
+            print(f"Processing 1 PDF file")
         
         # Debug mode: Analyze first PDF structure
         if debug_mode and pdf_files:
@@ -973,24 +989,39 @@ def main(highlight_text: str = None, name_text: str = None, debug_mode: bool = F
             print("❌ No PDFs were successfully highlighted")
             return
         
-        # Create highlighted ZIP file
-        print(f"\nCreating highlighted ZIP file...")
-        highlighted_zip_path = create_highlighted_zip(highlighted_files, file_path)
-        
-        # Display results
-        print("\n" + "=" * 70)
-        print("PROCESSING COMPLETE!")
-        print("=" * 70)
-        print(f"Original ZIP: {file_path.name}")
-        print(f"Highlighted ZIP: {highlighted_zip_path.name}")
-        print(f"PDFs processed: {len(highlighted_files)}/{len(pdf_files)}")
-        print(f"Output location: {highlighted_zip_path}")
-        print("=" * 70)
-        
-        # Clean up temporary files
-        cleanup_temp_files(extract_dir, output_dir)
-        
-        print(f"\n✅ Success! Your highlighted PDFs are ready in: {highlighted_zip_path.name}")
+        # Create highlighted output file
+        if file_path.suffix.lower() == '.zip':
+            print(f"\nCreating highlighted ZIP file...")
+            highlighted_zip_path = create_highlighted_zip(highlighted_files, file_path)
+            
+            # Display results
+            print("\n" + "=" * 70)
+            print("PROCESSING COMPLETE!")
+            print("=" * 70)
+            print(f"Original ZIP: {file_path.name}")
+            print(f"Highlighted ZIP: {highlighted_zip_path.name}")
+            print(f"PDFs processed: {len(highlighted_files)}/{len(pdf_files)}")
+            print(f"Output location: {highlighted_zip_path}")
+            print("=" * 70)
+            
+            # Clean up temporary files
+            cleanup_temp_files(extract_dir, output_dir)
+            
+            print(f"\n✅ Success! Your highlighted PDFs are ready in: {highlighted_zip_path.name}")
+        else:
+            # Single PDF file - the highlighted file is already in the output directory
+            highlighted_pdf = highlighted_files[0] if highlighted_files else None
+            
+            print("\n" + "=" * 70)
+            print("PROCESSING COMPLETE!")
+            print("=" * 70)
+            print(f"Original PDF: {file_path.name}")
+            print(f"Highlighted PDF: {highlighted_pdf.name if highlighted_pdf else 'None'}")
+            print(f"PDFs processed: {len(highlighted_files)}/1")
+            print(f"Output location: {highlighted_pdf}")
+            print("=" * 70)
+            
+            print(f"\n✅ Success! Your highlighted PDF is ready: {highlighted_pdf.name if highlighted_pdf else 'None'}")
         
     except Exception as e:
         logger.error(f"Error processing files: {e}")
@@ -1005,6 +1036,7 @@ if __name__ == "__main__":
     signature_options = None
     debug_mode = False
     profile = None
+    file_path = None
     
     # Parse command line arguments
     i = 1
@@ -1025,6 +1057,10 @@ if __name__ == "__main__":
             if i + 1 < len(sys.argv):
                 signature_options = sys.argv[i + 1]
                 i += 1
+        elif arg == "--file":
+            if i + 1 < len(sys.argv):
+                file_path = sys.argv[i + 1]
+                i += 1
         elif not arg.startswith("--"):
             # This is the highlight text (first non-flag argument)
             highlight_text = arg
@@ -1032,4 +1068,4 @@ if __name__ == "__main__":
         i += 1
     
     # Run the main function with the highlight text, name text, and signature options
-    main(highlight_text, name_text, debug_mode, profile, signature_options) 
+    main(highlight_text, name_text, debug_mode, profile, signature_options, file_path) 

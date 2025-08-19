@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dynamic Navigation Tool</title>
+    <title>PDF Highlighting Tool</title>
     <style>
       body {
         background: #1a2236;
@@ -373,84 +373,53 @@
             letter-spacing: 2px;
             color: #fff;
           "
-          >Dynamic Navigation Tool</span
+          >PDF Highlighting Tool</span
         >
       </div>
 
       <div class="input-container">
-        <label for="searchText" class="input-label"
-          >Enter URL to navigate to:</label
-        >
-        <input
-          type="url"
-          id="searchText"
-          class="text-input"
-          placeholder="Enter the URL you want to navigate to (e.g., https://monday.com/boards/123456)..."
-          value=""
-        />
-
-        <label for="einInput" class="input-label">EIN Number:</label>
-        <input
-          type="text"
-          id="einInput"
-          class="text-input"
-          placeholder="Enter EIN number to search for and fill..."
-          value=""
-        />
-
-        <label for="addressInput" class="input-label">Address:</label>
-        <input
-          type="text"
-          id="addressInput"
-          class="text-input"
-          placeholder="Enter address to search for and fill..."
-          value=""
-        />
-
-        <label for="emailInput" class="input-label">Email:</label>
-        <input
-          type="email"
-          id="emailInput"
-          class="text-input"
-          placeholder="Enter email to search for and fill..."
-          value=""
-        />
-
-        <label for="phoneInput" class="input-label">Phone Number:</label>
-        <input
-          type="tel"
-          id="phoneInput"
-          class="text-input"
-          placeholder="Enter phone number to search for and fill..."
-          value=""
-        />
-
-        <label for="usernameInput" class="input-label">Username:</label>
-        <input
-          type="text"
-          id="usernameInput"
-          class="text-input"
-          placeholder="Enter your username for login..."
-        />
-
-        <label for="passwordInput" class="input-label">Password:</label>
-        <input
-          type="password"
-          id="passwordInput"
-          class="text-input"
-          placeholder="Enter your password for login..."
-        />
-
         <label for="highlightText" class="input-label"
-          >Highlight Text (Multiple items separated by commas):</label
+          >Highlight Text (Optional - Multiple items separated by
+          commas):</label
         >
         <textarea
           id="highlightText"
           class="text-input"
-          placeholder="Enter what you want ChatGPT to highlight (e.g., signatures, dates, names, contract terms, amounts, addresses)..."
+          placeholder="Enter what you want ChatGPT to highlight (e.g., signatures, dates, names, contract terms, amounts, addresses)... Leave empty to use default highlighting"
           rows="3"
           style="resize: vertical; min-height: 80px"
         ></textarea>
+
+        <label for="fileUpload" class="input-label"
+          >Upload PDF or ZIP File:</label
+        >
+        <input
+          type="file"
+          id="fileUpload"
+          class="text-input"
+          accept=".pdf,.zip"
+          style="
+            padding: 8px;
+            margin: 8px 0 18px 0;
+            border: 2px dashed #1a2236;
+            background: #f8f9fa;
+          "
+        />
+        <div
+          id="fileInfo"
+          style="
+            margin: -10px 0 18px 0;
+            font-size: 0.9rem;
+            color: #28a745;
+            display: none;
+            padding: 8px;
+            background: #d4edda;
+            border-radius: 4px;
+            border: 1px solid #c3e6cb;
+          "
+        >
+          <span id="fileName"></span> (<span id="fileSize"></span>)
+        </div>
 
         <div class="checkbox-container">
           <label class="checkbox-label">Signature Options:</label>
@@ -551,34 +520,23 @@
           class="start-button"
           onclick="startAutomation()"
         >
-          Start Automation
+          Start Highlighting
         </button>
       </div>
 
       <div class="status-container">
-        <h3>Automation Status</h3>
+        <h3>Highlighting Status</h3>
         <div id="statusDisplay">
           <div class="status-item status-idle">
             <strong>Status:</strong> <span id="statusText">Idle</span>
           </div>
           <div class="status-item status-idle">
             <strong>Current Step:</strong>
-            <span id="currentStep">No automation running</span>
+            <span id="currentStep">No highlighting running</span>
           </div>
           <div class="status-item status-idle">
-            <strong>Target URL:</strong> <span id="searchTextDisplay">-</span>
-          </div>
-          <div class="status-item status-idle">
-            <strong>EIN Number:</strong> <span id="einTextDisplay">-</span>
-          </div>
-          <div class="status-item status-idle">
-            <strong>Address:</strong> <span id="addressTextDisplay">-</span>
-          </div>
-          <div class="status-item status-idle">
-            <strong>Email:</strong> <span id="emailTextDisplay">-</span>
-          </div>
-          <div class="status-item status-idle">
-            <strong>Phone:</strong> <span id="phoneTextDisplay">-</span>
+            <strong>Uploaded File:</strong>
+            <span id="uploadedFileDisplay">-</span>
           </div>
           <div class="status-item status-idle">
             <strong>Highlight Text:</strong>
@@ -618,29 +576,52 @@
     <script>
       let statusPollingInterval;
 
+      // File upload handling
+      document
+        .getElementById("fileUpload")
+        .addEventListener("change", function (event) {
+          const file = event.target.files[0];
+          const fileInfo = document.getElementById("fileInfo");
+          const fileName = document.getElementById("fileName");
+          const fileSize = document.getElementById("fileSize");
+
+          if (file) {
+            // Display file information
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            fileInfo.style.display = "block";
+
+            console.log(
+              "File selected:",
+              file.name,
+              "Size:",
+              formatFileSize(file.size)
+            );
+          } else {
+            fileInfo.style.display = "none";
+          }
+        });
+
+      // Format file size for display
+      function formatFileSize(bytes) {
+        if (bytes === 0) return "0 Bytes";
+        const k = 1024;
+        const sizes = ["Bytes", "KB", "MB", "GB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+      }
+
       // Start automation when button is clicked
       function startAutomation() {
         const button = document.getElementById("startButton");
         const statusText = document.getElementById("statusText");
-        const searchTextInput = document.getElementById("searchText");
-        const einInput = document.getElementById("einInput");
-        const addressInput = document.getElementById("addressInput");
-        const emailInput = document.getElementById("emailInput");
-        const phoneInput = document.getElementById("phoneInput");
-        const usernameInput = document.getElementById("usernameInput");
-        const passwordInput = document.getElementById("passwordInput");
         const highlightTextInput = document.getElementById("highlightText");
         const nameInput = document.getElementById("nameInput");
+        const fileUpload = document.getElementById("fileUpload");
 
-        const searchText = searchTextInput.value.trim();
-        const einText = einInput.value.trim();
-        const addressText = addressInput.value.trim();
-        const emailText = emailInput.value.trim();
-        const phoneText = phoneInput.value.trim();
-        const username = usernameInput.value.trim();
-        const password = passwordInput.value.trim();
         const highlightText = highlightTextInput.value.trim();
         const nameText = nameInput.value.trim();
+        const uploadedFile = fileUpload.files[0];
 
         // Get checkbox values
         const signatureNotary =
@@ -660,70 +641,66 @@
           document.getElementById("signatureApplicant").checked;
 
         // Validate input
-        if (!searchText) {
-          alert("Please enter a URL to navigate to.");
+        if (!uploadedFile) {
+          alert("Please select a PDF file to upload.");
           return;
         }
 
-        // Validate URL format
+        // Validate file type
         if (
-          searchText &&
-          !searchText.startsWith("http://") &&
-          !searchText.startsWith("https://")
+          !uploadedFile.name.toLowerCase().endsWith(".pdf") &&
+          !uploadedFile.name.toLowerCase().endsWith(".zip")
         ) {
-          alert(
-            "Please enter a valid URL starting with http:// or https://."
-          );
+          alert("Please select a valid PDF or ZIP file.");
           return;
         }
 
         // Disable button and show loading
         button.disabled = true;
         button.innerHTML =
-          '🔄 Starting automation... <div class="loading"></div>';
+          '🔄 Starting highlighting... <div class="loading"></div>';
         statusText.innerHTML =
-          'Starting automation... <div class="loading"></div>';
+          'Starting highlighting... <div class="loading"></div>';
 
-        // Make API call to start automation with search text and additional parameters
+        // Create FormData to send file and other data
+        const formData = new FormData();
+        formData.append("highlight_text", highlightText);
+        formData.append("name_text", nameText);
+        formData.append(
+          "signature_options",
+          JSON.stringify({
+            notary: signatureNotary,
+            claimant: signatureClaimant,
+            notaryPublic: signatureNotaryPublic,
+            representative: signatureRepresentative,
+            authorized: signatureAuthorized,
+            applicant: signatureApplicant,
+          })
+        );
+        formData.append("pdf_file", uploadedFile);
+
+        // Make API call to start automation with file upload
         fetch("/start_automation", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            search_text: searchText,
-            ein_text: einText,
-            address_text: addressText,
-            email_text: emailText,
-            phone_text: phoneText,
-            username: username,
-            password: password,
-            highlight_text: highlightText,
-            name_text: nameText,
-            signature_options: {
-              notary: signatureNotary,
-              claimant: signatureClaimant,
-              notaryPublic: signatureNotaryPublic,
-              representative: signatureRepresentative,
-              authorized: signatureAuthorized,
-              applicant: signatureApplicant,
-            },
-          }),
+          body: formData,
         })
           .then((response) => response.json())
           .then((data) => {
             if (data.success) {
-              console.log("Import started successfully with text:", searchText);
+              console.log(
+                "Highlighting started successfully with text:",
+                highlightText
+              );
               // Start polling for status updates
               startStatusPolling();
             } else {
-              alert("Failed to start automation: " + data.message);
+              alert("Failed to start highlighting: " + data.message);
               resetButton();
             }
           })
           .catch((error) => {
-            console.error("Error starting automation:", error);
-            alert("Error starting automation: " + error.message);
+            console.error("Error starting highlighting:", error);
+            alert("Error starting highlighting: " + error.message);
             resetButton();
           });
       }
@@ -732,7 +709,7 @@
       function resetButton() {
         const button = document.getElementById("startButton");
         button.disabled = false;
-        button.innerHTML = "🚀 Start Automation";
+        button.innerHTML = "🚀 Start Highlighting";
       }
 
       // Start polling for status updates
@@ -763,12 +740,9 @@
       function updateStatusDisplay(data) {
         const statusText = document.getElementById("statusText");
         const currentStep = document.getElementById("currentStep");
-        const searchTextDisplay = document.getElementById("searchTextDisplay");
-        const einTextDisplay = document.getElementById("einTextDisplay");
-        const addressTextDisplay =
-          document.getElementById("addressTextDisplay");
-        const emailTextDisplay = document.getElementById("emailTextDisplay");
-        const phoneTextDisplay = document.getElementById("phoneTextDisplay");
+        const uploadedFileDisplay = document.getElementById(
+          "uploadedFileDisplay"
+        );
         const highlightTextDisplay = document.getElementById(
           "highlightTextDisplay"
         );
@@ -796,12 +770,11 @@
         }
 
         // Update other fields
-        currentStep.textContent = data.current_step || "No automation running";
-        searchTextDisplay.textContent = data.search_text || "-";
-        einTextDisplay.textContent = data.ein_text || "-";
-        addressTextDisplay.textContent = data.address_text || "-";
-        emailTextDisplay.textContent = data.email_text || "-";
-        phoneTextDisplay.textContent = data.phone_text || "-";
+        currentStep.textContent =
+          data.current_step || "No highlighting running";
+        uploadedFileDisplay.textContent = data.uploaded_file
+          ? data.uploaded_file.split("/").pop() || "-"
+          : "-";
         highlightTextDisplay.textContent = data.highlight_text || "-";
 
         // Format signature options for display
@@ -848,11 +821,7 @@
                 start_time: null,
                 end_time: null,
                 current_step: null,
-                search_text: null,
-                ein_text: null,
-                address_text: null,
-                email_text: null,
-                phone_text: null,
+                uploaded_file: null,
                 highlight_text: null,
                 signature_options: null,
               });
