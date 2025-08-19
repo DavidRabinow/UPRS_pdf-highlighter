@@ -276,7 +276,10 @@ def insert_text_fields(doc, field_values):
                 r'email\s+address', 
                 r'email\s*[:\-]', 
                 r'claimant\s+email',
-                r'co-claimant\s+email'
+                r'co-claimant\s+email',
+                r'email',  # Simple email pattern
+                r'contact\s+email',
+                r'business\s+email'
             ],
             'phone': [
                 r'daytime\s+phone', 
@@ -285,7 +288,11 @@ def insert_text_fields(doc, field_values):
                 r'home\s+phone',
                 r'phone\s*[:\-]', 
                 r'telephone\s*[:\-]',
-                r'cell\s+phone'
+                r'cell\s+phone',
+                r'phone',  # Simple phone pattern
+                r'contact\s+phone',
+                r'business\s+phone',
+                r'fax'
             ],
             'name': [
                 r'name\s+of\s+claimant', 
@@ -295,7 +302,12 @@ def insert_text_fields(doc, field_values):
                 r'your\s+name', 
                 r'name[s]?\s*[:\-]', 
                 r'claimant\s+name', 
-                r'full\s+name'
+                r'full\s+name',
+                r'name',  # Simple name pattern
+                r'contact\s+name',
+                r'business\s+name',
+                r'company\s+name',
+                r'owner\s+name'
             ],
             'ein': [
                 r'social\s+security\s*/\s*fein', 
@@ -305,7 +317,11 @@ def insert_text_fields(doc, field_values):
                 r'ssn/fein', 
                 r'social\s+security.*tax\s+identifier',
                 r'claimant\'s\s+ssn',
-                r'joint\s+claimant\'s\s+ssn'
+                r'joint\s+claimant\'s\s+ssn',
+                r'ein',  # Simple EIN pattern
+                r'fein',
+                r'tax\s+identification',
+                r'employer\s+id'
             ],
             'address': [
                 r'present\s+mailing\s+address', 
@@ -314,7 +330,12 @@ def insert_text_fields(doc, field_values):
                 r'address\s*[:\-]', 
                 r'street\s+address', 
                 r'current\s+address',
-                r'city,\s+state,\s+zip'
+                r'city,\s+state,\s+zip',
+                r'address',  # Simple address pattern
+                r'business\s+address',
+                r'contact\s+address',
+                r'location',
+                r'street'
             ]
         }
         
