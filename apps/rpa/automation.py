@@ -19,7 +19,6 @@ import difflib
 from datetime import datetime
 import re
 import traceback
-import os
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -29,27 +28,141 @@ class SeleniumAutomation:
     Selenium automation class that handles browser automation tasks.
     """
     
-    def __init__(self, page_url=None):
+    def __init__(self, page_url=None, username=None, password=None):
         """
         Initialize the automation with configuration.
         Args:
             page_url (str): The URL or page path to navigate to (optional)
+            username (str): Username for login (optional, will prompt if not provided)
+            password (str): Password for login (optional, will prompt if not provided)
         """
         # Configuration - UPDATE THESE VALUES AS NEEDED
         self.website_url = "https://uprs-group-llc.monday.com/boards/9740813045"
+        
+        # Get credentials from parameters or prompt user
+        if username is None:
+            self.username = input("Please enter your username: ")
+        else:
+            self.username = username
+            
+        if password is None:
+            import getpass
+            self.password = getpass.getpass("Please enter your password: ")
+        else:
+            self.password = password
         
         # Dynamic page navigation - user can specify any page
         self.page_url = page_url
         
         # Element selectors - UPDATE THESE IF NEEDED
-        # Note: Login selectors removed as this version only handles highlighting
+        self.username_selector = "input[type='email'], input[name='email'], #email"
+        self.password_selector = "input[type='password'], input[name='password'], #password"
+        self.login_button_selector = "button[type='submit'], input[type='submit'], .login-btn"
         
-        # Navigation selectors - removed as this version only handles highlighting
+        # Navigation selectors - now dynamic based on page_url
+        self.search_properties_selector = "a[href*='search'], .search-link, #search, .board-item"
+        self.process_imported_files_selector = "a[href*='process'], .process-link, #process, .board-item"
         
-        # Tracking variables - simplified for highlighting only
+        # Tracking variables for continuous processing
+        self.last_payee_name = None  # Store the last processed Payee Name
+        self.consecutive_failures = 0  # Track consecutive failures
+        self.max_companies = 999999  # Maximum number of companies to process (set very high for unlimited)
+        self.companies_processed = 0  # Counter for processed companies
         
-        # File search field selectors - removed as this version only handles highlighting
-        # Green search button selectors - removed as this version only handles highlighting
+        # PRECISE selectors for the search field under "File" with dropdown arrow
+        # These selectors are designed to find the specific field with "select..." placeholder
+        self.file_search_field_selectors = [
+            # Target the visible select input first (based on debug output)
+            "input[placeholder='select...'][class*='ui-igcombo-field']",
+            "//input[@placeholder='select...' and contains(@class, 'ui-igcombo-field')]",
+            
+            # Look for select inputs near the "File" label
+            "//label[@id='lblFile']/following-sibling::input[@placeholder='select...']",
+            "//label[@id='lblFile']/../input[@placeholder='select...']",
+            "//label[@id='lblFile']/../../input[@placeholder='select...']",
+            
+            # Look for select inputs in the same container as "File" label
+            "//label[contains(text(), 'File')]/following-sibling::input[@placeholder='select...']",
+            "//label[contains(text(), 'File')]/../input[@placeholder='select...']",
+            "//label[contains(text(), 'File')]/../../input[@placeholder='select...']",
+            
+            # Look for select inputs near "forFile" class
+            "//span[@class='forFile floatR']/../input[@placeholder='select...']",
+            "//span[@class='forFile floatR']/../../input[@placeholder='select...']",
+            
+            # Direct input field with exact placeholder
+            "input[placeholder='select...']",
+            "input[placeholder*='select'][placeholder*='...']",
+            
+            # Look for input fields with dropdown arrow (common patterns)
+            "//input[@placeholder='select...' and following-sibling::*[contains(@class, 'arrow')]]",
+            "//input[@placeholder='select...' and following-sibling::*[contains(@class, 'dropdown')]]",
+            "//input[@placeholder='select...' and following-sibling::*[contains(@class, 'chevron')]]",
+            
+            # Fallback: Any input with "select..." placeholder
+            "//input[contains(@placeholder, 'select')]",
+            "input[placeholder*='select']",
+            "input[placeholder*='Select']"
+        ]
+        
+        # PRECISE selectors for the bright green "Search" button
+        # Highest priority: button directly after the 'File' label
+        self.green_search_button_selectors = [
+            # Most precise selector as requested
+            "//label[text()='File']/following::button[contains(text(),'Search')][1]",
+
+            # Most specific selectors for bright green "Search" button with exact text
+            "//button[text()='Search' and contains(@class, 'green')]",
+            "//button[text()='Search' and contains(@class, 'btn-success')]",
+            "//button[text()='Search' and contains(@class, 'btn-green')]",
+            "//button[text()='Search' and contains(@style, 'green')]",
+            "//button[text()='Search' and contains(@style, 'background-color: green')]",
+            "//button[text()='Search' and contains(@style, 'background: green')]",
+            
+            # Look for "Search" button positioned BELOW the input field (vertically aligned)
+            "//input[@placeholder='select...']/following-sibling::button[text()='Search']",
+            "//input[@placeholder='select...']/../following-sibling::button[text()='Search']",
+            "//input[@placeholder='select...']/../../button[text()='Search']",
+            "//input[@placeholder='select...']/ancestor::div[1]//button[text()='Search']",
+            
+            # Look for "Search" button positioned below the "File" label area
+            "//label[contains(text(), 'File')]/following-sibling::button[text()='Search']",
+            "//label[contains(text(), 'File')]/../following-sibling::button[text()='Search']",
+            "//label[contains(text(), 'File')]/../../button[text()='Search']",
+            "//label[contains(text(), 'File')]/ancestor::div[1]//button[text()='Search']",
+            
+            # Look for "Search" button in the same container as the input field
+            "//input[@placeholder='select...']/ancestor::div[1]//button[text()='Search']",
+            "//input[@placeholder='select...']/ancestor::form[1]//button[text()='Search']",
+            "//input[@placeholder='select...']/ancestor::section[1]//button[text()='Search']",
+            
+            # CSS selectors for bright green "Search" button
+            "button[class*='green'][class*='search']",
+            "button.btn-success:contains('Search')",
+            "button.btn-green:contains('Search')",
+            "button.search-btn:contains('Search')",
+            "button[style*='green']:contains('Search')",
+            
+            # Input submit buttons with "Search" value
+            "input[type='submit'][value='Search']",
+            "input[type='submit'][value*='Search']",
+            "//input[@type='submit' and @value='Search']",
+            "//input[@type='submit' and contains(@value, 'Search')]",
+            
+            # Look for any button with "Search" text positioned after the input field
+            "//input[@placeholder='select...']/following::button[contains(text(), 'Search')][1]",
+            "//input[@placeholder='select...']/following::button[text()='Search'][1]",
+            
+            # Fallback: Any button with "Search" text (case-insensitive)
+            "//button[contains(text(), 'Search')]",
+            "//button[contains(text(), 'search')]",
+            "//button[contains(translate(text(), 'SEARCH', 'search'), 'search')]",
+            
+            # Fallback: Any green button positioned after the input field
+            "//input[@placeholder='select...']/following::button[contains(@class, 'green')][1]",
+            "//input[@placeholder='select...']/following::button[contains(@class, 'btn-success')][1]",
+            "//input[@placeholder='select...']/following::button[contains(@class, 'btn-green')][1]"
+        ]
         
         self.driver = None
         
@@ -2837,217 +2950,3 @@ class SeleniumAutomation:
             self.driver.close()
         else:
             logger.info(f"Not closing tab: {current_url}")
-
-    def run_highlighting(self, highlight_text=None, name_text=None, signature_options=None, uploaded_filepath=None):
-        """
-        Method to run PDF/ZIP highlighting automation only.
-        This method focuses solely on processing uploaded files with ChatGPT highlighting.
-        
-        Args:
-            highlight_text (str): Optional custom text for ChatGPT highlighting
-            name_text (str): Optional name to fill in PDF forms
-            signature_options (dict): Optional signature options from checkboxes
-            uploaded_filepath (str): Path to the uploaded PDF or ZIP file
-        """
-        try:
-            logger.info("=== STARTING PDF/ZIP HIGHLIGHTING AUTOMATION ===")
-            logger.info(f"Uploaded file: '{uploaded_filepath}'")
-            logger.info(f"Highlight text: '{highlight_text}'")
-            logger.info(f"Name text: '{name_text}'")
-            logger.info(f"Signature options: '{signature_options}'")
-            logger.info("Browser will remain VISIBLE throughout the process")
-            
-            # Step 1: Set up browser (VISIBLE - not headless)
-            self.setup_browser()
-            
-            # Step 2: Copy uploaded file to downloads directory for processing
-            if uploaded_filepath and os.path.exists(uploaded_filepath):
-                import shutil
-                downloads_dir = os.path.expanduser("~/Downloads")
-                filename = os.path.basename(uploaded_filepath)
-                target_path = os.path.join(downloads_dir, filename)
-                
-                logger.info(f"Copying uploaded file to downloads directory: {target_path}")
-                shutil.copy2(uploaded_filepath, target_path)
-                logger.info(f"Successfully copied file to: {target_path}")
-            else:
-                logger.warning("No uploaded file provided or file not found")
-            
-            # Step 3: Navigate to ChatGPT to open the uploaded files
-            logger.info("Navigating to ChatGPT to open uploaded files...")
-            self.driver.get("https://chatgpt.com")
-            logger.info("Successfully navigated to ChatGPT")
-            
-            # Step 3: Wait 45 seconds for ChatGPT page to fully load and stabilize
-            logger.info("Waiting 45 seconds for ChatGPT page to fully load and stabilize...")
-            time.sleep(45)
-            logger.info("45-second wait completed. Now starting PDF processing...")
-            
-            # Step 4: Process the downloaded file with highlighting
-            logger.info("Processing downloaded file with highlighting...")
-            logger.info("Browser will remain open during highlighting process...")
-            
-            try:
-                import subprocess
-                import sys
-                
-                # Run the ChatGPT processor script with custom highlight text and file highlighting
-                logger.info("Starting ChatGPT processing and file highlighting with custom highlight text...")
-                
-                # Prepare command with highlight text, name text, signature options, and file path
-                cmd = ["venv\\Scripts\\python.exe", "chatgpt_processor_with_highlight.py"]
-                if highlight_text:
-                    cmd.append(highlight_text)
-                    logger.info(f"Using custom highlight text: '{highlight_text}'")
-                else:
-                    logger.info("No custom highlight text provided, using default")
-                
-                if name_text:
-                    cmd.append("--name")
-                    cmd.append(name_text)
-                    logger.info(f"Using name text: '{name_text}'")
-                else:
-                    logger.info("No name text provided")
-                
-                # Add signature options if provided
-                if signature_options:
-                    cmd.append("--signature-options")
-                    import json
-                    # Use a more robust JSON serialization that works with command line
-                    signature_options_json = json.dumps(signature_options, separators=(',', ':'))
-                    # Escape the JSON string for command line
-                    signature_options_json = signature_options_json.replace('"', '\\"')
-                    cmd.append(signature_options_json)
-                    logger.info(f"Using signature options: '{signature_options}'")
-                else:
-                    logger.info("No signature options provided")
-                
-                # Add the specific file path to ensure we process the uploaded file
-                if uploaded_filepath:
-                    cmd.append("--file")
-                    cmd.append(uploaded_filepath)
-                    logger.info(f"Using specific uploaded file: '{uploaded_filepath}'")
-                else:
-                    logger.warning("No uploaded file path provided, will use most recent file")
-                
-                result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-                
-                # After ChatGPT analysis (regardless of success/failure), wait 10 seconds then fill the PDF fields (only for PDF files)
-                if uploaded_filepath and uploaded_filepath.lower().endswith('.pdf'):
-                    logger.info("ChatGPT processing completed. Waiting 10 seconds before starting PDF filling...")
-                    time.sleep(10)
-                    logger.info("10-second wait completed. Now filling PDF fields...")
-                    
-                    # Process the specific uploaded file with PDF field filler
-                    logger.info("Processing uploaded file with PDF field filler...")
-                    pdf_cmd = ["venv\\Scripts\\python.exe", "pdf_field_filler.py", "--pdf", uploaded_filepath]
-                    
-                    if name_text:
-                        pdf_cmd.extend(["--name", name_text])
-                    
-                    # Run PDF field filler to process the specific uploaded file
-                    pdf_result = subprocess.run(pdf_cmd, capture_output=True, text=True, timeout=300)
-                    
-                    if pdf_result.returncode == 0:
-                        logger.info("✅ PDF fields filled successfully!")
-                        logger.info(f"PDF filling details: {pdf_result.stdout}")
-                    else:
-                        logger.warning(f"⚠️ PDF field filling failed: {pdf_result.stderr}")
-                else:
-                    logger.info("ChatGPT processing completed. Skipping PDF field filling (not a PDF file).")
-                
-                # Check ChatGPT result separately for logging
-                if result.returncode == 0:
-                    logger.info("✅ ChatGPT processing completed successfully!")
-                else:
-                    logger.warning(f"⚠️ ChatGPT processing failed: {result.stderr}")
-                
-                if result.returncode == 0:
-                    logger.info("✅ ChatGPT processing and file highlighting completed successfully!")
-                    logger.info(f"Processing details: {result.stdout}")
-                    
-                    # Display success in browser
-                    try:
-                        self.driver.execute_script("""
-                            // Create a notification in the browser
-                            const notification = document.createElement('div');
-                            notification.style.cssText = `
-                                position: fixed;
-                                top: 20px;
-                                right: 20px;
-                                background: #4CAF50;
-                                color: white;
-                                padding: 15px;
-                                border-radius: 5px;
-                                z-index: 10000;
-                                font-family: Arial, sans-serif;
-                                box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-                            `;
-                            notification.innerHTML = '✅ Processing completed! Check Downloads for highlighted files and chatgpt_response.txt for analysis.';
-                            document.body.appendChild(notification);
-                            
-                            // Remove notification after 5 seconds
-                            setTimeout(() => {
-                                if (notification.parentNode) {
-                                    notification.parentNode.removeChild(notification);
-                                }
-                            }, 5000);
-                        """)
-                        logger.info("✅ Success notification displayed in browser")
-                    except Exception as e:
-                        logger.warning(f"⚠️ Could not display browser notification: {e}")
-                
-                else:
-                    logger.error("❌ ChatGPT processing failed")
-                    # Display error in browser
-                    try:
-                        self.driver.execute_script("""
-                            // Create an error notification in the browser
-                            const notification = document.createElement('div');
-                            notification.style.cssText = `
-                                position: fixed;
-                                top: 20px;
-                                right: 20px;
-                                background: #f44336;
-                                color: white;
-                                padding: 15px;
-                                border-radius: 5px;
-                                z-index: 10000;
-                                font-family: Arial, sans-serif;
-                                box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-                            `;
-                            notification.innerHTML = '❌ Highlighting failed! Check console for details.';
-                            document.body.appendChild(notification);
-                            
-                            // Remove notification after 5 seconds
-                            setTimeout(() => {
-                                if (notification.parentNode) {
-                                    notification.parentNode.removeChild(notification);
-                                }
-                            }, 5000);
-                        """)
-                        logger.info("❌ Error notification displayed in browser")
-                    except Exception as e:
-                        logger.warning(f"⚠️ Could not display browser error notification: {e}")
-                
-            except subprocess.TimeoutExpired:
-                logger.error("❌ Subprocess timed out after 5 minutes")
-                raise Exception("Processing timed out after 5 minutes")
-            except Exception as e:
-                logger.error(f"❌ ERROR: Failed to process files: {e}")
-                logger.error(f"Full traceback: {traceback.format_exc()}")
-                raise Exception(f"File processing failed: {e}")
-            
-            # Final wait before closing
-            logger.info("Waiting 10 seconds before completing...")
-            time.sleep(10)
-            logger.info("=== PDF/ZIP HIGHLIGHTING AUTOMATION COMPLETED ===")
-            
-        except Exception as e:
-            logger.error(f"❌ PDF/ZIP HIGHLIGHTING AUTOMATION FAILED: {e}")
-            logger.error(f"Full traceback: {traceback.format_exc()}")
-            raise e
-        finally:
-            # Keep browser open for user inspection
-            logger.info("Browser will remain open for user inspection. Close manually when done.")
-            logger.info("=== PDF/ZIP HIGHLIGHTING AUTOMATION ENDED ===")

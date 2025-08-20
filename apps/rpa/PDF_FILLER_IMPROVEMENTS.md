@@ -133,4 +133,3 @@ With the improvements, the PDF filler should now:
 
 The system should now be much more reliable at detecting and filling the form fields shown in your images!
 
-

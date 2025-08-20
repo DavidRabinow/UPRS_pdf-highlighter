@@ -49,7 +49,7 @@ def find_most_recent_file():
     return most_recent
 
 def find_most_recent_pdf():
-    """Find the most recently downloaded PDF or ZIP file in the Downloads folder."""
+    """Find the most recently downloaded PDF file in the Downloads folder."""
     downloads_path = get_downloads_folder()
     logger.info(f"Downloads folder: {downloads_path}")
     
@@ -57,16 +57,16 @@ def find_most_recent_pdf():
         logger.error(f"Downloads folder not found: {downloads_path}")
         return None
     
-    # Get all PDF and ZIP files in Downloads folder
-    pdf_zip_files = [f for f in downloads_path.iterdir() if f.is_file() and f.suffix.lower() in ['.pdf', '.zip']]
+    # Get all PDF files in Downloads folder
+    pdf_files = [f for f in downloads_path.iterdir() if f.is_file() and f.suffix.lower() == '.pdf']
     
-    if not pdf_zip_files:
-        logger.error("No PDF or ZIP files found in Downloads folder")
+    if not pdf_files:
+        logger.error("No PDF files found in Downloads folder")
         return None
     
-    # Find the most recent PDF or ZIP file
-    most_recent = max(pdf_zip_files, key=lambda f: f.stat().st_mtime)
-    logger.info(f"Found most recent file: {most_recent.name}")
+    # Find the most recent PDF file
+    most_recent = max(pdf_files, key=lambda f: f.stat().st_mtime)
+    logger.info(f"Found most recent PDF: {most_recent.name}")
     
     return most_recent
 
@@ -215,10 +215,10 @@ The uploaded file has been processed and is ready for highlighting work."""
         logger.error(f"Error processing file with ChatGPT: {e}")
         return None
 
-def main(highlight_text=None, name_text=None, ein_text=None, address_text=None, email_text=None, phone_text=None, file_path=None):
-    """Main function to process a specific file or the most recent download."""
+def main(highlight_text=None, name_text=None, ein_text=None, address_text=None, email_text=None, phone_text=None):
+    """Main function to process the most recent download."""
     print("=" * 70)
-    print("ChatGPT File Processor - PDF/ZIP Highlighting Analysis")
+    print("ChatGPT File Processor - PDF Highlighting Analysis")
     print("=" * 70)
     
     # Load environment variables
@@ -232,20 +232,13 @@ def main(highlight_text=None, name_text=None, ein_text=None, address_text=None, 
     
     logger.info("Using provided API key")
     
-    # Use provided file path or find the most recent PDF file
-    if file_path:
-        print(f"\nUsing provided file path: {file_path}")
-        file_path = Path(file_path)
-        if not file_path.exists():
-            print(f"❌ File not found: {file_path}")
-            return
-    else:
-        print("\nSearching for most recent PDF or ZIP download...")
-        file_path = find_most_recent_pdf()
-        
-        if not file_path:
-            print("❌ No recent PDF or ZIP files found in Downloads folder")
-            return
+    # Find the most recent PDF file
+    print("\nSearching for most recent PDF download...")
+    file_path = find_most_recent_pdf()
+    
+    if not file_path:
+        print("❌ No recent PDF files found in Downloads folder")
+        return
     
     # Display file info
     print(f"\nFound file: {file_path.name}")
@@ -270,7 +263,7 @@ def main(highlight_text=None, name_text=None, ein_text=None, address_text=None, 
         print(f"Phone to fill: {phone_text}")
     
     # Upload and process with ChatGPT
-    print(f"\nUploading to ChatGPT and sending highlighting and field filling prompt...")
+    print(f"\nUploading to ChatGPT and sending PDF highlighting and field filling prompt...")
     print("This may take a few minutes...")
     
     response = upload_file_to_chatgpt(file_path, api_key, highlight_text, name_text, ein_text, address_text, email_text, phone_text)

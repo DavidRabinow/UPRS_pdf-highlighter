@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 """
-Flask Web Application for PDF Highlighting
-Serves a web interface to trigger PDF highlighting processes.
+Flask Web Application for Selenium Automation
+Serves a web interface to trigger browser automation processes.
 """
 
 from flask import Flask, render_template, jsonify, request
-import os
-import json
 import threading
 import time
 import logging
@@ -30,45 +28,53 @@ automation_status = {
     'start_time': None,
     'end_time': None,
     'current_step': None,
-    'highlight_text': None,
-    'name_text': None,
-    'signature_options': None
+    'search_text': None
 }
 
-def run_automation_in_background(highlight_text=None, name_text=None, signature_options=None, uploaded_filepath=None):
+def run_automation_in_background(search_text, highlight_text=None, name_text=None, signature_options=None, username=None, password=None, ein_text=None, address_text=None, email_text=None, phone_text=None):
     """
-    Background function to run PDF highlighting automation.
+    Background function to run Selenium automation.
     This runs in a separate thread so Flask remains responsive.
     
     Args:
+        search_text (str): The URL to navigate to (e.g., Monday.com board URL)
         highlight_text (str): Optional custom text for ChatGPT highlighting
         name_text (str): Optional name to fill in PDF forms
         signature_options (dict): Optional signature options from checkboxes
-        uploaded_filepath (str): Path to the uploaded PDF file
+        username (str): Username for login
+        password (str): Password for login
+        ein_text (str): Optional EIN number to search for and fill
+        address_text (str): Optional address to search for and fill
+        email_text (str): Optional email to search for and fill
+        phone_text (str): Optional phone number to search for and fill
     """
     global automation_status
     
     try:
-        logger.info(f"Starting highlighting automation with file: '{uploaded_filepath}', highlight text: '{highlight_text}', name text: '{name_text}', signature options: '{signature_options}'")
+        logger.info(f"Starting automation in background with URL: '{search_text}', highlight text: '{highlight_text}', name text: '{name_text}', signature options: '{signature_options}', username: '{username}', EIN: '{ein_text}', Address: '{address_text}', Email: '{email_text}', Phone: '{phone_text}'")
         automation_status['running'] = True
         automation_status['start_time'] = time.strftime('%Y-%m-%d %H:%M:%S')
         automation_status['error'] = None
-        automation_status['current_step'] = 'Initializing highlighting...'
+        automation_status['current_step'] = 'Initializing...'
+        automation_status['search_text'] = search_text
+        automation_status['ein_text'] = ein_text
+        automation_status['address_text'] = address_text
+        automation_status['email_text'] = email_text
+        automation_status['phone_text'] = phone_text
         automation_status['highlight_text'] = highlight_text
         automation_status['name_text'] = name_text
         automation_status['signature_options'] = signature_options
-        automation_status['uploaded_file'] = uploaded_filepath
         
         # Create and run automation
-        automation = SeleniumAutomation()
-        automation.run_highlighting(highlight_text, name_text, signature_options, uploaded_filepath)
+        automation = SeleniumAutomation(username=username, password=password)
+        automation.run(search_text, highlight_text, name_text, signature_options, ein_text, address_text, email_text, phone_text)
         
         # Update status on completion
         automation_status['running'] = False
         automation_status['completed'] = True
         automation_status['end_time'] = time.strftime('%Y-%m-%d %H:%M:%S')
-        automation_status['current_step'] = 'Highlighting completed successfully'
-        logger.info("PDF highlighting automation completed successfully")
+        automation_status['current_step'] = 'Automation completed successfully'
+        logger.info("Dynamic navigation automation completed successfully")
         
     except Exception as e:
         # Update status on error
@@ -76,20 +82,20 @@ def run_automation_in_background(highlight_text=None, name_text=None, signature_
         automation_status['error'] = str(e)
         automation_status['end_time'] = time.strftime('%Y-%m-%d %H:%M:%S')
         automation_status['current_step'] = f'Error: {str(e)}'
-        logger.error(f"PDF highlighting automation failed: {e}")
+        logger.error(f"Dynamic navigation automation failed: {e}")
 
 @app.route('/')
 def index():
     """
-    Main page with the Start Highlighting button and highlight text input.
+    Main page with the Start Automation button and URL input.
     """
     return render_template('index.html', status=automation_status)
 
 @app.route('/start_automation', methods=['POST'])
 def start_automation():
     """
-    API endpoint to start the highlighting process.
-    Receives highlight text and PDF file from frontend and returns immediately while automation runs in background.
+    API endpoint to start the automation process.
+    Receives URL from frontend and returns immediately while automation runs in background.
     """
     global automation_status
     
@@ -97,49 +103,37 @@ def start_automation():
     if automation_status['running']:
         return jsonify({
             'success': False,
-            'message': 'Highlighting is already running'
+            'message': 'Automation is already running'
         })
     
-    # Get parameters from request (FormData)
+    # Get parameters from request
     try:
-        highlight_text = request.form.get('highlight_text', '').strip()
-        name_text = request.form.get('name_text', '').strip()
-        signature_options_json = request.form.get('signature_options', '{}')
-        signature_options = json.loads(signature_options_json)
+        data = request.get_json()
+        search_text = data.get('search_text', '').strip()
+        ein_text = data.get('ein_text', '').strip()
+        address_text = data.get('address_text', '').strip()
+        email_text = data.get('email_text', '').strip()
+        phone_text = data.get('phone_text', '').strip()
+        username = data.get('username', '').strip()
+        password = data.get('password', '').strip()
+        highlight_text = data.get('highlight_text', '').strip()
+        name_text = data.get('name_text', '').strip()
+        signature_options = data.get('signature_options', {})
         
-        # Handle file upload
-        if 'pdf_file' not in request.files:
+        if not search_text:
             return jsonify({
                 'success': False,
-                'message': 'PDF file is required'
+                'message': 'URL is required'
             })
         
-        pdf_file = request.files['pdf_file']
-        if pdf_file.filename == '':
+        # Validate that the URL looks like a valid URL
+        if search_text and not (search_text.startswith('http://') or search_text.startswith('https://')):
             return jsonify({
                 'success': False,
-                'message': 'No file selected'
+                'message': 'Please enter a valid URL starting with http:// or https://.'
             })
-        
-        if not pdf_file.filename.lower().endswith('.pdf') and not pdf_file.filename.lower().endswith('.zip'):
-            return jsonify({
-                'success': False,
-                'message': 'Please upload a valid PDF or ZIP file'
-            })
-        
-        # Create uploads directory if it doesn't exist
-        uploads_dir = 'uploads'
-        if not os.path.exists(uploads_dir):
-            os.makedirs(uploads_dir)
-        
-        # Save the uploaded file
-        filename = f"uploaded_{int(time.time())}_{pdf_file.filename}"
-        filepath = os.path.join(uploads_dir, filename)
-        pdf_file.save(filepath)
-        
-
             
-        logger.info(f"Received highlighting request with file: '{filename}', highlight text: '{highlight_text}', name text: '{name_text}', signature options: '{signature_options}'")
+        logger.info(f"Received automation request with URL: '{search_text}', EIN: '{ein_text}', Address: '{address_text}', Email: '{email_text}', Phone: '{phone_text}', username: '{username}', highlight text: '{highlight_text}', name text: '{name_text}', signature options: '{signature_options}'")
         
     except Exception as e:
         logger.error(f"Error parsing request data: {e}")
@@ -156,22 +150,21 @@ def start_automation():
         'start_time': None,
         'end_time': None,
         'current_step': None,
+        'search_text': None,
         'highlight_text': None,
-        'name_text': None,
-        'signature_options': None,
-        'uploaded_file': None
+        'signature_options': None
     }
     
     # Start automation in background thread
-    automation_thread = threading.Thread(target=run_automation_in_background, args=(highlight_text, name_text, signature_options, filepath))
+    automation_thread = threading.Thread(target=run_automation_in_background, args=(search_text, highlight_text, name_text, signature_options, username, password, ein_text, address_text, email_text, phone_text))
     automation_thread.daemon = True  # Thread will stop when main app stops
     automation_thread.start()
     
-    logger.info(f"Highlighting thread started with file: '{filename}', highlight text: '{highlight_text}', name text: '{name_text}'")
+    logger.info(f"Automation thread started with URL: '{search_text}', username: '{username}', highlight text: '{highlight_text}', name text: '{name_text}'")
     
     return jsonify({
         'success': True,
-        'message': f'Highlighting started successfully with file: "{filename}" and text: "{highlight_text}"'
+        'message': f'Automation started successfully with URL: "{search_text}"'
     })
 
 @app.route('/status')
@@ -196,10 +189,12 @@ def reset_status():
         'start_time': None,
         'end_time': None,
         'current_step': None,
-        'highlight_text': None,
-        'name_text': None,
-        'signature_options': None,
-        'uploaded_file': None
+        'search_text': None,
+        'ein_text': None,
+        'address_text': None,
+        'email_text': None,
+        'phone_text': None,
+        'highlight_text': None
     }
     return jsonify({'success': True, 'message': 'Status reset'})
 

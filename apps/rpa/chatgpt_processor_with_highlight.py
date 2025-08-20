@@ -2,7 +2,7 @@
 """
 ChatGPT File Processor with Custom Highlight Text
 
-This script uploads a specified file (or the most recently downloaded file) to ChatGPT and sends a custom prompt
+This script uploads the most recently downloaded file to ChatGPT and sends a custom prompt
 about PDF highlighting based on user-specified text, then creates highlighted files.
 """
 
@@ -11,7 +11,7 @@ import os
 import subprocess
 from chatgpt_file_processor import main
 
-def run_pdf_highlighter(highlight_text=None, name_text=None, ein_text=None, address_text=None, email_text=None, phone_text=None, signature_options=None, file_path=None):
+def run_pdf_highlighter(highlight_text=None, name_text=None, ein_text=None, address_text=None, email_text=None, phone_text=None, signature_options=None):
     """Run the PDF highlighter to create highlighted files."""
     try:
         print("\n" + "=" * 70)
@@ -53,12 +53,6 @@ def run_pdf_highlighter(highlight_text=None, name_text=None, ein_text=None, addr
             cmd.append("--signature-options")
             cmd.append(signature_options)
             print(f"Using signature options: '{signature_options}'")
-        
-        # Add file path if provided
-        if file_path:
-            cmd.append("--file")
-            cmd.append(file_path)
-            print(f"Using specific file: '{file_path}'")
         
         # Run the PDF highlighter script
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
@@ -111,22 +105,17 @@ if __name__ == "__main__":
     if len(sys.argv) > 13 and sys.argv[12] == "--signature-options":
         signature_options = sys.argv[13]
     
-    # Get file path from command line arguments
-    file_path = None
-    if len(sys.argv) > 15 and sys.argv[14] == "--file":
-        file_path = sys.argv[15]
-    
     # Run the ChatGPT processing
     print("=" * 70)
     print("STEP 1: CHATGPT PROCESSING")
     print("=" * 70)
-    main(highlight_text, name_text, ein_text, address_text, email_text, phone_text, file_path)
+    main(highlight_text, name_text, ein_text, address_text, email_text, phone_text)
     
     # Run the PDF highlighter to create highlighted files
     print("\n" + "=" * 70)
     print("STEP 2: CREATING HIGHLIGHTED FILES")
     print("=" * 70)
-    success = run_pdf_highlighter(highlight_text, name_text, ein_text, address_text, email_text, phone_text, signature_options, file_path)
+    success = run_pdf_highlighter(highlight_text, name_text, ein_text, address_text, email_text, phone_text, signature_options)
     
     if success:
         print("\n" + "=" * 70)
