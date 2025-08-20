@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dynamic Navigation Tool</title>
+    <style>
+      body {
+        background: #1a2236;
+        color: #fff;
+        font-family: "Segoe UI", Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 16px rgba(26, 34, 54, 0.1);
+        max-width: 700px;
+        margin: 40px auto;
+        padding: 32px 36px 36px 36px;
+        color: #1a2236;
+      }
+      .automation-header {
+        display: flex;
+        align-items: center;
+        background: #1a2236;
+        color: #fff;
+        padding: 24px 32px;
+        border-radius: 10px;
+        margin-bottom: 32px;
+        box-shadow: 0 2px 8px rgba(26, 34, 54, 0.08);
+      }
+      .automation-header img {
+        height: 70px;
+        margin-right: 32px;
+        background: #e5e7eb;
+        border-radius: 8px;
+        padding: 8px;
+      }
+      .automation-header span {
+        font-size: 2.2rem;
+        font-weight: bold;
+        letter-spacing: 2px;
+        color: #fff;
+      }
+      .input-container,
+      .status-container {
+        background: #f5f6fa;
+        border-radius: 8px;
+        padding: 24px 20px 20px 20px;
+        margin-bottom: 28px;
+        box-shadow: 0 1px 4px rgba(26, 34, 54, 0.04);
+        color: #1a2236;
+      }
+      .input-label {
+        color: #1a2236;
+        font-weight: 500;
+        margin-top: 12px;
+        display: block;
+      }
+      .text-input,
+      select {
+        width: 100%;
+        padding: 10px;
+        margin: 8px 0 18px 0;
+        border: 1px solid #1a2236;
+        border-radius: 4px;
+        background: #fff;
+        color: #1a2236;
+        font-size: 1rem;
+        box-sizing: border-box;
+      }
+      .button-container {
+        text-align: center;
+        margin-bottom: 24px;
+      }
+      .start-button,
+      .reset-button {
+        background: #1a2236;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        padding: 12px 32px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+        margin: 0 8px;
+      }
+      .start-button:hover,
+      .reset-button:hover {
+        background: #232b43;
+      }
+      .status-container h3 {
+        color: #1a2236;
+        margin-top: 0;
+      }
+      .status-item {
+        margin-bottom: 10px;
+        color: #1a2236;
+      }
+      .status-idle strong {
+        color: #1a2236;
+      }
+      .uprs-logo-corner {
+        position: absolute;
+        top: 24px;
+        left: 32px;
+        z-index: 100;
+      }
+      @media (max-width: 600px) {
+        .uprs-logo-corner {
+          top: 8px;
+          left: 8px;
+        }
+        .uprs-logo-corner img {
+          height: 70px;
+        }
+      }
+      @media (max-width: 800px) {
+        .container {
+          padding: 12px 4vw;
+        }
+        .automation-header {
+          flex-direction: column;
+          text-align: center;
+          padding: 18px 8px;
+        }
+        .automation-header img {
+          margin: 0 0 12px 0;
+        }
+      }
+      .stux-footer {
+        text-align: center;
+        color: #e5e7eb;
+        background: transparent;
+        font-size: 1rem;
+        margin: 40px 0 16px 0;
+      }
+      .stux-footer a {
+        color: #e5e7eb;
+        text-decoration: underline;
+        font-weight: 600;
+      }
+      .stux-footer a:hover {
+        color: #fff;
+      }
+      .uprs-navbar {
+        width: 100%;
+        background: #232b43;
+        padding: 0 0 0 0;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 200;
+        box-shadow: 0 2px 8px rgba(26, 34, 54, 0.1);
+        display: flex;
+        align-items: center;
+        height: 56px;
+      }
+      .uprs-navbar-logo {
+        height: 40px;
+        width: auto;
+        margin-left: 24px;
+        margin-right: 18px;
+        display: block;
+      }
+      .uprs-navbar-link {
+        color: #e5e7eb;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-decoration: none;
+        letter-spacing: 1px;
+        transition: color 0.2s;
+        margin-left: 8px;
+      }
+      .uprs-navbar-link:hover {
+        color: #fff;
+        text-decoration: underline;
+      }
+      .uprs-navbar-link-secondary {
+        margin-left: 24px;
+      }
+      .container {
+        margin-top: 70px; /* Add space for fixed navbar */
+      }
+
+      /* Loading animation */
+      .loading {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #1a2236;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-left: 8px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Status styling */
+      .status-running {
+        color: #1a2236;
+      }
+
+      .status-completed {
+        color: #28a745;
+      }
+
+      .status-error {
+        color: #dc3545;
+      }
+
+      /* Checkbox styling */
+      .checkbox-container {
+        margin: 20px 0;
+        padding: 16px;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(26, 34, 54, 0.1);
+      }
+
+      .checkbox-label {
+        color: #1a2236;
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 12px;
+        display: block;
+      }
+
+      .checkbox-controls {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      .checkbox-control-btn {
+        background: #f3f4f6;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        padding: 4px 12px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .checkbox-control-btn:hover {
+        background: #e5e7eb;
+        border-color: #9ca3af;
+      }
+
+      .checkbox-group {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .checkbox-item {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        font-size: 0.95rem;
+        color: #1a2236;
+        position: relative;
+        padding-left: 35px;
+        user-select: none;
+      }
+
+      .checkbox-item input[type="checkbox"] {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        height: 0;
+        width: 0;
+      }
+
+      .checkmark {
+        position: absolute;
+        left: 0;
+        height: 20px;
+        width: 20px;
+        background-color: #fff;
+        border: 2px solid #1a2236;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+      }
+
+      .checkbox-item:hover input ~ .checkmark {
+        background-color: #f8f9fa;
+        border-color: #232b43;
+      }
+
+      .checkbox-item input:checked ~ .checkmark {
+        background-color: #1a2236;
+        border-color: #1a2236;
+      }
+
+      .checkmark:after {
+        content: "";
+        position: absolute;
+        display: none;
+        left: 6px;
+        top: 2px;
+        width: 6px;
+        height: 10px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+      }
+
+      .checkbox-item input:checked ~ .checkmark:after {
+        display: block;
+      }
+
+      @media (max-width: 600px) {
+        .checkbox-group {
+          gap: 10px;
+        }
+
+        .checkbox-item {
+          font-size: 0.9rem;
+          padding-left: 30px;
+        }
+
+        .checkmark {
+          height: 18px;
+          width: 18px;
+        }
+
+        .checkmark:after {
+          left: 5px;
+          top: 1px;
+          width: 5px;
+          height: 9px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="uprs-navbar">
+      <img
+        src="/static/assets/uprs.png"
+        alt="UPRS Logo"
+        class="uprs-navbar-logo"
+      />
+      <a
+        href="https://uprs-group-llc.monday.com/boards/9740813045"
+        target="_blank"
+        class="uprs-navbar-link"
+        >Monday.com Board</a
+      >
+      <a
+        href="https://www.uprsgroup.com/"
+        target="_blank"
+        class="uprs-navbar-link uprs-navbar-link-secondary"
+        >UPRS Group Website</a
+      >
+    </nav>
+    <div class="container">
+      <div class="automation-header">
+        <span
+          style="
+            font-size: 2.2rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: #fff;
+          "
+          >Dynamic Navigation Tool</span
+        >
+      </div>
+
+      <div class="input-container">
+        <label for="searchText" class="input-label"
+          >Enter URL to navigate to:</label
+        >
+        <input
+          type="url"
+          id="searchText"
+          class="text-input"
+          placeholder="Enter the URL you want to navigate to (e.g., https://monday.com/boards/123456)..."
+          value=""
+        />
+
+        <label for="einInput" class="input-label">EIN Number:</label>
+        <input
+          type="text"
+          id="einInput"
+          class="text-input"
+          placeholder="Enter EIN number to search for and fill..."
+          value=""
+        />
+
+        <label for="addressInput" class="input-label">Address:</label>
+        <input
+          type="text"
+          id="addressInput"
+          class="text-input"
+          placeholder="Enter address to search for and fill..."
+          value=""
+        />
+
+        <label for="emailInput" class="input-label">Email:</label>
+        <input
+          type="email"
+          id="emailInput"
+          class="text-input"
+          placeholder="Enter email to search for and fill..."
+          value=""
+        />
+
+        <label for="phoneInput" class="input-label">Phone Number:</label>
+        <input
+          type="tel"
+          id="phoneInput"
+          class="text-input"
+          placeholder="Enter phone number to search for and fill..."
+          value=""
+        />
+
+        <label for="usernameInput" class="input-label">Username:</label>
+        <input
+          type="text"
+          id="usernameInput"
+          class="text-input"
+          placeholder="Enter your username for login..."
+        />
+
+        <label for="passwordInput" class="input-label">Password:</label>
+        <input
+          type="password"
+          id="passwordInput"
+          class="text-input"
+          placeholder="Enter your password for login..."
+        />
+
+        <label for="highlightText" class="input-label"
+          >Highlight Text (Multiple items separated by commas):</label
+        >
+        <textarea
+          id="highlightText"
+          class="text-input"
+          placeholder="Enter what you want ChatGPT to highlight (e.g., signatures, dates, names, contract terms, amounts, addresses)..."
+          rows="3"
+          style="resize: vertical; min-height: 80px"
+        ></textarea>
+
+        <div class="checkbox-container">
+          <label class="checkbox-label">Signature Options:</label>
+          <div class="checkbox-controls">
+            <button
+              type="button"
+              onclick="selectAllSignatures()"
+              class="checkbox-control-btn"
+            >
+              Select All
+            </button>
+            <button
+              type="button"
+              onclick="clearAllSignatures()"
+              class="checkbox-control-btn"
+            >
+              Clear All
+            </button>
+          </div>
+          <div class="checkbox-group">
+            <label class="checkbox-item">
+              <input
+                type="checkbox"
+                id="signatureNotary"
+                name="signatureOptions"
+                value="notary"
+              />
+              <span class="checkmark"></span>
+              Signature of Notary
+            </label>
+            <label class="checkbox-item">
+              <input
+                type="checkbox"
+                id="signatureClaimant"
+                name="signatureOptions"
+                value="claimant"
+              />
+              <span class="checkmark"></span>
+              Signature of Claimant
+            </label>
+            <label class="checkbox-item">
+              <input
+                type="checkbox"
+                id="signatureNotaryPublic"
+                name="signatureOptions"
+                value="notaryPublic"
+              />
+              <span class="checkmark"></span>
+              Notary Public
+            </label>
+            <label class="checkbox-item">
+              <input
+                type="checkbox"
+                id="signatureRepresentative"
+                name="signatureOptions"
+                value="representative"
+              />
+              <span class="checkmark"></span>
+              Representative Signature
+            </label>
+            <label class="checkbox-item">
+              <input
+                type="checkbox"
+                id="signatureAuthorized"
+                name="signatureOptions"
+                value="authorized"
+              />
+              <span class="checkmark"></span>
+              Authorized Signer
+            </label>
+            <label class="checkbox-item">
+              <input
+                type="checkbox"
+                id="signatureApplicant"
+                name="signatureOptions"
+                value="applicant"
+              />
+              <span class="checkmark"></span>
+              Signature of Applicant
+            </label>
+          </div>
+        </div>
+
+        <label for="nameInput" class="input-label"
+          >Enter name to fill in PDF forms:</label
+        >
+        <input
+          type="text"
+          id="nameInput"
+          class="text-input"
+          placeholder="Enter the name to fill in PDF name fields (e.g., John Doe)..."
+        />
+      </div>
+
+      <div class="button-container">
+        <button
+          id="startButton"
+          class="start-button"
+          onclick="startAutomation()"
+        >
+          Start Automation
+        </button>
+      </div>
+
+      <div class="status-container">
+        <h3>Automation Status</h3>
+        <div id="statusDisplay">
+          <div class="status-item status-idle">
+            <strong>Status:</strong> <span id="statusText">Idle</span>
+          </div>
+          <div class="status-item status-idle">
+            <strong>Current Step:</strong>
+            <span id="currentStep">No automation running</span>
+          </div>
+          <div class="status-item status-idle">
+            <strong>Target URL:</strong> <span id="searchTextDisplay">-</span>
+          </div>
+          <div class="status-item status-idle">
+            <strong>EIN Number:</strong> <span id="einTextDisplay">-</span>
+          </div>
+          <div class="status-item status-idle">
+            <strong>Address:</strong> <span id="addressTextDisplay">-</span>
+          </div>
+          <div class="status-item status-idle">
+            <strong>Email:</strong> <span id="emailTextDisplay">-</span>
+          </div>
+          <div class="status-item status-idle">
+            <strong>Phone:</strong> <span id="phoneTextDisplay">-</span>
+          </div>
+          <div class="status-item status-idle">
+            <strong>Highlight Text:</strong>
+            <span id="highlightTextDisplay">-</span>
+          </div>
+          <div class="status-item status-idle">
+            <strong>Signature Options:</strong>
+            <span id="signatureOptionsDisplay">-</span>
+          </div>
+          <div class="status-item status-idle">
+            <strong>Start Time:</strong> <span id="startTime">-</span>
+          </div>
+          <div class="status-item status-idle">
+            <strong>End Time:</strong> <span id="endTime">-</span>
+          </div>
+          <div
+            class="status-item status-idle"
+            id="errorContainer"
+            style="display: none"
+          >
+            <strong>Error:</strong> <span id="errorText">-</span>
+          </div>
+        </div>
+
+        <button class="reset-button" onclick="resetStatus()">
+          Reset Status
+        </button>
+      </div>
+    </div>
+    <footer class="stux-footer">
+      Created by
+      <a href="https://stuxtechnologies.com" target="_blank"
+        >STUX TECHNOLOGIES LLC.</a
+      >
+    </footer>
+
+    <script>
+      let statusPollingInterval;
+
+      // Start automation when button is clicked
+      function startAutomation() {
+        const button = document.getElementById("startButton");
+        const statusText = document.getElementById("statusText");
+        const searchTextInput = document.getElementById("searchText");
+        const einInput = document.getElementById("einInput");
+        const addressInput = document.getElementById("addressInput");
+        const emailInput = document.getElementById("emailInput");
+        const phoneInput = document.getElementById("phoneInput");
+        const usernameInput = document.getElementById("usernameInput");
+        const passwordInput = document.getElementById("passwordInput");
+        const highlightTextInput = document.getElementById("highlightText");
+        const nameInput = document.getElementById("nameInput");
+
+        const searchText = searchTextInput.value.trim();
+        const einText = einInput.value.trim();
+        const addressText = addressInput.value.trim();
+        const emailText = emailInput.value.trim();
+        const phoneText = phoneInput.value.trim();
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value.trim();
+        const highlightText = highlightTextInput.value.trim();
+        const nameText = nameInput.value.trim();
+
+        // Get checkbox values
+        const signatureNotary =
+          document.getElementById("signatureNotary").checked;
+        const signatureClaimant =
+          document.getElementById("signatureClaimant").checked;
+        const signatureNotaryPublic = document.getElementById(
+          "signatureNotaryPublic"
+        ).checked;
+        const signatureRepresentative = document.getElementById(
+          "signatureRepresentative"
+        ).checked;
+        const signatureAuthorized = document.getElementById(
+          "signatureAuthorized"
+        ).checked;
+        const signatureApplicant =
+          document.getElementById("signatureApplicant").checked;
+
+        // Validate input
+        if (!searchText) {
+          alert("Please enter a URL to navigate to.");
+          return;
+        }
+
+        // Validate URL format
+        if (
+          searchText &&
+          !searchText.startsWith("http://") &&
+          !searchText.startsWith("https://")
+        ) {
+          alert(
+            "Please enter a valid URL starting with http:// or https://."
+          );
+          return;
+        }
+
+        // Disable button and show loading
+        button.disabled = true;
+        button.innerHTML =
+          '🔄 Starting automation... <div class="loading"></div>';
+        statusText.innerHTML =
+          'Starting automation... <div class="loading"></div>';
+
+        // Make API call to start automation with search text and additional parameters
+        fetch("/start_automation", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            search_text: searchText,
+            ein_text: einText,
+            address_text: addressText,
+            email_text: emailText,
+            phone_text: phoneText,
+            username: username,
+            password: password,
+            highlight_text: highlightText,
+            name_text: nameText,
+            signature_options: {
+              notary: signatureNotary,
+              claimant: signatureClaimant,
+              notaryPublic: signatureNotaryPublic,
+              representative: signatureRepresentative,
+              authorized: signatureAuthorized,
+              applicant: signatureApplicant,
+            },
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              console.log("Import started successfully with text:", searchText);
+              // Start polling for status updates
+              startStatusPolling();
+            } else {
+              alert("Failed to start automation: " + data.message);
+              resetButton();
+            }
+          })
+          .catch((error) => {
+            console.error("Error starting automation:", error);
+            alert("Error starting automation: " + error.message);
+            resetButton();
+          });
+      }
+
+      // Reset button to original state
+      function resetButton() {
+        const button = document.getElementById("startButton");
+        button.disabled = false;
+        button.innerHTML = "🚀 Start Automation";
+      }
+
+      // Start polling for status updates
+      function startStatusPolling() {
+        // Poll every 2 seconds
+        statusPollingInterval = setInterval(updateStatus, 2000);
+      }
+
+      // Update status display
+      function updateStatus() {
+        fetch("/status")
+          .then((response) => response.json())
+          .then((data) => {
+            updateStatusDisplay(data);
+
+            // Stop polling if automation is complete or failed
+            if (!data.running && (data.completed || data.error)) {
+              clearInterval(statusPollingInterval);
+              resetButton();
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching status:", error);
+          });
+      }
+
+      // Update the status display with new data
+      function updateStatusDisplay(data) {
+        const statusText = document.getElementById("statusText");
+        const currentStep = document.getElementById("currentStep");
+        const searchTextDisplay = document.getElementById("searchTextDisplay");
+        const einTextDisplay = document.getElementById("einTextDisplay");
+        const addressTextDisplay =
+          document.getElementById("addressTextDisplay");
+        const emailTextDisplay = document.getElementById("emailTextDisplay");
+        const phoneTextDisplay = document.getElementById("phoneTextDisplay");
+        const highlightTextDisplay = document.getElementById(
+          "highlightTextDisplay"
+        );
+        const signatureOptionsDisplay = document.getElementById(
+          "signatureOptionsDisplay"
+        );
+        const startTime = document.getElementById("startTime");
+        const endTime = document.getElementById("endTime");
+        const errorContainer = document.getElementById("errorContainer");
+        const errorText = document.getElementById("errorText");
+
+        // Update status text and styling
+        if (data.running) {
+          statusText.innerHTML = 'Running <div class="loading"></div>';
+          statusText.parentElement.className = "status-item status-running";
+        } else if (data.completed) {
+          statusText.textContent = "Completed";
+          statusText.parentElement.className = "status-item status-completed";
+        } else if (data.error) {
+          statusText.textContent = "Error";
+          statusText.parentElement.className = "status-item status-error";
+        } else {
+          statusText.textContent = "Idle";
+          statusText.parentElement.className = "status-item status-idle";
+        }
+
+        // Update other fields
+        currentStep.textContent = data.current_step || "No automation running";
+        searchTextDisplay.textContent = data.search_text || "-";
+        einTextDisplay.textContent = data.ein_text || "-";
+        addressTextDisplay.textContent = data.address_text || "-";
+        emailTextDisplay.textContent = data.email_text || "-";
+        phoneTextDisplay.textContent = data.phone_text || "-";
+        highlightTextDisplay.textContent = data.highlight_text || "-";
+
+        // Format signature options for display
+        let signatureOptionsText = "-";
+        if (data.signature_options) {
+          const options = data.signature_options;
+          const selectedOptions = [];
+          if (options.notary) selectedOptions.push("Notary");
+          if (options.claimant) selectedOptions.push("Claimant");
+          if (options.notaryPublic) selectedOptions.push("Notary Public");
+          if (options.representative) selectedOptions.push("Representative");
+          if (options.authorized) selectedOptions.push("Authorized Signer");
+          if (options.applicant) selectedOptions.push("Applicant");
+          signatureOptionsText =
+            selectedOptions.length > 0
+              ? selectedOptions.join(", ")
+              : "None selected";
+        }
+        signatureOptionsDisplay.textContent = signatureOptionsText;
+
+        startTime.textContent = data.start_time || "-";
+        endTime.textContent = data.end_time || "-";
+
+        // Show/hide error container
+        if (data.error) {
+          errorText.textContent = data.error;
+          errorContainer.style.display = "block";
+        } else {
+          errorContainer.style.display = "none";
+        }
+      }
+
+      // Reset status
+      function resetStatus() {
+        fetch("/reset")
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              // Reset display
+              updateStatusDisplay({
+                running: false,
+                completed: false,
+                error: null,
+                start_time: null,
+                end_time: null,
+                current_step: null,
+                search_text: null,
+                ein_text: null,
+                address_text: null,
+                email_text: null,
+                phone_text: null,
+                highlight_text: null,
+                signature_options: null,
+              });
+              console.log("Status reset successfully");
+            }
+          })
+          .catch((error) => {
+            console.error("Error resetting status:", error);
+          });
+      }
+
+      // Select all signature checkboxes
+      function selectAllSignatures() {
+        const checkboxes = [
+          "signatureNotary",
+          "signatureClaimant",
+          "signatureNotaryPublic",
+          "signatureRepresentative",
+          "signatureAuthorized",
+          "signatureApplicant",
+        ];
+        checkboxes.forEach((id) => {
+          document.getElementById(id).checked = true;
+        });
+      }
+
+      // Clear all signature checkboxes
+      function clearAllSignatures() {
+        const checkboxes = [
+          "signatureNotary",
+          "signatureClaimant",
+          "signatureNotaryPublic",
+          "signatureRepresentative",
+          "signatureAuthorized",
+          "signatureApplicant",
+        ];
+        checkboxes.forEach((id) => {
+          document.getElementById(id).checked = false;
+        });
+      }
+
+      // Load initial status on page load
+      document.addEventListener("DOMContentLoaded", function () {
+        updateStatus();
+      });
+    </script>
+  </body>
+</html>

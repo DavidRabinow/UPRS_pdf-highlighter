@@ -1,0 +1,11 @@
+# davidrabinow.online/robots.txt
+
+User-agent: googlebot
+
+Disallow: /assets/
+Disallow: /dedication/
+Disallow: /yt/cookies/
+Disallow: /404.html
+Disallow: /nav.html
+
+Sitemap: https://davidrabinow.online/sitemap.xml

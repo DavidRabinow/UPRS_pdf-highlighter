@@ -1,0 +1,10 @@
+selenium==4.15.2
+webdriver-manager==4.0.1 
+Flask
+gunicorn
+pyautogui
+pygetwindow
+openai
+python-dotenv
+PyMuPDF
+PyPDF2 
