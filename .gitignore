@@ -1,0 +1,10 @@
+# secrets
+.env
+*.env
+*.pem
+*.pfx
+*.cer
+*.key
+*.secret
+*.credentials
+config/*.local.json
