@@ -18,3 +18,12 @@ config/*.local.json
 *.secret
 *.credentials
 config/*.local.json
+
+__pycache__/
+*.pyc
+
+# compiled + uploads
+__pycache__/
+*.pyc
+apps/rpa/uploads/
+
