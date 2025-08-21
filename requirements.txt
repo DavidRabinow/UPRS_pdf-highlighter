@@ -1,0 +1,30 @@
+# Unified PDF Processing and Automation Application Requirements
+
+# Core Flask dependencies
+Flask>=2.0.0
+gunicorn>=20.0.0
+
+# PDF processing
+PyMuPDF>=1.20.0
+PyPDF2>=3.0.0
+pypdf>=3.0.0
+
+# Automation and web scraping
+selenium>=4.15.0
+webdriver-manager>=4.0.0
+pyautogui>=0.9.50
+pygetwindow>=0.0.9
+
+# AI and processing
+openai>=1.0.0
+python-dotenv>=1.0.0
+rapidfuzz>=3.0.0
+
+# Utilities
+PyYAML>=6.0
+loguru>=0.7.0
+
+# Additional dependencies for enhanced functionality
+requests>=2.25.0
+beautifulsoup4>=4.9.0
+lxml>=4.6.0

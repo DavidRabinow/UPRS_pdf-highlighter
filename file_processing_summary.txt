@@ -1,0 +1,22 @@
+File Processing Summary
+=====================
+File: C:\Users\drabi\AppData\Local\Temp\tmplk_75v04\17341284311383_1584248.pdf
+File Size: 128 characters
+File Type: .pdf
+Processing Time: 2025-08-21 12:30:45
+
+Extracted Data:
+- EIN Numbers: 2
+- Addresses: 2
+- Emails: 2
+- Phone Numbers: 2
+- Names: 2
+
+Recommendations:
+- Process EIN numbers for tax purposes
+- Validate email addresses
+- Standardize phone number formats
+
+Critical Fields:
+- EIN numbers for tax compliance
+- Email addresses for communication

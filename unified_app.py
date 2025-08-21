@@ -11,6 +11,7 @@ import threading
 import time
 import logging
 import tempfile
+import json
 from pathlib import Path
 from flask import Flask, render_template, request, send_file, flash, redirect, url_for, jsonify
 from datetime import datetime
@@ -191,7 +192,7 @@ def process_highlight_zip(zip_bytes, highlight_words):
     
     return output_zip.getvalue()
 
-def run_automation_in_background(search_text, highlight_text=None, name_text=None, signature_options=None, username=None, password=None, ein_text=None, address_text=None, email_text=None, phone_text=None):
+def run_automation_in_background(highlight_text=None, name_text=None, signature_options=None, data_file_path=None):
     """
     Background function to run Selenium automation.
     This runs in a separate thread so Flask remains responsive.
@@ -199,24 +200,19 @@ def run_automation_in_background(search_text, highlight_text=None, name_text=Non
     global automation_status
     
     try:
-        logger.info(f"Starting automation in background with URL: '{search_text}', highlight text: '{highlight_text}', name text: '{name_text}', signature options: '{signature_options}', username: '{username}', EIN: '{ein_text}', Address: '{address_text}', Email: '{email_text}', Phone: '{phone_text}'")
+        logger.info(f"Starting automation in background with highlight text: '{highlight_text}', name text: '{name_text}', signature options: '{signature_options}', data file: '{data_file_path}'")
         automation_status['running'] = True
         automation_status['start_time'] = time.strftime('%Y-%m-%d %H:%M:%S')
         automation_status['error'] = None
         automation_status['current_step'] = 'Initializing...'
-        automation_status['search_text'] = search_text
-        automation_status['ein_text'] = ein_text
-        automation_status['address_text'] = address_text
-        automation_status['email_text'] = email_text
-        automation_status['phone_text'] = phone_text
         automation_status['highlight_text'] = highlight_text
         automation_status['name_text'] = name_text
         automation_status['signature_options'] = signature_options
         
         # Create and run automation
         try:
-            automation = SeleniumAutomation(username=username, password=password)
-            automation.run(search_text, highlight_text, name_text, signature_options, ein_text, address_text, email_text, phone_text)
+            automation = SeleniumAutomation()
+            automation.run(highlight_text, name_text, signature_options, data_file_path)
             
             # Update status on completion
             automation_status['running'] = False
@@ -358,38 +354,28 @@ def start_automation():
     global automation_status
     
     try:
-        data = request.get_json()
-        if not data:
+        # Handle form data with file upload
+        highlight_text = request.form.get('highlight_text', '').strip()
+        name_text = request.form.get('name_text', '').strip()
+        signature_options_str = request.form.get('signature_options', '{}')
+        
+        # Parse signature options
+        try:
+            signature_options = json.loads(signature_options_str)
+        except json.JSONDecodeError:
+            signature_options = {}
+        
+        # Handle file upload
+        data_file = request.files.get('data_file')
+        if not data_file:
             return jsonify({
                 'success': False,
-                'message': 'No data provided'
+                'message': 'Data file is required'
             })
         
-        search_text = data.get('url', '').strip()
-        ein_text = data.get('ein', '').strip()
-        address_text = data.get('address', '').strip()
-        email_text = data.get('email', '').strip()
-        phone_text = data.get('phone', '').strip()
-        username = data.get('username', '').strip()
-        password = data.get('password', '').strip()
-        highlight_text = data.get('highlight_text', '').strip()
-        name_text = data.get('name_text', '').strip()
-        signature_options = data.get('signature_options', {})
-        
-        if not search_text:
-            return jsonify({
-                'success': False,
-                'message': 'URL is required'
-            })
-        
-        # Validate that the URL looks like a valid URL
-        if search_text and not (search_text.startswith('http://') or search_text.startswith('https://')):
-            return jsonify({
-                'success': False,
-                'message': 'Please enter a valid URL starting with http:// or https://.'
-            })
+
             
-        logger.info(f"Received automation request with URL: '{search_text}', EIN: '{ein_text}', Address: '{address_text}', Email: '{email_text}', Phone: '{phone_text}', username: '{username}', highlight text: '{highlight_text}', name text: '{name_text}', signature options: '{signature_options}'")
+        logger.info(f"Received automation request with highlight text: '{highlight_text}', name text: '{name_text}', signature options: '{signature_options}', data file: '{data_file.filename}'")
         
     except Exception as e:
         logger.error(f"Error parsing request data: {e}")
@@ -397,6 +383,20 @@ def start_automation():
             'success': False,
             'message': 'Invalid request data'
         })
+    
+    # Save uploaded file to temporary location
+    import tempfile
+    import os
+    
+    # Create uploads directory if it doesn't exist
+    uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
+    os.makedirs(uploads_dir, exist_ok=True)
+    
+    # Save file with unique name
+    file_extension = os.path.splitext(data_file.filename)[1]
+    temp_filename = f"data_file_{int(time.time())}{file_extension}"
+    file_path = os.path.join(uploads_dir, temp_filename)
+    data_file.save(file_path)
     
     # Reset status for new run
     automation_status = {
@@ -406,26 +406,22 @@ def start_automation():
         'start_time': None,
         'end_time': None,
         'current_step': None,
-        'search_text': None,
-        'ein_text': None,
-        'address_text': None,
-        'email_text': None,
-        'phone_text': None,
+        'data_file': data_file.filename,
         'highlight_text': None,
         'name_text': None,
         'signature_options': None
     }
     
     # Start automation in background thread
-    automation_thread = threading.Thread(target=run_automation_in_background, args=(search_text, highlight_text, name_text, signature_options, username, password, ein_text, address_text, email_text, phone_text))
+    automation_thread = threading.Thread(target=run_automation_in_background, args=(highlight_text, name_text, signature_options, file_path))
     automation_thread.daemon = True  # Thread will stop when main app stops
     automation_thread.start()
     
-    logger.info(f"Automation thread started with URL: '{search_text}', username: '{username}', highlight text: '{highlight_text}', name text: '{name_text}'")
+    logger.info(f"Automation thread started with highlight text: '{highlight_text}', name text: '{name_text}', data file: '{data_file.filename}'")
     
     return jsonify({
         'success': True,
-        'message': f'Automation started successfully with URL: "{search_text}"'
+        'message': 'Automation started successfully'
     })
 
 @app.route('/automation_status')
@@ -444,12 +440,10 @@ def reset_automation_status():
         'start_time': None,
         'end_time': None,
         'current_step': None,
-        'search_text': None,
-        'ein_text': None,
-        'address_text': None,
-        'email_text': None,
-        'phone_text': None,
-        'highlight_text': None
+        'data_file': None,
+        'highlight_text': None,
+        'name_text': None,
+        'signature_options': None
     }
     return jsonify({'success': True, 'message': 'Status reset'})
 
@@ -466,6 +460,6 @@ if __name__ == '__main__':
     app.run(
         host=HOST,
         port=PORT,
-        debug=True,  # Enable debug mode for development
+        debug=False,  # Disable debug mode to prevent auto-reload during automation
         threaded=True  # Enable threading for multiple requests
     )

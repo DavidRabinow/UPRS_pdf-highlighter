@@ -1,0 +1,35 @@
+{
+  "extracted_data": {
+    "ein_numbers": [
+      "123456789",
+      "987654321"
+    ],
+    "addresses": [
+      "123 Main St, City, State",
+      "456 Oak Ave, City, State"
+    ],
+    "emails": [
+      "example@email.com",
+      "test@email.com"
+    ],
+    "phone_numbers": [
+      "555-123-4567",
+      "555-987-6543"
+    ],
+    "names": [
+      "John Doe",
+      "Jane Smith"
+    ],
+    "other_fields": []
+  },
+  "recommendations": [
+    "Process EIN numbers for tax purposes",
+    "Validate email addresses",
+    "Standardize phone number formats"
+  ],
+  "critical_fields": [
+    "EIN numbers for tax compliance",
+    "Email addresses for communication"
+  ],
+  "processing_notes": "File processed successfully. Found 128 characters of data. Ready for automation processing."
+}

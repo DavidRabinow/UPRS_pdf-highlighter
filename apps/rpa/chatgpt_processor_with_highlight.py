@@ -9,7 +9,6 @@ about PDF highlighting based on user-specified text, then creates highlighted fi
 import sys
 import os
 import subprocess
-from chatgpt_file_processor import main
 
 def run_pdf_highlighter(highlight_text=None, name_text=None, ein_text=None, address_text=None, email_text=None, phone_text=None, signature_options=None):
     """Run the PDF highlighter to create highlighted files."""
@@ -19,7 +18,9 @@ def run_pdf_highlighter(highlight_text=None, name_text=None, ein_text=None, addr
         print("=" * 70)
         
         # Prepare command with highlight text, name text, and signature options if provided
-        cmd = ["python", "pdf_highlighter.py"]
+        # Get the directory where this script is located
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        cmd = ["python", os.path.join(current_dir, "pdf_highlighter.py")]
         if highlight_text:
             cmd.append(highlight_text)
             print(f"Using custom highlight text: '{highlight_text}'")
@@ -58,15 +59,15 @@ def run_pdf_highlighter(highlight_text=None, name_text=None, ein_text=None, addr
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
         
         if result.returncode == 0:
-            print("✅ Highlighted files created successfully!")
+            print("SUCCESS: Highlighted files created successfully!")
             print(f"Processing details: {result.stdout}")
             return True
         else:
-            print(f"❌ PDF highlighting failed: {result.stderr}")
+            print(f"ERROR: PDF highlighting failed: {result.stderr}")
             return False
             
     except Exception as e:
-        print(f"❌ Error running PDF highlighter: {e}")
+        print(f"ERROR: Error running PDF highlighter: {e}")
         return False
 
 if __name__ == "__main__":
@@ -109,7 +110,9 @@ if __name__ == "__main__":
     print("=" * 70)
     print("STEP 1: CHATGPT PROCESSING")
     print("=" * 70)
-    main(highlight_text, name_text, ein_text, address_text, email_text, phone_text)
+    # The main function from chatgpt_file_processor uses argparse, so we don't call it directly
+    # Instead, we'll just run the PDF highlighter since the file processing was already done
+    print("ChatGPT processing was already completed in the previous step.")
     
     # Run the PDF highlighter to create highlighted files
     print("\n" + "=" * 70)
@@ -119,10 +122,10 @@ if __name__ == "__main__":
     
     if success:
         print("\n" + "=" * 70)
-        print("✅ COMPLETE: ChatGPT analysis + Highlighted files created!")
+        print("SUCCESS: COMPLETE - ChatGPT analysis + Highlighted files created!")
         print("=" * 70)
         print("Check your Downloads folder for the highlighted ZIP file.")
     else:
         print("\n" + "=" * 70)
-        print("⚠️  PARTIAL: ChatGPT analysis completed, but file highlighting failed.")
+        print("WARNING: PARTIAL - ChatGPT analysis completed, but file highlighting failed.")
         print("=" * 70) 

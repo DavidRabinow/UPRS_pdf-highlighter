@@ -1,0 +1,32 @@
+
+Please analyze the following data file and extract relevant information for processing:
+
+File Content:
+PDF file detected: 17341284311383_1584248.pdf
+This PDF will be processed by the PDF highlighter for highlighting and annotation.
+
+Additional Parameters:
+- Highlight Text: None provided
+- Name Text: None provided
+- Signature Options: None provided
+
+Please:
+1. Extract any EIN numbers, addresses, emails, phone numbers, and other relevant data
+2. Identify any patterns or important information
+3. Provide recommendations for processing this data
+4. Highlight any critical fields that need attention
+
+Please format your response as JSON with the following structure:
+{
+    "extracted_data": {
+        "ein_numbers": [],
+        "addresses": [],
+        "emails": [],
+        "phone_numbers": [],
+        "names": [],
+        "other_fields": []
+    },
+    "recommendations": [],
+    "critical_fields": [],
+    "processing_notes": ""
+}
