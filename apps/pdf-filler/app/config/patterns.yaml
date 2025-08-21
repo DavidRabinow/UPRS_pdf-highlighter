@@ -1,12 +1,46 @@
 labels:
   name:
+    # Generic name patterns
+    - "name"
+    - "names"
     - "name:"
+    - "names:"
+    - "name: "
+    - "names: "
+
+    # Specific form variations
     - "full name:"
     - "legal name:"
     - "business name:"
     - "company name:"
+    - "organization name:"
     - "name(s):"
-    - "names:"
+    - "name(s) if different than above:"
+    - "name if different than above:"
+
+    # First/Last/Middle name variations
+    - "first name:"
+    - "given name:"
+    - "family name:"
+    - "surname:"
+
+    # Applicant/Claimant variations
+    - "applicant name:"
+    - "claimant name:"
+    - "owner name:"
+    - "authorized name:"
+
+    # Form field variations
+    - "name (first):"
+    - "(first):"
+
+    # Additional variations
+    - "printed name:"
+    - "signer name:"
+    - "contact name:"
+    - "primary name:"
+    - "secondary name:"
+    - "preferred name:"
   email:
     - "email:"
     - "e-mail:"

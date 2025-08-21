@@ -2,11 +2,26 @@ fields:
   - key: name
     acroform_names:
       - "name"
+      - "names"
       - "full_name"
       - "legal_name"
       - "business_name"
       - "company_name"
-      - "names"
+      - "organization_name"
+      - "claimant_name"
+      - "applicant_name"
+      - "first_name"
+      - "given_name"
+      - "family_name"
+      - "surname"
+      - "owner_name"
+      - "authorized_name"
+      - "printed_name"
+      - "signer_name"
+      - "contact_name"
+      - "primary_name"
+      - "secondary_name"
+      - "preferred_name"
     write:
       anchor_label: name
       offset:

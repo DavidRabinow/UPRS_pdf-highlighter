@@ -235,11 +235,18 @@ def fill_form_fields(doc, field_values):
         
         # Enhanced field mapping based on the form images provided
         field_mapping = {
-            'name': ['name', 'full_name', 'claimant_name', 'name_s', 'name_of_claimant', 'name_of_co_claimant'],
+            'name': [
+                'name', 'names', 'full_name', 'legal_name', 'business_name', 'company_name', 'organization_name',
+                'claimant_name', 'name_s', 'name_of_claimant', 'name_of_co_claimant', 'applicant_name',
+                'first_name', 'given_name', 'family_name', 'surname',
+                'owner_name', 'authorized_name', 'printed_name', 'signer_name',
+                'contact_name', 'primary_name', 'secondary_name', 'preferred_name'
+            ],
             'ein': ['ein', 'tax_id', 'employer_id', 'federal_employer_identification_number', 'social_security_fein', 'ssn_fein'],
             'address': ['address', 'mailing_address', 'current_mailing_address', 'street_address', 'present_mailing_address', 'current_address'],
             'email': ['email', 'email_address', 'emailaddress', 'claimant_email', 'co_claimant_email'],
-            'phone': ['phone', 'telephone', 'phone_number', 'daytime_telephone_number', 'daytime_phone', 'home_phone', 'telephone_number']
+            'phone': ['phone', 'telephone', 'phone_number', 'daytime_telephone_number', 'daytime_phone', 'home_phone', 'telephone_number'],
+            'dob': ['dob', 'date_of_birth', 'birthdate', 'birth_date']
         }
         
         filled_count = 0
@@ -279,23 +286,59 @@ def insert_text_fields(doc, field_values):
                 r'co-claimant\s+email'
             ],
             'phone': [
+                r'phone',  # Simple "Phone" label
+                r'phone\s*[:\-]',  # Phone with colon or dash
                 r'daytime\s+phone', 
                 r'phone\s+number', 
                 r'telephone\s+number',
                 r'home\s+phone',
-                r'phone\s*[:\-]', 
                 r'telephone\s*[:\-]',
                 r'cell\s+phone'
             ],
             'name': [
+                # Generic name patterns - most flexible
+                r'name[s]?',  # Simple "name" or "names"
+                r'name[s]?\s*[:\-]',  # "name:" or "names:"
+                r'name[s]?\s*[:\-]\s*',  # "name: " or "names: "
+                
+                # Specific form variations
+                r'name[s]?\s+if\s+different\s+than\s+above',  # Exact match for the form
+                r'name[s]?\s+if\s+different',  # Partial match
                 r'name\s+of\s+claimant', 
                 r'name\s+of\s+co-claimant',
-                r'name[s]?\s+if\s+different\s+than\s+above',
                 r'name\s+and\s+address', 
                 r'your\s+name', 
-                r'name[s]?\s*[:\-]', 
                 r'claimant\s+name', 
-                r'full\s+name'
+                r'full\s+name',
+                r'legal\s+name',
+                r'business\s+name',
+                r'company\s+name',
+                r'organization\s+name',
+                r'entity\s+name',
+                
+                                 # First/Last/Middle name variations
+                 r'first\s+name',
+                 r'given\s+name',
+                 r'family\s+name',
+                 r'surname',
+                 
+                 # Applicant/Claimant variations
+                 r'applicant\s+name',
+                 r'claimant\s+name',
+                 r'owner\s+name',
+                 r'authorized\s+name',
+                 
+                 # Form field variations
+                 r'name\s+\(first\)',
+                 r'\(first\)',
+                 
+                 # Additional variations
+                 r'printed\s+name',
+                 r'signer\s+name',
+                 r'contact\s+name',
+                 r'primary\s+name',
+                 r'secondary\s+name',
+                 r'preferred\s+name'
             ],
             'ein': [
                 r'social\s+security\s*/\s*fein', 
@@ -315,6 +358,14 @@ def insert_text_fields(doc, field_values):
                 r'street\s+address', 
                 r'current\s+address',
                 r'city,\s+state,\s+zip'
+            ],
+            'dob': [
+                r'date\s+of\s+birth',
+                r'date\s+of\s+birth\s*[:\-]',  # Date of birth with colon or dash
+                r'dob',
+                r'dob\s*[:\-]',  # DOB with colon or dash
+                r'birth\s+date',
+                r'birthdate'
             ]
         }
         
@@ -334,6 +385,17 @@ def insert_text_fields(doc, field_values):
             page_text = page.get_text("text").lower()
             logger.info(f"Page text contains: {page_text[:200]}...")
             
+            # Debug: Print field values being processed
+            logger.info(f"Field values to fill: {field_values}")
+            
+            # Debug: Print all text blocks for detailed analysis
+            logger.debug("All text blocks on page:")
+            for block in text_blocks:
+                if "lines" in block:
+                    for line in block["lines"]:
+                        for span in line["spans"]:
+                            logger.debug(f"  Text: '{span['text']}' at position {span['origin']}")
+            
             for block in text_blocks:
                 if "lines" in block:
                     for line in block["lines"]:
@@ -343,6 +405,8 @@ def insert_text_fields(doc, field_values):
                             # Check if this text matches any field pattern
                             for field_name, patterns in field_patterns.items():
                                  if field_name in field_values and field_values[field_name]:
+                                     # Debug: Log what we're looking for
+                                     logger.debug(f"Looking for field '{field_name}' with value '{field_values[field_name]}' in text: '{text}'")
                                      # Skip if we've already filled this field type on this page
                                      field_key = f"{field_name}_{page_num}"
                                      if field_key in filled_fields:
@@ -364,7 +428,7 @@ def insert_text_fields(doc, field_values):
                                                  continue
                                              
                                              # Skip sensitive fields that shouldn't be filled automatically
-                                             if 'social\s+security' in text.lower() or 'date\s+of\s+birth' in text.lower():
+                                             if 'social\s+security' in text.lower():
                                                  logger.debug(f"Skipping sensitive field: {text}")
                                                  continue
                                                  

@@ -12,7 +12,27 @@ MAPPING = yaml.safe_load(open(ROOT / 'config' / 'mapping.yaml', 'r', encoding='u
 
 # Enhanced field type classification with fuzzy matching support
 FIELD_MAP = {
-    "name": ["name", "names", "name(s)", "full name", "legal name", "business name", "company name"],
+    "name": [
+        # Generic name patterns
+        "name", "names", "name(s)", 
+        
+        # Specific form variations
+        "full name", "legal name", "business name", "company name", "organization name",
+        "name if different than above", "names if different than above",
+        
+        # First/Last/Middle name variations
+        "first name", "given name", "family name", "surname",
+        
+        # Applicant/Claimant variations
+        "applicant name", "claimant name", "owner name", "authorized name",
+        
+        # Form field variations
+        "name (first)", "(first)",
+        
+        # Additional variations
+        "printed name", "signer name", "contact name", "primary name", "secondary name",
+        "preferred name"
+    ],
     "email": ["email", "email address", "e-mail", "e-mail address"],
     "address": ["address", "street address", "mailing address", "business address", "current address", "physical address"],
     "phone": ["phone", "telephone", "phone number", "telephone number", "mobile", "cell", "daytime phone"],

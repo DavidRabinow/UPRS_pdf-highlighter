@@ -251,6 +251,7 @@ def fill_pdf_route():
         address = request.form.get('address', '').strip()
         phone = request.form.get('phone', '').strip()
         ein = request.form.get('ein', '').strip()
+        dob = request.form.get('dob', '').strip()
         
         # Get signature options
         signature_options = {}
@@ -275,7 +276,8 @@ def fill_pdf_route():
             'email': email,
             'address': address,
             'phone': phone,
-            'ein': ein
+            'ein': ein,
+            'dob': dob
         }
         
         # Add signature options
