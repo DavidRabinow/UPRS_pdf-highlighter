@@ -531,6 +531,76 @@
               <span class="checkmark"></span>
               Signature of Applicant
             </label>
+            <label class="checkbox-item">
+              <input
+                type="checkbox"
+                id="signatureClaimantDetailed"
+                name="signatureOptions"
+                value="claimantDetailed"
+              />
+              <span class="checkmark"></span>
+              Signature of Claimant (Detailed)
+            </label>
+            <label class="checkbox-item">
+              <input
+                type="checkbox"
+                id="signatureClaimingAgent"
+                name="signatureOptions"
+                value="claimingAgent"
+              />
+              <span class="checkmark"></span>
+              Claiming Agent's Signature
+            </label>
+            <label class="checkbox-item">
+              <input
+                type="checkbox"
+                id="signatureNA"
+                name="signatureOptions"
+                value="na"
+              />
+              <span class="checkmark"></span>
+              N/A
+            </label>
+            <label class="checkbox-item">
+              <input
+                type="checkbox"
+                id="signatureElectronic"
+                name="signatureOptions"
+                value="electronic"
+              />
+              <span class="checkmark"></span>
+              Electronic Signature Not Accepted
+            </label>
+            <label class="checkbox-item">
+              <input
+                type="checkbox"
+                id="signatureGeneric"
+                name="signatureOptions"
+                value="generic"
+              />
+              <span class="checkmark"></span>
+              Signature (Generic)
+            </label>
+            <label class="checkbox-item">
+              <input
+                type="checkbox"
+                id="signatureOwner"
+                name="signatureOptions"
+                value="owner"
+              />
+              <span class="checkmark"></span>
+              Claimant/Owner Signature
+            </label>
+            <label class="checkbox-item">
+              <input
+                type="checkbox"
+                id="signatureFull"
+                name="signatureOptions"
+                value="full"
+              />
+              <span class="checkmark"></span>
+              Full Signature
+            </label>
           </div>
         </div>
 
@@ -658,6 +728,27 @@
         ).checked;
         const signatureApplicant =
           document.getElementById("signatureApplicant").checked;
+        const signatureClaimantDetailed = document.getElementById(
+          "signatureClaimantDetailed"
+        ).checked;
+        const signatureClaimingAgent = document.getElementById(
+          "signatureClaimingAgent"
+        ).checked;
+        const signatureNA = document.getElementById(
+          "signatureNA"
+        ).checked;
+        const signatureElectronic = document.getElementById(
+          "signatureElectronic"
+        ).checked;
+        const signatureGeneric = document.getElementById(
+          "signatureGeneric"
+        ).checked;
+        const signatureOwner = document.getElementById(
+          "signatureOwner"
+        ).checked;
+        const signatureFull = document.getElementById(
+          "signatureFull"
+        ).checked;
 
         // Validate input
         if (!searchText) {
@@ -707,6 +798,13 @@
               representative: signatureRepresentative,
               authorized: signatureAuthorized,
               applicant: signatureApplicant,
+              claimantDetailed: signatureClaimantDetailed,
+              claimingAgent: signatureClaimingAgent,
+              na: signatureNA,
+              electronic: signatureElectronic,
+              generic: signatureGeneric,
+              owner: signatureOwner,
+              full: signatureFull,
             },
           }),
         })
@@ -815,6 +913,13 @@
           if (options.representative) selectedOptions.push("Representative");
           if (options.authorized) selectedOptions.push("Authorized Signer");
           if (options.applicant) selectedOptions.push("Applicant");
+          if (options.claimantDetailed) selectedOptions.push("Claimant Detailed");
+          if (options.claimingAgent) selectedOptions.push("Claiming Agent");
+          if (options.na) selectedOptions.push("N/A");
+          if (options.electronic) selectedOptions.push("Electronic");
+          if (options.generic) selectedOptions.push("Generic");
+          if (options.owner) selectedOptions.push("Owner");
+          if (options.full) selectedOptions.push("Full");
           signatureOptionsText =
             selectedOptions.length > 0
               ? selectedOptions.join(", ")
@@ -873,6 +978,13 @@
           "signatureRepresentative",
           "signatureAuthorized",
           "signatureApplicant",
+          "signatureClaimantDetailed",
+          "signatureClaimingAgent",
+          "signatureNA",
+          "signatureElectronic",
+          "signatureGeneric",
+          "signatureOwner",
+          "signatureFull",
         ];
         checkboxes.forEach((id) => {
           document.getElementById(id).checked = true;
@@ -888,6 +1000,13 @@
           "signatureRepresentative",
           "signatureAuthorized",
           "signatureApplicant",
+          "signatureClaimantDetailed",
+          "signatureClaimingAgent",
+          "signatureNA",
+          "signatureElectronic",
+          "signatureGeneric",
+          "signatureOwner",
+          "signatureFull",
         ];
         checkboxes.forEach((id) => {
           document.getElementById(id).checked = false;

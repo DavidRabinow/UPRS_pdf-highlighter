@@ -565,6 +565,65 @@ def highlight_pdf_pymupdf(pdf_path: Path, output_path: Path, highlight_text: str
                     ])
                     logger.info("Added applicant signature keywords")
                 
+                if sig_options.get('claimantDetailed', False):
+                    signature_keywords.extend([
+                        "signature of claimant", "signature of claimant:",
+                        "claimant's signature", "claimant's signature:",
+                        "claiming agent's signature", "claiming agent's signature (sign in the presence of a notary):",
+                        "n/a", "signature of claimant (electronic signature not accepted)",
+                        "claimant signature:", "signature", "signature(s) of claimant(s)",
+                        "claimant/owner #1 signature", "claimant signature", "*signature",
+                        "full signature of claimant", "claimant's signature",
+                        "signature of claimant(s)"
+                    ])
+                    logger.info("Added detailed claimant signature keywords")
+                
+                if sig_options.get('claimingAgent', False):
+                    signature_keywords.extend([
+                        "claiming agent's signature", "claiming agent signature",
+                        "claiming agent's signature:", "claiming agent signature:",
+                        "claiming agent signature line", "sign in the presence of a notary"
+                    ])
+                    logger.info("Added claiming agent signature keywords")
+                
+                if sig_options.get('na', False):
+                    signature_keywords.extend([
+                        "n/a", "n/a:", "not applicable", "not applicable:",
+                        "na signature", "na signature line"
+                    ])
+                    logger.info("Added N/A signature keywords")
+                
+                if sig_options.get('electronic', False):
+                    signature_keywords.extend([
+                        "electronic signature not accepted", "electronic signature",
+                        "electronic signature:", "electronic signature line",
+                        "signature of claimant (electronic signature not accepted)"
+                    ])
+                    logger.info("Added electronic signature keywords")
+                
+                if sig_options.get('generic', False):
+                    signature_keywords.extend([
+                        "signature", "signature:", "signature line",
+                        "*signature", "*signature:", "*signature line"
+                    ])
+                    logger.info("Added generic signature keywords")
+                
+                if sig_options.get('owner', False):
+                    signature_keywords.extend([
+                        "claimant/owner #1 signature", "claimant/owner signature",
+                        "owner signature", "owner signature:", "owner signature line",
+                        "claimant/owner signature:", "claimant/owner signature line"
+                    ])
+                    logger.info("Added owner signature keywords")
+                
+                if sig_options.get('full', False):
+                    signature_keywords.extend([
+                        "full signature of claimant", "full signature",
+                        "full signature:", "full signature line",
+                        "complete signature", "complete signature:"
+                    ])
+                    logger.info("Added full signature keywords")
+                
                 # Add signature keywords to the main keywords list
                 if signature_keywords:
                     keywords.extend(signature_keywords)

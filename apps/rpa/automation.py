@@ -1903,10 +1903,10 @@ class SeleniumAutomation:
                                     }
                                 }, 5000);
                             """)
-                    except Exception as e:
+                        except Exception as e:
                             logger.warning(f"Could not display browser notification: {e}")
                     
-                    except Exception as e:
+                except Exception as e:
                     logger.error(f"❌ ERROR: Failed to process uploaded file: {e}")
                     raise Exception(f"File processing failed: {e}")
             else:
@@ -1920,7 +1920,7 @@ class SeleniumAutomation:
             try:
                 # Wait indefinitely to keep browser open
                 while True:
-                time.sleep(10)
+                    time.sleep(10)
                     # Check if browser is still open
                     try:
                         self.driver.current_url
